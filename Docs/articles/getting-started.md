@@ -32,9 +32,9 @@ IFilePath parsedFilePath = FilePath.Parse(
 
 IAbsoluteFilePath finalFilePath;
 
-if (filePath.IsAbsolute)
+if (parsedFilePath.IsAbsolute)
 {
-    finalFilePath = (IAbsoluteFilePath)absolutePath;
+    finalFilePath = (IAbsoluteFilePath)parsedFilePath;
 }
 else
 {
@@ -51,7 +51,7 @@ else
 FileStream stream = finalFilePath.OpenStream(FileMode.Create);
 ```
 
-This example highlights several important aspects of the library. First, file system operations can only be performed on absolute paths. This forces you to consider and make explicit your intent about where relative paths should actually be relative to - should it be relative to the current directory, the executing assembly, the application folder, or something else?
+This example highlights several important aspects of the library. First, file system operations can only be performed on absolute paths. This forces you to consider and make explicit your intent about what relative paths should actually be relative to - should it be relative to the current directory, the executing assembly, the application folder, or something else?
 
 Secondly, you can see that `PathOptions.NoUnfriendlyNames` has been specified during parsing. `PathOptions` controls the parsing behavior and the default value on all methods that accept string paths is `NoUnfriendlyNames` if left unspecified. This is to ensure that you consider and explicitly state if you are prepared to handle unfriendly paths. Most applications should not attempt to handle unfriendly paths so sticking with `NoUnfriendlyNames` is recommended unless the need to process unfriendly paths is established and you are prepared to consider the steps you need to take to ensure proper handling of them. See [Advanced PathOptions Handling](advanced-pathoptions-handling.html) for more details on the topic.
 
