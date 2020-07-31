@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Singulink.IO</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.9.0</Version>
+    <Authors>Mike Marynowski</Authors>
+    <Company>Singulink</Company>
+    <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access in .NET.</Description>
+    <Copyright>Copyright (c) 2020 Singulink</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Singulink/Singulink.IO.FileSystem</PackageProjectUrl>
+    <PackageTags>File, Directory, Path</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />
+  </ItemGroup>
+
+</Project>
