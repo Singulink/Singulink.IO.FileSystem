@@ -42,7 +42,7 @@ IAbsoluteFilePath finalFilePath;
 
 if (filePath.IsAbsolute)
 {
-    finalFilePath = (IAbsoluteFilePath)absolutePath;
+    finalFilePath = (IAbsoluteFilePath)parsedFilePath;
 }
 else
 {
