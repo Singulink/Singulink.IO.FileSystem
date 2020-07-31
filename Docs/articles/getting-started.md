@@ -102,7 +102,7 @@ string usersFilePathString = "../Data/Users.json";
 IRelativeFilePath usersFileRelativePath = 
     FilePath.ParseRelative(userPathString, PathFormat.Universal);
 
-// dataDirectoryPath = "../Data" in universal format since usersFileRelativePath is
+// dataDirRelativePath = "../Data" in universal format since usersFileRelativePath is
 // in universal format:
 IRelativeDirectoryPath dataDirRelativePath = usersFileRelativePath.ParentDirectory;
 
