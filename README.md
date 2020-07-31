@@ -6,7 +6,7 @@
 
 Singulink.IO.FileSystem is a reliable cross-platform library that provides strongly-typed file/directory path manipulation and file system access in .NET. It has been designed to encourage developers to code with explicit intent in such a way that their applications can work seamlessly and bug free across both Unix and Windows file systems under all conditions. System.IO.* has numerous pitfalls that make 99% of file system code out in the wild fragile and problematic in edge cases. It also contains behavioral inconsistencies between Unix and Windows file systems that are abstracted and handled by this library so you don't have to worry about them.
 
-You can view the [full project documentation](www.singulink.com/Docs/Singulink.IO.FileSystem/) for more details, but here is an overview to get you started:
+You can view the [full project documentation](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) for more details, but here is an overview to get you started:
 
 ## Installation
 
@@ -104,4 +104,4 @@ Due to the platform-specific nature of absolute paths, only relative paths are a
 
 ## Further Reading
 
-Please head over to the [project documentation site](www.singulink.com/Docs/Singulink.IO.FileSystem/) to view articles, examples and the fully documented API.
+Please head over to the [project documentation site](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) to view articles, examples and the fully documented API.
