@@ -40,7 +40,7 @@ IFilePath parsedFilePath = FilePath.Parse(
 
 IAbsoluteFilePath finalFilePath;
 
-if (filePath.IsAbsolute)
+if (parsedFilePath.IsAbsolute)
 {
     finalFilePath = (IAbsoluteFilePath)parsedFilePath;
 }
