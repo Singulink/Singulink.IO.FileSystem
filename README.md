@@ -91,7 +91,7 @@ If you want to get available free space for an installation path, for example, y
 ```c#
 string installPathString = @"C:\Program Files\Your Application";
 
-IAbsoluteDirectoryPath installPath = DirectoryPath.Parse(installPathString);
+IAbsoluteDirectoryPath installPath = DirectoryPath.ParseAbsolute(installPathString);
 
 long availableSpaceBytes = installPath.AvailableFreeSpace;
 ```
