@@ -80,5 +80,16 @@ namespace Singulink.IO.FileSystem.Tests
 
             dir = DirectoryPath.ParseAbsolute("/./test/.././", PathFormat.Unix, PathOptions.None);
         }
+
+        [TestMethod]
+        public void PathFormatDependent()
+        {
+            var dir = DirectoryPath.ParseAbsolute("/ test.", PathFormat.Unix, PathOptions.PathFormatDependent);
+            Assert.AreEqual("/ test.", dir.PathDisplay);
+
+            dir = DirectoryPath.ParseAbsolute("c:/ test.", PathFormat.Windows, PathOptions.None);
+            Assert.AreEqual(@"c:\ test.", dir.PathDisplay);
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
+        }
     }
 }

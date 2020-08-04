@@ -109,5 +109,37 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/", PathFormat.Unix, PathOptions.None));
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test", PathFormat.Unix, PathOptions.None));
         }
+
+        [TestMethod]
+        public void PathFormatDependent()
+        {
+            var dir = DirectoryPath.ParseRelative("./ test.", PathFormat.Universal, PathOptions.None);
+            Assert.AreEqual(" test.", dir.PathDisplay);
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Universal, PathOptions.PathFormatDependent));
+
+            dir = DirectoryPath.ParseRelative("./ test.", PathFormat.Unix, PathOptions.PathFormatDependent);
+            Assert.AreEqual(" test.", dir.PathDisplay);
+
+            dir = DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.None);
+            Assert.AreEqual(@"\ test.", dir.PathDisplay);
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
+        }
+
+        [TestMethod]
+        public void PathOptionExceptions()
+        {
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test", PathFormat.Windows, PathOptions.NoLeadingSpaces));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test ", PathFormat.Windows, PathOptions.NoTrailingSpaces));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test.", PathFormat.Windows, PathOptions.NoTrailingDots));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test/..", PathFormat.Windows, PathOptions.NoNavigation));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/./", PathFormat.Windows, PathOptions.NoNavigation));
+
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/COM1/", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("AUX", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("CON", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test/NUL", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("PRN/test", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test/LPT5/test2", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+        }
     }
 }

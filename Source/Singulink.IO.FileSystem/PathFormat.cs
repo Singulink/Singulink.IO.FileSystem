@@ -104,6 +104,11 @@ namespace Singulink.IO
                 return false;
             }
 
+            if (options.HasFlag(PathOptions.NoLeadingSpaces) && name[0] == ' ') {
+                error = "Entry name starts with a space.";
+                return false;
+            }
+
             if (options.HasFlag(PathOptions.NoTrailingDots) && name[^1] == '.') {
                 error = "Entry name ends with a dot.";
                 return false;
