@@ -120,7 +120,7 @@ namespace Singulink.IO
         /// </summary>
         public static void SetCurrent(IAbsoluteDirectoryPath dir)
         {
-            dir.PathFormat.EnsureCurrent();
+            dir.PathFormat.EnsureCurrent(nameof(dir));
             Directory.SetCurrentDirectory(dir.PathExport);
         }
 
