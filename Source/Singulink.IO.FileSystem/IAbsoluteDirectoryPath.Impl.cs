@@ -56,7 +56,14 @@ namespace Singulink.IO
                 get {
                     PathFormat.EnsureCurrent();
 
-                    var attributes = File.GetAttributes(PathExport);
+                    FileAttributes attributes;
+
+                    try {
+                        attributes = File.GetAttributes(PathExport);
+                    }
+                    catch (FileNotFoundException) {
+                        attributes = 0;
+                    }
 
                     if (!attributes.HasFlag(FileAttributes.Directory))
                         throw new DirectoryNotFoundException();
