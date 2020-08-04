@@ -32,7 +32,7 @@ namespace Singulink.IO
 
             internal override bool IsUncPath(string path) => throw new NotSupportedException();
 
-            internal override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest) => throw new NotSupportedException();
+            protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest) => throw new NotSupportedException();
 
             internal override string GetAbsolutePathExportString(string pathDisplay) => throw new NotSupportedException();
 

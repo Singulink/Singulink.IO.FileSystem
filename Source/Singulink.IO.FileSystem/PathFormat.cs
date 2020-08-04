@@ -28,9 +28,11 @@ namespace Singulink.IO
         /// Gets a universal cross-platform path format that plays nice across all operating systems. Only non-rooted relative paths are supported.
         /// </summary>
         /// <remarks>
-        /// <para>The universal path format is useful for storing relative paths in a cross-platform compatible fashion and only allows paths that are valid on all
-        /// platforms. It only supports the forward slash (<c>/</c>) character as a path separator, which works on both Windows and Unix-based systems alike.
-        /// Paths containing backslashes (<c>\</c>) or path segments that begin/end with a space are not allowed and will throw an exception.</para>
+        /// <para>The universal path format is useful for storing relative paths in a cross-platform compatible fashion and only allows paths that are valid on
+        /// all platforms. It only supports the forward slash (<c>/</c>) character as a path separator, which works on both Windows and Unix-based systems
+        /// alike. Attempting to parse paths containing backslashes (<c>\</c>) will throw an exception, but you can convert a <see cref="Windows"/> format path
+        /// with backslashes to a <see cref="Universal"/> format path with methods like `<see cref="IRelativePath.ToPathFormat(PathFormat, PathOptions)"/>.
+        /// </para>
         /// </remarks>
         public static PathFormat Universal { get; } = new UniversalPathFormat();
 
@@ -89,10 +91,14 @@ namespace Singulink.IO
         /// </remarks>
         internal abstract PathKind GetPathKind(ReadOnlySpan<char> path);
 
+        internal abstract bool IsUncPath(string path);
+
         internal virtual ReadOnlySpan<char> NormalizeSeparators(ReadOnlySpan<char> path) => path;
 
         internal virtual bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
         {
+            SetPathFormatDependentOptions(ref options);
+
             if (name.IsEmpty) {
                 error = "Empty entry name.";
                 return false;
@@ -112,69 +118,10 @@ namespace Singulink.IO
             return true;
         }
 
-        internal abstract bool IsUncPath(string path);
-
-        /// <summary>
-        /// Returns the root of the absolute path and outputs the remaining non-rooted relative component of the path.
-        /// </summary>
-        internal abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
-
-        /// <summary>
-        /// Splits a non-rooted relative path into a list of parts.
-        /// </summary>
-        internal List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, PathOptions options)
-        {
-            int maxSegmentCount = 1;
-
-            foreach (char c in path) {
-                if (c == SeparatorChar)
-                    maxSegmentCount++;
-            }
-
-            var segments = new List<string>(maxSegmentCount);
-
-            while (path.Length > 0) {
-                int separatorIndex = path.IndexOf(SeparatorChar);
-
-                ReadOnlySpan<char> segment;
-
-                if (separatorIndex < 0) {
-                    segment = path;
-                    path = default;
-                }
-                else {
-                    segment = path[..separatorIndex];
-                    path = path[(separatorIndex + 1)..];
-                }
-
-                if (segment.Length == 0) {
-                    if (!options.HasFlag(PathOptions.AllowEmptyDirectories))
-                        throw new ArgumentException("Invalid empty directory in path.", nameof(path));
-                }
-                else if (segment.SequenceEqual(".") || segment.SequenceEqual("..")) {
-                    if (options.HasFlag(PathOptions.NoNavigation))
-                        throw new ArgumentException("Invalid navigational path segment.", nameof(path));
-
-                    if (segment.Length == 2) {
-                        if (segments.Count == 0 || segments[^1].Equals("..", StringComparison.Ordinal))
-                            segments.Add("..");
-                        else
-                            segments.RemoveAt(segments.Count - 1);
-                    }
-                }
-                else if (!ValidateEntryName(segment, options, false, out string error)) {
-                    throw new ArgumentException(error, nameof(path));
-                }
-                else {
-                    segments.Add(segment.ToString());
-                }
-            }
-
-            return segments;
-        }
-
         internal string NormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, out int rootLength)
         {
+            SetPathFormatDependentOptions(ref options);
+
             var pathKind = GetPathKind(path);
 
             if (pathKind == PathKind.Absolute)
@@ -221,6 +168,8 @@ namespace Singulink.IO
 
         internal string NormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, out int rootLength)
         {
+            SetPathFormatDependentOptions(ref options);
+
             var pathKind = GetPathKind(path);
 
             if (pathKind != PathKind.Absolute)
@@ -397,6 +346,75 @@ namespace Singulink.IO
         {
             if (this != Current)
                 throw new ArgumentException("The path format is not the correct type for the current platform.", paramName);
+        }
+
+        /// <summary>
+        /// Returns the root of the absolute path and outputs the remaining non-rooted relative component of the path.
+        /// </summary>
+        protected abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
+
+        /// <summary>
+        /// Appends NoUnfriendlyNames if the PathFormatDependent flag is set for the Universal and Windows path formats. Must be called at the start of all
+        /// non-private entry points into PathFormat methods that accept a PathOptions parameter.
+        /// </summary>
+        private void SetPathFormatDependentOptions(ref PathOptions options)
+        {
+            if (this != Unix && options.HasFlag(PathOptions.PathFormatDependent))
+                options |= PathOptions.NoUnfriendlyNames;
+        }
+
+        /// <summary>
+        /// Splits a non-rooted relative path into a list of parts.
+        /// </summary>
+        private List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, PathOptions options)
+        {
+            int maxSegmentCount = 1;
+
+            foreach (char c in path) {
+                if (c == SeparatorChar)
+                    maxSegmentCount++;
+            }
+
+            var segments = new List<string>(maxSegmentCount);
+
+            while (path.Length > 0) {
+                int separatorIndex = path.IndexOf(SeparatorChar);
+
+                ReadOnlySpan<char> segment;
+
+                if (separatorIndex < 0) {
+                    segment = path;
+                    path = default;
+                }
+                else {
+                    segment = path[..separatorIndex];
+                    path = path[(separatorIndex + 1)..];
+                }
+
+                if (segment.Length == 0) {
+                    if (!options.HasFlag(PathOptions.AllowEmptyDirectories))
+                        throw new ArgumentException("Invalid empty directory in path.", nameof(path));
+                }
+                else if (segment.SequenceEqual(".") || segment.SequenceEqual("..")) {
+                    if (options.HasFlag(PathOptions.NoNavigation))
+                        throw new ArgumentException("Invalid navigational path segment.", nameof(path));
+
+                    if (segment.Length == 2) {
+                        if (segments.Count == 0 || segments[^1].Equals("..", StringComparison.Ordinal))
+                            segments.Add("..");
+                        else
+                            segments.RemoveAt(segments.Count - 1);
+                    }
+                }
+                else if (!ValidateEntryName(segment, options, false, out string error)) {
+                    throw new ArgumentException(error, nameof(path));
+                }
+                else {
+                    segments.Add(segment.ToString());
+                }
+            }
+
+            return segments;
         }
     }
 }

@@ -85,7 +85,7 @@ namespace Singulink.IO
 
             internal override bool IsUncPath(string absoluteDisplayPath) => absoluteDisplayPath[1] != ':';
 
-            internal override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
+            protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
             {
                 if (path.StartsWith(@"\\?\", StringComparison.Ordinal) || path.StartsWith(@"\\.\", StringComparison.Ordinal)) {
                     path = path.Slice(4);

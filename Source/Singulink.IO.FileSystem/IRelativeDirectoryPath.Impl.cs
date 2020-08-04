@@ -34,7 +34,7 @@ namespace Singulink.IO
 
             IRelativeDirectoryPath? IRelativePath.ParentDirectory => ParentDirectory;
 
-            public bool HasParentDirectory => IsRooted ? PathDisplay.Length > RootLength : true;
+            public bool HasParentDirectory => !IsRooted || PathDisplay.Length > RootLength;
 
             bool IPath.HasParentDirectory => HasParentDirectory;
 
