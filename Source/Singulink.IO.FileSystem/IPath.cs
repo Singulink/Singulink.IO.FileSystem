@@ -17,9 +17,9 @@ namespace Singulink.IO
         /// Gets a path string suitable for user friendly display or serialization. Do not use this value to access the file system.
         /// </summary>
         /// <remarks>
-        /// <para>The value returned by this property is ideal for display to the user. Parsing this value with the appropriate parse method that matches the actual
-        /// type of this path will recreate an identical path object. If you need a string path parameter in order to perform IO operations (i.e. opening a
-        /// file stream) you should obtain an absolute path and use the <see cref="IAbsolutePath.PathExport"/> property value instead as it is
+        /// <para>The value returned by this property is ideal for display to the user. Parsing this value with the appropriate parse method that matches the
+        /// actual type of this path will recreate an identical path object. If you need a string path parameter in order to perform IO operations (i.e.
+        /// opening a file stream) you should obtain an absolute path and use the <see cref="IAbsolutePath.PathExport"/> property value instead as it is
         /// specifically formatted to ensure the path is correctly parsed by the underlying file system.</para>
         /// </remarks>
         string PathDisplay { get; }
