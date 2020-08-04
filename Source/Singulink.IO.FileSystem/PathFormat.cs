@@ -359,7 +359,7 @@ namespace Singulink.IO
         /// </summary>
         private void SetPathFormatDependentOptions(ref PathOptions options)
         {
-            if (this != Unix && options.HasFlag(PathOptions.PathFormatDependent))
+            if (options.HasFlag(PathOptions.PathFormatDependent) && this != Unix)
                 options |= PathOptions.NoUnfriendlyNames;
         }
 
