@@ -5,7 +5,7 @@
     <RootNamespace>Singulink.IO</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.2</Version>
+    <Version>0.9.3</Version>
     <Authors>Mike Marynowski</Authors>
     <Company>Singulink</Company>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access in .NET.</Description>
@@ -13,10 +13,17 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Singulink/Singulink.IO.FileSystem</PackageProjectUrl>
     <PackageTags>File, Directory, Path</PackageTags>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+    <PackageIcon>Singulink Icon 128x128.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="stylecop.json" />
+    <None Include="..\..\Resources\Singulink Icon 128x128.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
