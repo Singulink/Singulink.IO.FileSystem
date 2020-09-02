@@ -1,6 +1,6 @@
 # Advanced PathOptions Handling
 
-More detailed article coming soon...for now, see the [PathOptions API documentation](../api/Singulink.IO.PathOptions.html) for a detailed description of its values.
+More detailed article coming soon...for now, see the [PathOptions API documentation](../api/Singulink.IO.PathOptions.yml) for a detailed description of its values.
 
 The two most important things to consider when using path options other than `PathOptions.NoUnfriendlyNames` are:
 1) The paths may not be usable from Windows Explorer or other Windows applications, i.e. if they contain trailing spaces, reserved device names or end with a dot. For example, users may be stuck not being able to delete the files/directories without resorting to advanced command line operations.

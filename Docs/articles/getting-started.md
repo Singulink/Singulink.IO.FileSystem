@@ -10,15 +10,15 @@ The package is available on NuGet - simply install the `Singulink.IO.FileSystem`
 - Xamarin.iOS 12.16+
 - Xamarin.Android 10.0+
 
-## Main Concepts
+## Usage
 
 ### Path Creation
 
-Your main entry point into creating file and directory paths is the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `DirectoryPath.ParseAbsolute()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
+Your main entry point into creating file and directory paths is the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `ParseAbsolute()` and `ParseRelative()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
 
 ### Strong Typing
 
-Everything in Singulink.IO.FileSystem is strongly typed to the kind of path it represents, so there is no more guesswork about what type of path a `string` contains. Every path is an `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. Some methods may return a less specific interface if all the information is not available about the specific kind of path that will be returned, but the result can always be cast to one of the 4 specific interfaces.
+Paths are always strongly typed to the kind of path they represent. Every path is an `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. Some methods may return a less specific interface if all the information is not available about the specific kind of path that will be returned, but the result can always be cast to one of the 4 specific interfaces.
 
 ### Explicit Intent
 
@@ -53,7 +53,7 @@ FileStream stream = finalFilePath.OpenStream(FileMode.Create);
 
 This example highlights several important aspects of the library. First, file system operations can only be performed on absolute paths. This forces you to consider and make explicit your intent about what relative paths should actually be relative to - should it be relative to the current directory, the executing assembly, the application folder, or something else?
 
-Secondly, you can see that `PathOptions.NoUnfriendlyNames` has been specified during parsing. `PathOptions` controls the parsing behavior and the default value on all methods that accept string paths is `NoUnfriendlyNames` if left unspecified. This is to ensure that you consider and explicitly state if you are prepared to handle unfriendly paths. Most applications should not attempt to handle unfriendly paths so sticking with `NoUnfriendlyNames` is recommended unless the need to process unfriendly paths is established and you are prepared to consider the steps you need to take to ensure proper handling of them. See [Advanced PathOptions Handling](advanced-pathoptions-handling.html) for more details on the topic.
+Secondly, you can see that `PathOptions.NoUnfriendlyNames` has been specified during parsing. `PathOptions` controls the parsing behavior and the default value on all methods that accept string paths is `NoUnfriendlyNames` if left unspecified. This is to ensure that you consider and explicitly state if you are prepared to handle unfriendly paths. Most applications should not attempt to handle unfriendly paths so sticking with `NoUnfriendlyNames` is recommended unless the need to process unfriendly paths is established and you are prepared to consider the steps you need to take to ensure proper handling of them. See [Advanced PathOptions Handling](advanced-pathoptions-handling.md) for more details on the topic.
 
 ### No Silent Path Modification
 

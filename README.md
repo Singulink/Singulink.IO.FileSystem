@@ -4,7 +4,9 @@
 [![View nuget packages](https://img.shields.io/nuget/v/Singulink.IO.FileSystem.svg)](https://www.nuget.org/packages/Singulink.IO.FileSystem/)
 [![Build and Test](https://github.com/Singulink/Singulink.IO.FileSystem/workflows/build%20and%20test/badge.svg)](https://github.com/Singulink/Singulink.IO.FileSystem/actions?query=workflow%3A%22build+and+test%22)
 
-Singulink.IO.FileSystem is a reliable cross-platform library that provides strongly-typed file/directory path manipulation and file system access in .NET. It has been designed to encourage developers to code with explicit intent in such a way that their applications can work seamlessly and bug free across both Unix and Windows file systems under all conditions. System.IO.* has numerous pitfalls that make 99% of file system code out in the wild fragile and problematic in edge cases. It also contains behavioral inconsistencies between Unix and Windows file systems that are abstracted and handled by this library so you don't have to worry about them.
+**Singulink.IO.FileSystem** is a reliable cross-platform library that provides strongly-typed file/directory path manipulation and file system access in .NET. It has been designed to encourage developers to code with explicit intent in such a way that their applications can work seamlessly and bug free across both Unix and Windows file systems under all conditions. `System.IO.*` has numerous pitfalls that make 99% of file system code out in the wild fragile and problematic in edge cases. It also contains behavioral inconsistencies between Unix and Windows file systems that are abstracted and handled by this library so you don't have to worry about them.
+
+**Singulink.IO.FileSystem** is part of the **Singulink Libraries** collection. Visit https://github.com/Singulink/ to see the full list of libraries available.
 
 You can view the [full project documentation](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) for more details, but here is an overview to get you started:
 
@@ -18,15 +20,15 @@ The package is available on NuGet - simply install the `Singulink.IO.FileSystem`
 - Xamarin.iOS 12.16+
 - Xamarin.Android 10.0+
 
-## Main Concepts
+## Usage
 
 ### Path Creation
 
-Your main entry point into creating file and directory paths is the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `DirectoryPath.ParseAbsolute()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
+Your main entry point into creating file and directory paths is the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `ParseAbsolute()` and `ParseRelative()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
 
 ### Strong Typing
 
-Everything in Singulink.IO.FileSystem is strongly typed to the kind of path it represents, so there is no more guesswork about what type of path a `string` contains. Every path is an `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. Some methods may return a less specific interface if all the information is not available about the specific kind of path that will be returned, but the result can always be cast to one of the 4 specific interfaces.
+Paths are always strongly typed to the kind of path they represent. Every path is an `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. Some methods may return a less specific interface if all the information is not available about the specific kind of path that will be returned, but the result can always be cast to one of the 4 specific interfaces.
 
 ### Explicit Intent
 
