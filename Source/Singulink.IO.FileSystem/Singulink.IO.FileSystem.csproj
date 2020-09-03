@@ -6,13 +6,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.9.3</Version>
-    <Authors>Mike Marynowski</Authors>
-    <Company>Singulink</Company>
-    <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access in .NET.</Description>
-    <Copyright>Copyright (c) 2020 Singulink</Copyright>
+    <Authors>Singulink</Authors>
+    <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
+    <Copyright>© Singulink. All rights reserved.</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Singulink/Singulink.IO.FileSystem</PackageProjectUrl>
-    <PackageTags>File, Directory, Path</PackageTags>
+    <PackageTags>File, Directory, Path, Folder, FileSystem</PackageTags>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <PackageIcon>Singulink Icon 128x128.png</PackageIcon>
