@@ -6,9 +6,11 @@
 
 **Singulink.IO.FileSystem** is a reliable cross-platform library that provides strongly-typed file/directory path manipulation and file system access in .NET. It has been designed to encourage developers to code with explicit intent in such a way that their applications can work seamlessly and bug free across both Unix and Windows file systems under all conditions. `System.IO.*` has numerous pitfalls that make 99% of file system code out in the wild fragile and problematic in edge cases. It also contains behavioral inconsistencies between Unix and Windows file systems that are abstracted and handled by this library so you don't have to worry about them.
 
-**Singulink.IO.FileSystem** is part of the **Singulink Libraries** collection. Visit https://github.com/Singulink/ to see the full list of libraries available.
+### About Singulink
 
-You can view the [full project documentation](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) for more details, but here is an overview to get you started:
+*Shameless plug*: We are a small team of engineers and designers dedicated to building beautiful, functional and well-engineered software solutions. We offer very competitive rates as well as fixed-price contracts and welcome inquiries to discuss any custom development / project support needs you may have.
+
+This package is part of our **Singulink Libraries** collection. Visit https://github.com/Singulink to see our full list of publicly available libraries and other open-source projects.
 
 ## Installation
 
@@ -21,6 +23,8 @@ The package is available on NuGet - simply install the `Singulink.IO.FileSystem`
 - Xamarin.Android 10.0+
 
 ## Usage
+
+You can view the [full project documentation](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) for more details, but here is an overview to get you started:
 
 ### Path Creation
 
