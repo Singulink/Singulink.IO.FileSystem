@@ -24,7 +24,7 @@ namespace Singulink.IO
                     string parentPath;
 
                     if (!IsRooted && PathFormat.GetEntryName(PathDisplay, 0).Length == 0)
-                        parentPath = PathDisplay.Length == 0 ? ".." : ValueStringBuilder.Concat(PathDisplay, PathFormat.SeparatorString, "..");
+                        parentPath = PathDisplay.Length == 0 ? ".." : StringHelper.Concat(PathDisplay, PathFormat.SeparatorString, "..");
                     else
                         parentPath = PathFormat.GetPreviousDirectory(PathDisplay, RootLength).ToString();
 
@@ -78,7 +78,7 @@ namespace Singulink.IO
                 basePath = PathFormat.ConvertRelativePathToMutualFormat(basePath, PathFormat, mutualFormat);
 
                 string newPath = appendPath.Length > 0 || parentDirs == -1 ?
-                    ValueStringBuilder.Concat(basePath, PathFormat.SeparatorString, appendPath) : (string)basePath;
+                    StringHelper.Concat(basePath, PathFormat.SeparatorString, appendPath) : (string)basePath;
 
                 if (entry.IsDirectory)
                     return new Impl(newPath, RootLength, PathFormat);

@@ -326,3 +326,6 @@ dotnet_diagnostic.SA1205.severity = none
 
 # CA1060: Move pinvokes to native methods class
 dotnet_diagnostic.CA1060.severity = none
+
+# SA1519: Braces should not be omitted from multi-line child statement
+dotnet_diagnostic.SA1519.severity = silent

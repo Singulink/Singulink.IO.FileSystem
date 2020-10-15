@@ -37,21 +37,12 @@ namespace Singulink.IO.Utilities
 
         public static implicit operator StringOrSpan(ReadOnlySpan<char> value) => new StringOrSpan(value);
 
-        public StringOrSpan Replace(char oldChar, char newChar)
+        public unsafe StringOrSpan Replace(char oldChar, char newChar)
         {
-            int firstIndex = Span.IndexOf(oldChar);
-
-            if (firstIndex < 0)
+            if (_string == null && Span.IndexOf(oldChar) < 0)
                 return this;
 
-            var newSpan = Span.ToString().AsSpan().AsWritableSpan();
-
-            for (int i = firstIndex; i < newSpan.Length; i++) {
-                if (newSpan[i] == oldChar)
-                    newSpan[i] = newChar;
-            }
-
-            return new StringOrSpan(newSpan);
+            return String.Replace(oldChar, newChar);
         }
 
         public override string ToString() => String;

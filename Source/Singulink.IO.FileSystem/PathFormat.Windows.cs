@@ -91,7 +91,7 @@ namespace Singulink.IO
                     path = path.Slice(4);
 
                     if (path.StartsWith(@"UNC\", StringComparison.Ordinal))
-                        path = ValueStringBuilder.Concat(@"\\", path[4..]);
+                        path = StringHelper.Concat(@"\\", path[4..]);
                 }
 
                 ReadOnlySpan<char> root;
@@ -117,7 +117,7 @@ namespace Singulink.IO
                     ReadOnlySpan<char> share;
 
                     if (shareLength <= 0) {
-                        root = ValueStringBuilder.Concat(path, SeparatorString);
+                        root = StringHelper.Concat(path, SeparatorString);
                         rest = default;
                         share = path.Slice(shareStart);
                     }
@@ -137,7 +137,7 @@ namespace Singulink.IO
                         ThrowInvalidPathRoot();
 
                     if (path.Length == 2) {
-                        root = ValueStringBuilder.Concat(path, SeparatorString);
+                        root = StringHelper.Concat(path, SeparatorString);
                         rest = default;
                     }
                     else {
@@ -171,7 +171,7 @@ namespace Singulink.IO
                 if (pathDisplay[1] == ':')
                     return @"\\?\" + pathDisplay;
 
-                return ValueStringBuilder.Concat(@"\\?\UNC\", pathDisplay[2..]);
+                return StringHelper.Concat(@"\\?\UNC\", pathDisplay[2..]);
             }
 
             private static HashSet<char> GetInvalidNameChars()

@@ -95,19 +95,6 @@ namespace Singulink.IO
 
         #endregion
 
-        #region
-
-        /// <summary>
-        /// Gets the list of directory paths that represent mounting points (drives in Windows).
-        /// </summary>
-        public static IEnumerable<IAbsoluteDirectoryPath> GetMountingPoints()
-        {
-            foreach (var d in DriveInfo.GetDrives())
-                yield return ParseAbsolute(d.ToString(), PathOptions.None);
-        }
-
-        #endregion
-
         #region Special Directories
 
         /// <summary>
@@ -136,6 +123,15 @@ namespace Singulink.IO
         public static IAbsoluteDirectoryPath GetSpecialFolder(Environment.SpecialFolder specialFolder)
         {
             return ParseAbsolute(Environment.GetFolderPath(specialFolder), PathOptions.None);
+        }
+
+        /// <summary>
+        /// Gets the list of directory paths that represent mounting points (drives in Windows).
+        /// </summary>
+        public static IEnumerable<IAbsoluteDirectoryPath> GetMountingPoints()
+        {
+            foreach (var d in DriveInfo.GetDrives())
+                yield return ParseAbsolute(d.ToString(), PathOptions.None);
         }
 
         #endregion

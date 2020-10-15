@@ -146,9 +146,9 @@ namespace Singulink.IO
                 if (appendPath.Length == 0)
                     newPath = basePath;
                 else if (basePath.Length == RootLength)
-                    newPath = ValueStringBuilder.Concat(basePath, appendPath);
+                    newPath = StringHelper.Concat(basePath, appendPath);
                 else
-                    newPath = ValueStringBuilder.Concat(basePath, PathFormat.SeparatorString, appendPath);
+                    newPath = StringHelper.Concat(basePath, PathFormat.SeparatorString, appendPath);
 
                 if (path.IsDirectory)
                     return new Impl(newPath, RootLength, PathFormat);
@@ -239,9 +239,9 @@ namespace Singulink.IO
                     string relativePath = entryInfo.FullName[PathExport.Length..];
 
                     if (entryInfo is DirectoryInfo dirInfo)
-                        yield return (TEntry)(object)new Impl(ValueStringBuilder.Concat(PathDisplay, relativePath), 0, PathFormat);
+                        yield return (TEntry)(object)new Impl(StringHelper.Concat(PathDisplay, relativePath), 0, PathFormat);
                     else if (entryInfo is FileInfo fileInfo)
-                        yield return (TEntry)(object)new IAbsoluteFilePath.Impl(ValueStringBuilder.Concat(PathDisplay, relativePath), 0, PathFormat);
+                        yield return (TEntry)(object)new IAbsoluteFilePath.Impl(StringHelper.Concat(PathDisplay, relativePath), 0, PathFormat);
                 }
             }
 
@@ -293,7 +293,7 @@ namespace Singulink.IO
                         }
                     }
 
-                    string finalPath = currentPrefix.Length == 0 ? (string)entryPath : ValueStringBuilder.Concat(currentPrefix, PathFormat.SeparatorString, entryPath);
+                    string finalPath = currentPrefix.Length == 0 ? (string)entryPath : StringHelper.Concat(currentPrefix, PathFormat.SeparatorString, entryPath);
 
                     if (entry.IsFile) {
                         yield return (TEntry)(object)new IRelativeFilePath.Impl(finalPath, 0, PathFormat);

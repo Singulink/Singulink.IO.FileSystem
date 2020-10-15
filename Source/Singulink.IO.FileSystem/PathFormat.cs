@@ -187,7 +187,7 @@ namespace Singulink.IO
                 throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
 
             rootLength = root.Length;
-            return ValueStringBuilder.Concat(root, string.Join(SeparatorString, segments));
+            return StringHelper.Concat(root, string.Join(SeparatorString, segments));
         }
 
         internal abstract string GetAbsolutePathExportString(string pathDisplay);
@@ -272,12 +272,12 @@ namespace Singulink.IO
             var parentDir = GetPreviousDirectory(path, 0);
             var fileNameWithoutExtension = GetFileNameWithoutExtension(path);
 
-            string newFileName = ValueStringBuilder.Concat(fileNameWithoutExtension, newExtension);
+            string newFileName = StringHelper.Concat(fileNameWithoutExtension, newExtension);
 
             if (!ValidateEntryName(newFileName, options, false, out string error))
                 throw new ArgumentException($"Invalid new file name: {error}", nameof(newExtension));
 
-            return ValueStringBuilder.Concat(parentDir, newFileName);
+            return StringHelper.Concat(parentDir, newFileName);
         }
 
         internal ReadOnlySpan<char> GetPreviousDirectory(ReadOnlySpan<char> path, int rootLength)
