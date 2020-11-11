@@ -45,8 +45,7 @@ string userEnteredPath = GetPathFromUser();
 
 // Parses both relative and absolute file paths:
 
-IFilePath parsedFilePath = FilePath.Parse(
-    userEnteredPath, PathOptions.NoUnfriendlyNames);
+IFilePath parsedFilePath = FilePath.Parse(userEnteredPath, PathOptions.NoUnfriendlyNames);
 
 IAbsoluteFilePath finalFilePath;
 
