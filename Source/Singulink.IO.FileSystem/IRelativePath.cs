@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Singulink.IO
 {
@@ -12,10 +12,6 @@ namespace Singulink.IO
 
         /// <inheritdoc/>
         IDirectoryPath? IPath.ParentDirectory => ParentDirectory;
-
-        #region Combining
-
-        #endregion
 
         #region Path Format Conversion
 

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #pragma warning disable SA1122 // Use string.Empty for empty strings
