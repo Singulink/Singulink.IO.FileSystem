@@ -79,7 +79,7 @@ namespace Singulink.IO
                 }
             }
 
-            public bool IsReady => IsUnc || new DriveInfo(PathDisplay).IsReady;
+            public long TotalFreeSpace {
 
             public DriveType DriveType => IsUnc ? DriveType.Network : new DriveInfo(PathDisplay).DriveType;
 

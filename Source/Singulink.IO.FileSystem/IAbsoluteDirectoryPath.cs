@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -33,12 +33,6 @@ namespace Singulink.IO
         /// Gets a value indicating whether this directory is empty.
         /// </summary>
         bool IsEmpty { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the directory is ready for access (i.e. disk is mounted or DVD is inserted into the drive). Always returns
-        /// <c>true</c> for UNC paths.
-        /// </summary>
-        bool IsReady { get; }
 
         /// <summary>
         /// Gets the drive type that the directory points to, i.e. CD-ROM, removable, network or fixed.
