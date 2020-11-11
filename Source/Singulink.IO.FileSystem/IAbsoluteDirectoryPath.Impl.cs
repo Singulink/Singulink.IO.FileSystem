@@ -106,6 +106,37 @@ namespace Singulink.IO
                 Directory.Delete(PathExport, recursive);
             }
 
+            public IAbsoluteDirectoryPath GetLastExistingDirectory()
+            {
+                // Start at the root to prevent repeated potentially slow network accesses starting from the last dir.
+
+                var lastExistingDir = RootDirectory;
+
+                // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.
+
+                if (!lastExistingDir.Exists)
+                    throw ExceptionHelper.GetNotFoundException(lastExistingDir);
+
+                foreach (var dir in GetPathsFromDirToRoot(this).Reverse()) {
+                    if (!dir.Exists)
+                        break;
+
+                    lastExistingDir = dir;
+                }
+
+                return lastExistingDir;
+
+                static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
+                {
+                    while (!path.IsRoot) {
+                        yield return path;
+                        path = path.ParentDirectory!;
+                    }
+                }
+            }
+
+            IAbsoluteDirectoryPath IAbsolutePath.GetLastExistingDirectory() => GetLastExistingDirectory();
+
             #endregion
 
             #region Combine

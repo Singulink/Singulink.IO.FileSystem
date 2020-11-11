@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
@@ -59,5 +59,11 @@ namespace Singulink.IO
 
         /// <inheritdoc/>
         IDirectoryPath? IPath.ParentDirectory => ParentDirectory;
+
+        /// <summary>
+        /// Gets the last directory in the path that exists.
+        /// </summary>
+        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
+        IAbsoluteDirectoryPath GetLastExistingDirectory() => throw new NotImplementedException();
     }
 }
