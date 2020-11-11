@@ -126,8 +126,8 @@ namespace Singulink.IO
         /// </summary>
         public static IEnumerable<IAbsoluteDirectoryPath> GetMountingPoints()
         {
-            foreach (var d in DriveInfo.GetDrives())
-                yield return ParseAbsolute(d.ToString(), PathOptions.None);
+            foreach (string d in Environment.GetLogicalDrives())
+                yield return ParseAbsolute(d, PathOptions.None);
         }
 
         #endregion
