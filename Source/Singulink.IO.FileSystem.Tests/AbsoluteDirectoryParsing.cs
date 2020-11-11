@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #pragma warning disable SA1122 // Use string.Empty for empty strings
@@ -9,7 +9,29 @@ namespace Singulink.IO.FileSystem.Tests
     public class AbsoluteDirectoryParsing
     {
         [TestMethod]
-        public void AbsoluteRootUnix()
+        public void ParseToCorrectType()
+        {
+            var dirs = new[] {
+                DirectoryPath.Parse("/", PathFormat.Unix),
+                DirectoryPath.Parse("/test", PathFormat.Unix),
+                DirectoryPath.Parse("c:/test", PathFormat.Windows),
+                DirectoryPath.Parse("c:", PathFormat.Windows),
+                DirectoryPath.Parse(@"c:\test", PathFormat.Windows),
+                DirectoryPath.Parse(@"c:\", PathFormat.Windows),
+                DirectoryPath.Parse(@"\\server\test", PathFormat.Windows),
+                DirectoryPath.Parse(@"\\server\test\", PathFormat.Windows),
+                DirectoryPath.Parse("//server/test", PathFormat.Windows),
+                DirectoryPath.Parse("//server/test/test", PathFormat.Windows),
+            };
+
+            foreach (var dir in dirs) {
+                Assert.IsTrue(dir.IsAbsolute);
+                Assert.IsTrue(dir is IAbsoluteDirectoryPath);
+            }
+        }
+
+        [TestMethod]
+        public void RootUnix()
         {
             var dir = DirectoryPath.ParseAbsolute("/", PathFormat.Unix, PathOptions.None);
             Assert.AreEqual("/", dir.Name);
@@ -20,7 +42,7 @@ namespace Singulink.IO.FileSystem.Tests
         }
 
         [TestMethod]
-        public void AbsoluteRootWindowsDrive()
+        public void RootWindowsDrive()
         {
             var dir = DirectoryPath.ParseAbsolute("c:", PathFormat.Windows, PathOptions.None);
             Assert.AreEqual("c:", dir.Name);
@@ -38,7 +60,7 @@ namespace Singulink.IO.FileSystem.Tests
         }
 
         [TestMethod]
-        public void AbsoluteRootWindowsUnc()
+        public void RootWindowsUnc()
         {
             var dir = DirectoryPath.ParseAbsolute(@"\\Server\Share", PathFormat.Windows, PathOptions.None);
             Assert.AreEqual(@"\\Server\Share", dir.Name);
@@ -51,16 +73,33 @@ namespace Singulink.IO.FileSystem.Tests
         }
 
         [TestMethod]
-        public void BadAbsolutePaths()
+        public void BadWindowsPaths()
         {
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("test", PathFormat.Windows, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("", PathFormat.Windows, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("xy:/", PathFormat.Windows, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("1:/", PathFormat.Windows, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(" :/", PathFormat.Windows, PathOptions.None));
+            string[]? paths = new[] {
+                "test",
+                "",
+                "xy:/",
+                "1:/",
+                " :/",
+            };
 
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("test", PathFormat.Unix, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("", PathFormat.Unix, PathOptions.None));
+            foreach (var path in paths) {
+                Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Windows, PathOptions.None));
+            }
+        }
+
+        [TestMethod]
+        public void BadUnixPaths()
+        {
+            string[]? paths = new[] {
+                "test",
+                "",
+                " /",
+            };
+
+            foreach (var path in paths) {
+                Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Unix, PathOptions.None));
+            }
         }
 
         [TestMethod]
@@ -77,6 +116,8 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.IsTrue(dir.IsRoot);
 
             dir = DirectoryPath.ParseAbsolute("/./test/.././", PathFormat.Unix, PathOptions.None);
+            Assert.AreEqual("/", dir.PathDisplay);
+            Assert.IsTrue(dir.IsRoot);
         }
 
         [TestMethod]
@@ -88,6 +129,15 @@ namespace Singulink.IO.FileSystem.Tests
             dir = DirectoryPath.ParseAbsolute("c:/ test.", PathFormat.Windows, PathOptions.None);
             Assert.AreEqual(@"c:\ test.", dir.PathDisplay);
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
+        }
+
+        [TestMethod]
+        public void NoUniversal()
+        {
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse("/test", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse("/", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("/test", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("/", PathFormat.Universal));
         }
     }
 }

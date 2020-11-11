@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 #pragma warning disable SA1122 // Use string.Empty for empty strings
@@ -41,7 +41,10 @@ namespace Singulink.IO.FileSystem.Tests
 
             dir = DirectoryPath.ParseRelative("/test", PathFormat.Windows, PathOptions.None);
             Assert.IsTrue(dir.HasParentDirectory);
-            Assert.AreEqual(@"\", dir.ParentDirectory!.PathDisplay);
+
+            dir = dir.ParentDirectory!;
+            Assert.AreEqual(@"\", dir.PathDisplay);
+            Assert.IsFalse(dir.HasParentDirectory);
         }
 
         [TestMethod]
@@ -49,6 +52,7 @@ namespace Singulink.IO.FileSystem.Tests
         {
             var dir = DirectoryPath.ParseRelative("dir1/dir2", PathFormat.Universal, PathOptions.None);
             Assert.AreEqual("dir1/dir2", dir.PathDisplay);
+
             var parent = dir.ParentDirectory!;
             Assert.AreEqual("dir1", parent.PathDisplay);
 

@@ -9,6 +9,33 @@ namespace Singulink.IO.FileSystem.Tests
     public class RelativeDirectoryParsing
     {
         [TestMethod]
+        public void ParseToCorrectType()
+        {
+            var dirs = new[] {
+                DirectoryPath.Parse("test", PathFormat.Unix),
+                DirectoryPath.Parse("./test", PathFormat.Unix),
+                DirectoryPath.Parse("../test", PathFormat.Unix),
+
+                DirectoryPath.Parse("test", PathFormat.Universal),
+                DirectoryPath.Parse("./test", PathFormat.Universal),
+                DirectoryPath.Parse("../test", PathFormat.Universal),
+
+                DirectoryPath.Parse("test", PathFormat.Windows),
+                DirectoryPath.Parse("/test", PathFormat.Windows),
+                DirectoryPath.Parse("./test", PathFormat.Windows),
+                DirectoryPath.Parse("../test", PathFormat.Windows),
+                DirectoryPath.Parse(@"\test", PathFormat.Windows),
+                DirectoryPath.Parse(@".\test", PathFormat.Windows),
+                DirectoryPath.Parse(@"..\test", PathFormat.Windows),
+            };
+
+            foreach (var dir in dirs) {
+                Assert.IsFalse(dir.IsAbsolute);
+                Assert.IsTrue(dir is IRelativeDirectoryPath);
+            }
+        }
+
+        [TestMethod]
         public void SpecialCurrent()
         {
             var dir = DirectoryPath.ParseRelative("", PathOptions.None);
@@ -48,6 +75,13 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.AreEqual("test", dir.Name);
             Assert.AreEqual(@"\test", dir.PathDisplay);
             Assert.IsTrue(dir.IsRooted);
+        }
+
+        [TestMethod]
+        public void NoUnixRooted()
+        {
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/", PathFormat.Unix, PathOptions.None));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test", PathFormat.Unix, PathOptions.None));
         }
 
         [TestMethod]
@@ -101,13 +135,6 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test", PathFormat.Windows, PathOptions.NoNavigation));
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/", PathFormat.Windows, PathOptions.NoNavigation));
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test", PathFormat.Windows, PathOptions.NoNavigation));
-        }
-
-        [TestMethod]
-        public void NoUnixRelativeRooted()
-        {
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/", PathFormat.Unix, PathOptions.None));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/test", PathFormat.Unix, PathOptions.None));
         }
 
         [TestMethod]
