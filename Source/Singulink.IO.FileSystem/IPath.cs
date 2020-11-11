@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Singulink.IO
 {
@@ -37,12 +37,14 @@ namespace Singulink.IO
         /// <summary>
         /// Gets the parent directory of this file/directory.
         /// </summary>
-        IDirectoryPath? ParentDirectory => null; // Override higher up.
+        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
+        IDirectoryPath? ParentDirectory => throw new NotImplementedException();
 
         /// <summary>
         /// Gets a value indicating whether this path has a parent directory.
         /// </summary>
-        bool HasParentDirectory => false; // Override higher up.
+        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
+        bool HasParentDirectory => throw new NotImplementedException();
 
         /// <summary>
         /// Gets a value indicating whether this path is rooted. Relative paths can be rooted and absolute paths are always rooted.

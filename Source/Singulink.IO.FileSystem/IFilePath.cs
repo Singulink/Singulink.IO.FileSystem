@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Singulink.IO
 {
@@ -24,9 +24,8 @@ namespace Singulink.IO
         string Extension { get; }
 
         /// <inheritdoc/>
-#pragma warning disable CA1033 // Interface methods should be callable by child types
+        [SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "Base method throws NotImplementedException")]
         bool IPath.HasParentDirectory => true; // All files have parent directories.
-#pragma warning restore CA1033
 
         #region Path Manipulation
 

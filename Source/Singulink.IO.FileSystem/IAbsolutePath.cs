@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.Contracts;
 using System.IO;
 
@@ -54,7 +54,8 @@ namespace Singulink.IO
         IAbsoluteDirectoryPath RootDirectory { get; }
 
         /// <inheritdoc cref="IPath.ParentDirectory"/>
-        new IAbsoluteDirectoryPath? ParentDirectory => null; // To be overriden higher up.
+        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
+        new IAbsoluteDirectoryPath? ParentDirectory => throw new NotImplementedException();
 
         /// <inheritdoc/>
         IDirectoryPath? IPath.ParentDirectory => ParentDirectory;

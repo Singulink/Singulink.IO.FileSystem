@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Singulink.IO
 {
@@ -24,7 +24,7 @@ namespace Singulink.IO
         /// </summary>
         /// <param name="format">The format that the path should be converted to.</param>
         /// <param name="options">The options to use when parsing the new path.</param>
-        IRelativePath ToPathFormat(PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames) => null!; // Override higher up.
+        IRelativePath ToPathFormat(PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames) => throw new NotImplementedException();
 
         #endregion
     }

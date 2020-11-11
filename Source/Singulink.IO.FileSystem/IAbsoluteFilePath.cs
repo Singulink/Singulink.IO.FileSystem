@@ -13,9 +13,6 @@ namespace Singulink.IO
         /// </summary>
         new IAbsoluteDirectoryPath ParentDirectory { get; }
 
-        /// <inheritdoc/>
-        IAbsoluteDirectoryPath? IAbsolutePath.ParentDirectory => ParentDirectory;
-
         /// <summary>
         /// Gets or sets a value indicating whether the file is read-only.
         /// </summary>
