@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Singulink.IO
 {
@@ -27,14 +27,6 @@ namespace Singulink.IO
             public bool IsRooted => PathFormat.GetPathKind(PathDisplay) != PathKind.Relative;
 
             int IPath.RootLength => RootLength;
-
-            public bool IsAbsolute => this is IAbsolutePath;
-
-            public bool IsRelative => this is IRelativePath;
-
-            public bool IsDirectory => this is IDirectoryPath;
-
-            public bool IsFile => this is IFilePath;
 
             #region Equality and String Formatting
 
