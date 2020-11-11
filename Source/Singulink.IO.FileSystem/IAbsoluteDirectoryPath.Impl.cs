@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,32 +64,81 @@ namespace Singulink.IO
                     }
 
                     if (!attributes.HasFlag(FileAttributes.Directory))
-                        throw new DirectoryNotFoundException();
+                        throw ExceptionHelper.GetNotFoundException(this);
 
                     return attributes;
                 }
                 set {
                     PathFormat.EnsureCurrent();
-
-                    // Ensure this is a directory
-                    if (!Exists)
-                        throw new DirectoryNotFoundException();
+                    EnsureExists(); // Ensure this is a directory
 
                     File.SetAttributes(PathExport, value);
                 }
             }
 
+            public DriveType DriveType {
+                get {
+                    PathFormat.EnsureCurrent();
+
+                    DriveType type;
+
+                    if (PathFormat == PathFormat.Windows)
+                        type = IsUnc ? DriveType.Network : Interop.Windows.GetDriveType(this);
+                    else
+                        type = new DriveInfo(PathDisplay).DriveType;
+
+                    if (type == DriveType.NoRootDirectory)
+                        throw ExceptionHelper.GetNotFoundException(this);
+
+                    return type;
+                }
+            }
+
+            public string FileSystem {
+                get {
+                    PathFormat.EnsureCurrent();
+                    return PathFormat == PathFormat.Windows ? Interop.Windows.GetFileSystem(this) : new DriveInfo(PathDisplay).DriveFormat;
+                }
+            }
+
+            public long AvailableFreeSpace {
+                get {
+                    PathFormat.EnsureCurrent();
+
+                    if (PathFormat == PathFormat.Windows) {
+                        Interop.Windows.GetSpace(this, out long available, out _, out _);
+                        return available;
+                    }
+
+                    return new DriveInfo(PathExport).AvailableFreeSpace;
+                }
+            }
+
             public long TotalFreeSpace {
+                get {
+                    PathFormat.EnsureCurrent();
 
-            public DriveType DriveType => IsUnc ? DriveType.Network : new DriveInfo(PathDisplay).DriveType;
+                    if (PathFormat == PathFormat.Windows) {
+                        Interop.Windows.GetSpace(this, out _, out _, out long totalFree);
+                        return totalFree;
+                    }
 
-            public string FileSystem => IsUnc ? "Unknown" : new DriveInfo(PathDisplay).DriveFormat;
+                    return new DriveInfo(PathExport).TotalFreeSpace;
+                }
+            }
 
-            public long AvailableFreeSpace => DiskSpace.GetAvailableFreeSpace(PathExport, PathFormat);
+            public long TotalSize {
+                get {
+                    PathFormat.EnsureCurrent();
 
-            public long TotalFreeSpace => DiskSpace.GetTotalFreeSpace(PathExport, PathFormat);
+                    if (PathFormat == PathFormat.Windows) {
+                        Interop.Windows.GetSpace(this, out _, out long totalSize, out _);
+                        return totalSize;
+                    }
 
-            public long TotalSize => DiskSpace.GetTotalSize(PathExport, PathFormat);
+                    return new DriveInfo(PathExport).TotalSize;
+                }
+            }
 
             #region File System Operations
 
@@ -103,7 +152,21 @@ namespace Singulink.IO
             {
                 PathFormat.EnsureCurrent();
                 EnsureExists();
-                Directory.Delete(PathExport, recursive);
+
+                // Consistently throw DirectoryNotFoundException across platforms instead of IOException on Windows if path points to a file.
+
+                if (PathFormat == PathFormat.Windows) {
+                    try {
+                        Directory.Delete(PathExport, recursive);
+                    }
+                    catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
+                        EnsureExists(); // Will throw DirectoryNotFoundException if this path is not a dir.
+                        throw; // Otherwise throw whatever exception was caught.
+                    }
+                }
+                else {
+                    Directory.Delete(PathExport, recursive);
+                }
             }
 
             public IAbsoluteDirectoryPath GetLastExistingDirectory()

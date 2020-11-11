@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO
@@ -53,23 +54,21 @@ namespace Singulink.IO
                 }
             }
 
-            public override bool Exists => File.Exists(PathExport);
-
             public override FileAttributes Attributes {
                 get {
-                    var attributes = File.GetAttributes(PathExport);
+                    var attributes = File.GetAttributes(PathExport); // Works for both files and dirs
 
                     if (attributes.HasFlag(FileAttributes.Directory))
-                        throw new FileNotFoundException();
+                        throw ExceptionHelper.GetNotFoundException(this);
 
                     return attributes;
                 }
                 set {
                     // Ensure this is a file
                     if (!Exists)
-                        throw new FileNotFoundException();
+                        throw ExceptionHelper.GetNotFoundException(this);
 
-                    File.SetAttributes(PathExport, value);
+                    File.SetAttributes(PathExport, value); // Works for both files and dirs
                 }
             }
 

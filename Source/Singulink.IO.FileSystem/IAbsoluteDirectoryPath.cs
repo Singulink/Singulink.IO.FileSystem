@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -40,7 +40,7 @@ namespace Singulink.IO
         DriveType DriveType { get; }
 
         /// <summary>
-        /// Gets the name of the file system, such as NTFS or FAT32. Always returns "Unknown" for UNC paths.
+        /// Gets the name of the file system, such as NTFS or FAT32.
         /// </summary>
         string FileSystem { get; }
 
@@ -58,6 +58,21 @@ namespace Singulink.IO
         /// Gets the total size of storage space in the directory, in bytes.
         /// </summary>
         long TotalSize { get; }
+
+        /// <summary>
+        /// Gets the export path with a trailing separator, which is required for some Win32 functions.
+        /// </summary>
+        internal string PathExportWithTrailingSeparator {
+            get {
+                string path = PathExport;
+                string separator = PathFormat.SeparatorString; // Avoid extra string alloc when appending char
+
+                if (path[^1] != separator[0])
+                    path += separator;
+
+                return path;
+            }
+        }
 
         #region File System Operations
 
