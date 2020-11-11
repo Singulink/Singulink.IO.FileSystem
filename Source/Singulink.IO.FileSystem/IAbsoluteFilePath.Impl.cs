@@ -39,7 +39,19 @@ namespace Singulink.IO
                 }
             }
 
-            public long Length => new FileInfo(PathExport).Length;
+            public long Length {
+                get {
+                    PathFormat.EnsureCurrent();
+                    return new FileInfo(PathExport).Length;
+                }
+            }
+
+            public override bool Exists {
+                get {
+                    PathFormat.EnsureCurrent();
+                    return File.Exists(PathExport); // Only returns true for actual files, not dirs
+                }
+            }
 
             public override bool Exists => File.Exists(PathExport);
 
