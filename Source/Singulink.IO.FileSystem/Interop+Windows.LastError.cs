@@ -17,7 +17,7 @@ namespace Singulink.IO
                 Debug.Assert(error != 0, "no error");
 
                 var win32Ex = new Win32Exception(error);
-                string message = $"{win32Ex.Message} ('{path}').";
+                string message = $"{win32Ex.Message} Path: '{path.PathDisplay}'.";
 
                 switch (error)
                 {
