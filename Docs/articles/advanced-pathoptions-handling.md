@@ -8,4 +8,4 @@ The two most important things to consider when using path options other than `Pa
 
 If you are receiving the path from something like an `OpenFileWindow` and simply opening the existing file without storing the path for later use then it is safe to use `PathOptions.None` to allow access to all existing files in the file system, even if the path is "unfriendly."
 
-By default, it is an error to parse a path that contains empty directories such as `path/to//some/dir` (notice the double slash resulting in an empty directory between them) as this indicates a malformed path. If you would like the parser to ignore empty directories then you can use the `PathOptions.AllowEmptyDirectories` option.
+By default, it is an error to parse a path that contains empty directories such as `path/to//some/dir` (notice the double slash resulting in an empty path segment between them) as this indicates a malformed path. If you would like the parser to normalize out empty directories instead then you can use the `PathOptions.AllowEmptyDirectories` option, which would cause the above path to be parsed as `path/to/some/dir`.

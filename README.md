@@ -32,17 +32,21 @@ Your main entry point into creating file and directory paths is the `DirectoryPa
 
 ### Strong Typing
 
-Paths are always strongly typed to the kind of path they represent. Every path is an `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. Some methods may return a less specific interface if all the information is not available about the specific kind of path that will be returned, but the result can always be cast to one of the 4 specific interfaces.
+Paths are always strongly typed to the kind of path they represent. Every path implements `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. 
+
+Some methods or operations may return a less specific interface if all the information is not statically available about the resulting path, but the result can always be cast to one of the 4 specific interfaces. There are 4 helper properties available on every path to help you determine what it can be cast to: `IsAbsolute`, `IsRelative`, `IsFile`, and `IsDirectory`.
 
 ### Explicit Intent
 
 Consider the following example:
 
 ```c#
+string userEnteredPath = GetPathFromUser();
+
 // Parses both relative and absolute file paths:
 
 IFilePath parsedFilePath = FilePath.Parse(
-    @"C:\folder\file.txt", PathOptions.NoUnfriendlyNames);
+    userEnteredPath, PathOptions.NoUnfriendlyNames);
 
 IAbsoluteFilePath finalFilePath;
 
@@ -95,18 +99,29 @@ For these reasons, there is no concept of a "drive" in this library. Instead, th
 If you want to get available free space for an installation path, for example, you would do it like this:
 
 ```c#
-string installPathString = @"C:\Program Files\Your Application";
+string installPathString = GetInstallPathFromUser();
 
 IAbsoluteDirectoryPath installPath = DirectoryPath.ParseAbsolute(installPathString);
 
-long availableSpaceBytes = installPath.AvailableFreeSpace;
+// Check available free space in the last directory in the path that exists:
+
+long availableSpaceBytes = installPath.GetLastExistingDirectory().AvailableFreeSpace;
+
+if (availableSpaceBytes < InstallSizeBytes)
+    throw new Exception("Not enough available space in the path for installation.");
+
+// Create the installation dir:
+
+installPath.Create();
 ```
 
 ### Cross-Platform Path Handling
 
-All methods that accept string path parameters have an optional `PathFormat` parameter. If this parameter is not specified then the default is to use the path format of the current system, i.e. `PathFormat.Windows` or `PathFormat.Unix`. There is one additional special path format called `PathFormat.Universal`. The universal path format is how you should parse, store, serialize/deserialize all paths for cross-platform applications. The universal path format uses `/` as the separator character. If you are manipulating Unix paths from Windows (or vice versa), you can simply specify that you want to use `PathFormat.Unix` for parsing the path and everything works how you would expect it to. File system operations can only be performed on paths in the appropriate path format for the current operating system.
+All methods that accept string path parameters have an optional `PathFormat` parameter. If this parameter is not specified then the default is to use the path format of the current system, i.e. `PathFormat.Windows` or `PathFormat.Unix`. 
 
-Due to the platform-specific nature of absolute paths, only relative paths are allowed when using the universal path format. The universal path format ensures that the paths are portable across both Unix and Windows file systems - it is a common denominator format. Platform specific relative paths can be converted to/from universal path formats and universal relative paths can always be combined with platform specific paths to produce a resulting platform specific path.
+There is one additional special path format called `PathFormat.Universal`. The universal path format is how you should store all paths in databases or files that are expected to work cross-platform. It uses `/` as the separator character and due to the platform-specific nature of absolute paths, only relative paths are allowed. The universal path format ensures that the paths are portable across both Unix and Windows file systems - it is a common denominator format. Platform specific relative paths can be converted to/from universal path formats and universal paths can always be combined with platform specific paths to produce a resulting platform specific path.
+
+If, for example, you are manipulating Unix paths from Windows, you can simply specify that you want to use `PathFormat.Unix` for parsing the path and everything works how you would expect it to. File system operations can only be performed on paths that are in the appropriate path format for the current operating system.
 
 ## Further Reading
 
