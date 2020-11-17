@@ -119,6 +119,8 @@ namespace Singulink.IO
                         return Interop.Windows.GetFileSystem(dir);
                     }
                     else {
+                        EnsureExists();
+
                         try {
                             return new DriveInfo(PathDisplay).DriveFormat;
                         }
@@ -138,6 +140,8 @@ namespace Singulink.IO
                         return available;
                     }
 
+                    EnsureExists();
+
                     try {
                         return new DriveInfo(PathExport).AvailableFreeSpace;
                     }
@@ -156,6 +160,8 @@ namespace Singulink.IO
                         return totalFree;
                     }
 
+                    EnsureExists();
+
                     try {
                         return new DriveInfo(PathExport).TotalFreeSpace;
                     }
@@ -173,6 +179,8 @@ namespace Singulink.IO
                         Interop.Windows.GetSpace(this, out _, out long totalSize, out _);
                         return totalSize;
                     }
+
+                    EnsureExists();
 
                     try {
                         return new DriveInfo(PathExport).TotalSize;

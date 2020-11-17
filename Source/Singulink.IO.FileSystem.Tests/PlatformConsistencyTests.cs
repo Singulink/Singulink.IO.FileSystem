@@ -30,6 +30,7 @@ namespace Singulink.IO.FileSystem.Tests
 
             Assert.IsFalse(file.Exists);
             Assert.ThrowsException<FileNotFoundException>(() => _ = file.Attributes);
+            Assert.ThrowsException<FileNotFoundException>(() => _ = file.CreationTime);
             Assert.ThrowsException<FileNotFoundException>(() => file.IsReadOnly = true);
             Assert.ThrowsException<FileNotFoundException>(() => file.Attributes |= FileAttributes.Hidden);
             Assert.ThrowsException<FileNotFoundException>(() => file.Length);
@@ -45,7 +46,10 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.IsFalse(dir.Exists);
             Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.IsEmpty);
             Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.Attributes);
+            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.CreationTime);
+            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.AvailableFreeSpace);
             Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalFreeSpace);
+            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalSize);
             Assert.ThrowsException<DirectoryNotFoundException>(() => dir.Attributes |= FileAttributes.Hidden);
             Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.DriveType);
             Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.FileSystem);
