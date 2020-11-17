@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Singulink.IO.FileSystem.Tests
 {
-    public class AbsoluteFileParsing
+    public class AbsoluteFileParseTests
     {
         [TestMethod]
         public void ParseToCorrectType()

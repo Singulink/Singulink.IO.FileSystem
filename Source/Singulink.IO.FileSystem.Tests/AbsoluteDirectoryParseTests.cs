@@ -6,28 +6,32 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class AbsoluteDirectoryParsing
+    public class AbsoluteDirectoryParseTests
     {
-        [TestMethod]
-        public void ParseToCorrectType()
+        [DataTestMethod]
+        [DataRow("c:/test")]
+        [DataRow("c:")]
+        [DataRow(@"c:\test")]
+        [DataRow(@"c:\")]
+        [DataRow(@"\\server\test")]
+        [DataRow(@"\\server\test\")]
+        [DataRow("//server/test")]
+        [DataRow("//server/test/test")]
+        public void ParseToCorrectWindowsType(string path)
         {
-            var dirs = new[] {
-                DirectoryPath.Parse("/", PathFormat.Unix),
-                DirectoryPath.Parse("/test", PathFormat.Unix),
-                DirectoryPath.Parse("c:/test", PathFormat.Windows),
-                DirectoryPath.Parse("c:", PathFormat.Windows),
-                DirectoryPath.Parse(@"c:\test", PathFormat.Windows),
-                DirectoryPath.Parse(@"c:\", PathFormat.Windows),
-                DirectoryPath.Parse(@"\\server\test", PathFormat.Windows),
-                DirectoryPath.Parse(@"\\server\test\", PathFormat.Windows),
-                DirectoryPath.Parse("//server/test", PathFormat.Windows),
-                DirectoryPath.Parse("//server/test/test", PathFormat.Windows),
-            };
+            var dir = DirectoryPath.Parse(path, PathFormat.Windows);
+            Assert.IsTrue(dir.IsAbsolute);
+            Assert.IsTrue(dir is IAbsoluteDirectoryPath);
+        }
 
-            foreach (var dir in dirs) {
-                Assert.IsTrue(dir.IsAbsolute);
-                Assert.IsTrue(dir is IAbsoluteDirectoryPath);
-            }
+        [DataTestMethod]
+        [DataRow("/")]
+        [DataRow("/test")]
+        public void ParseToCorrectUnixType(string path)
+        {
+            var dir = DirectoryPath.Parse(path, PathFormat.Unix);
+            Assert.IsTrue(dir.IsAbsolute);
+            Assert.IsTrue(dir is IAbsoluteDirectoryPath);
         }
 
         [TestMethod]
@@ -72,34 +76,24 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("\\Server", PathFormat.Windows, PathOptions.None));
         }
 
-        [TestMethod]
-        public void BadWindowsPaths()
+        [DataTestMethod]
+        [DataRow("test")]
+        [DataRow("")]
+        [DataRow("xy:/ ")]
+        [DataRow("1:/")]
+        [DataRow(" :/")]
+        public void BadWindowsPaths(string path)
         {
-            string[]? paths = new[] {
-                "test",
-                "",
-                "xy:/",
-                "1:/",
-                " :/",
-            };
-
-            foreach (var path in paths) {
-                Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Windows, PathOptions.None));
-            }
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Windows, PathOptions.None));
         }
 
-        [TestMethod]
-        public void BadUnixPaths()
+        [DataTestMethod]
+        [DataRow("test")]
+        [DataRow("")]
+        [DataRow(" /")]
+        public void BadUnixPaths(string path)
         {
-            string[]? paths = new[] {
-                "test",
-                "",
-                " /",
-            };
-
-            foreach (var path in paths) {
-                Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Unix, PathOptions.None));
-            }
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Unix, PathOptions.None));
         }
 
         [TestMethod]
@@ -131,13 +125,13 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
         }
 
-        [TestMethod]
-        public void NoUniversal()
+        [DataTestMethod]
+        [DataRow("/test")]
+        [DataRow("/")]
+        public void NoUniversal(string path)
         {
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse("/test", PathFormat.Universal));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse("/", PathFormat.Universal));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("/test", PathFormat.Universal));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("/", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse(path, PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Universal));
         }
     }
 }

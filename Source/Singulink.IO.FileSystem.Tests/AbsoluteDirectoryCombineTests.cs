@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class AbsoluteDirectoryCombining
+    public class AbsoluteDirectoryCombineTests
     {
         [TestMethod]
         public void NavigateWindows()

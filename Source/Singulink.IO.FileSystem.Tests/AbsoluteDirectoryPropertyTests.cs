@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class AbsoluteDirectoryProperties
+    public class AbsoluteDirectoryPropertyTests
     {
         public static readonly DateTime EarliestDateTime = new DateTime(2010, 1, 1);
 

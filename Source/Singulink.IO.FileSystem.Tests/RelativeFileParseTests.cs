@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class RelativeFileParsing
+    public class RelativeFileParseTests
     {
         [TestMethod]
         public void ParseToCorrectType()

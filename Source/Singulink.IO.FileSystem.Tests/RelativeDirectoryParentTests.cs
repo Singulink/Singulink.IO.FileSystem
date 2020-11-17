@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class RelativeDirectoryParent
+    public class RelativeDirectoryParentTests
     {
         [TestMethod]
         public void SpecialCurrent()

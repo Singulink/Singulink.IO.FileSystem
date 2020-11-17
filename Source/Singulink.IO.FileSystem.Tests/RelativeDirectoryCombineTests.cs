@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class RelativeDirectoryCombining
+    public class RelativeDirectoryCombineTests
     {
         [TestMethod]
         public void NavigateRooted()

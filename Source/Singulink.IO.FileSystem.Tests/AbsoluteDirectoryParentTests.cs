@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Singulink.IO.FileSystem.Tests
 {
     [TestClass]
-    public class AbsoluteDirectoryParent
+    public class AbsoluteDirectoryParentTests
     {
         [TestMethod]
         public void Windows()
