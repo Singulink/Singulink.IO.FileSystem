@@ -59,21 +59,6 @@ namespace Singulink.IO
         /// </summary>
         long TotalSize { get; }
 
-        /// <summary>
-        /// Gets the export path with a trailing separator, which is required for some Win32 functions.
-        /// </summary>
-        internal string PathExportWithTrailingSeparator {
-            get {
-                string path = PathExport;
-                string separator = PathFormat.SeparatorString; // Avoid extra string alloc when appending char
-
-                if (path[^1] != separator[0])
-                    path += separator;
-
-                return path;
-            }
-        }
-
         #region File System Operations
 
         /// <summary>

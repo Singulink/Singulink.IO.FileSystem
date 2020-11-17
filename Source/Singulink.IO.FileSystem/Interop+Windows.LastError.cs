@@ -10,7 +10,7 @@ namespace Singulink.IO
     {
         internal static partial class Windows
         {
-            public static Exception GetLastWin32ErrorDirException(IAbsolutePath path)
+            public static Exception GetLastWin32ErrorException(IAbsoluteDirectoryPath.Impl path)
             {
                 int error = Marshal.GetLastWin32Error();
 
@@ -26,10 +26,13 @@ namespace Singulink.IO
                     case WindowsNative.Errors.INVALID_DRIVE:
                         return new DirectoryNotFoundException(message, win32Ex);
                     case WindowsNative.Errors.ACCESS_DENIED:
-                        return new UnauthorizedAccessException(message, win32Ex);
+                        return new UnauthorizedIOAccessException(message, win32Ex);
                     case WindowsNative.Errors.FILENAME_EXCED_RANGE:
                         return new PathTooLongException(message, win32Ex);
                     default:
+                        if (path.PathFormat == PathFormat.Windows)
+                            path.EnsureExists(); // Throw DirectoryNotFound exception instead of IOException if path is a file.
+
                         return new IOException(message, win32Ex);
                 }
             }

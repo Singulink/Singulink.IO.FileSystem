@@ -7,7 +7,7 @@ namespace Singulink.IO
     {
         internal static partial class Windows
         {
-            public static DriveType GetDriveType(IAbsoluteDirectoryPath path) => WindowsNative.GetDriveType(path.PathExportWithTrailingSeparator);
+            public static DriveType GetDriveType(IAbsoluteDirectoryPath.Impl path) => WindowsNative.GetDriveType(path.PathExportWithTrailingSeparator);
         }
     }
 }

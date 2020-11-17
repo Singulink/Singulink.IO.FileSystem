@@ -56,6 +56,7 @@ namespace Singulink.IO
 
             public override FileAttributes Attributes {
                 get {
+                    PathFormat.EnsureCurrent();
                     var attributes = File.GetAttributes(PathExport); // Works for both files and dirs
 
                     if (attributes.HasFlag(FileAttributes.Directory))
@@ -64,11 +65,10 @@ namespace Singulink.IO
                     return attributes;
                 }
                 set {
-                    // Ensure this is a file
-                    if (!Exists)
-                        throw ExceptionHelper.GetNotFoundException(this);
+                    var current = Attributes; // Ensures that this is a file
 
-                    File.SetAttributes(PathExport, value); // Works for both files and dirs
+                    if (current != value)
+                        File.SetAttributes(PathExport, value); // Works for both files and dirs
                 }
             }
 

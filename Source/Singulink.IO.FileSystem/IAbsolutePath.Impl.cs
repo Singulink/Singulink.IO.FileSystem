@@ -73,7 +73,7 @@ namespace Singulink.IO
             /// <remarks>
             /// <para>Examples of problematic methods: File.GetLastWriteTime / Directory.GetLastWriteTime (plus all other timestamp methods).</para>
             /// </remarks>
-            protected void EnsureExists() => _ = Attributes;
+            internal void EnsureExists() => _ = Attributes;
         }
     }
 }

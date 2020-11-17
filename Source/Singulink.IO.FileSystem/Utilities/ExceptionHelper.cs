@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Singulink.IO.Utilities
 {
@@ -15,6 +13,11 @@ namespace Singulink.IO.Utilities
         public static FileNotFoundException GetNotFoundException(IAbsoluteFilePath path)
         {
             return new FileNotFoundException($"Could not find file '{path.PathDisplay}'.", path.PathDisplay);
+        }
+
+        public static UnauthorizedIOAccessException Convert(UnauthorizedAccessException ex)
+        {
+            return new UnauthorizedIOAccessException(ex.Message, ex);
         }
     }
 }

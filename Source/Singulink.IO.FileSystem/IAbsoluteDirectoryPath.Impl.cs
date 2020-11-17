@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO
@@ -28,7 +27,7 @@ namespace Singulink.IO
             public bool IsEmpty {
                 get {
                     PathFormat.EnsureCurrent();
-                    return !Directory.EnumerateFileSystemEntries(PathExport).Any();
+                    return GetFileSystemInfos("*", SearchOptions.Default, EntryEnumerator).Any();
                 }
             }
 
@@ -62,6 +61,9 @@ namespace Singulink.IO
                     catch (FileNotFoundException) {
                         attributes = 0;
                     }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
 
                     if (!attributes.HasFlag(FileAttributes.Directory))
                         throw ExceptionHelper.GetNotFoundException(this);
@@ -69,23 +71,31 @@ namespace Singulink.IO
                     return attributes;
                 }
                 set {
-                    PathFormat.EnsureCurrent();
-                    EnsureExists(); // Ensure this is a directory
+                    var current = Attributes; // Ensures that this is a directory
 
-                    File.SetAttributes(PathExport, value);
+                    if (current != value)
+                        File.SetAttributes(PathExport, value);
                 }
             }
 
             public DriveType DriveType {
                 get {
                     PathFormat.EnsureCurrent();
+                    EnsureExists();
 
                     DriveType type;
 
-                    if (PathFormat == PathFormat.Windows)
+                    if (PathFormat == PathFormat.Windows) {
                         type = IsUnc ? DriveType.Network : Interop.Windows.GetDriveType(this);
-                    else
-                        type = new DriveInfo(PathDisplay).DriveType;
+                    }
+                    else {
+                        try {
+                            type = new DriveInfo(PathDisplay).DriveType;
+                        }
+                        catch (UnauthorizedAccessException ex) {
+                            throw ExceptionHelper.Convert(ex);
+                        }
+                    }
 
                     if (type == DriveType.NoRootDirectory)
                         throw ExceptionHelper.GetNotFoundException(this);
@@ -97,7 +107,18 @@ namespace Singulink.IO
             public string FileSystem {
                 get {
                     PathFormat.EnsureCurrent();
-                    return PathFormat == PathFormat.Windows ? Interop.Windows.GetFileSystem(this) : new DriveInfo(PathDisplay).DriveFormat;
+
+                    if (PathFormat == PathFormat.Windows) {
+                        return Interop.Windows.GetFileSystem(this);
+                    }
+                    else {
+                        try {
+                            return new DriveInfo(PathDisplay).DriveFormat;
+                        }
+                        catch (UnauthorizedAccessException ex) {
+                            throw ExceptionHelper.Convert(ex);
+                        }
+                    }
                 }
             }
 
@@ -110,7 +131,12 @@ namespace Singulink.IO
                         return available;
                     }
 
-                    return new DriveInfo(PathExport).AvailableFreeSpace;
+                    try {
+                        return new DriveInfo(PathExport).AvailableFreeSpace;
+                    }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
                 }
             }
 
@@ -123,7 +149,12 @@ namespace Singulink.IO
                         return totalFree;
                     }
 
-                    return new DriveInfo(PathExport).TotalFreeSpace;
+                    try {
+                        return new DriveInfo(PathExport).TotalFreeSpace;
+                    }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
                 }
             }
 
@@ -136,7 +167,27 @@ namespace Singulink.IO
                         return totalSize;
                     }
 
-                    return new DriveInfo(PathExport).TotalSize;
+                    try {
+                        return new DriveInfo(PathExport).TotalSize;
+                    }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Gets the export path with a trailing separator, which is required for some Win32 functions.
+            /// </summary>
+            internal string PathExportWithTrailingSeparator {
+                get {
+                    string path = PathExport;
+                    string separator = PathFormat.SeparatorString; // Avoid extra string alloc when appending char
+
+                    if (path[^1] != separator[0])
+                        path += separator;
+
+                    return path;
                 }
             }
 
@@ -145,7 +196,13 @@ namespace Singulink.IO
             public void Create()
             {
                 PathFormat.EnsureCurrent();
-                Directory.CreateDirectory(PathExport);
+
+                try {
+                    Directory.CreateDirectory(PathExport);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public void Delete(bool recursive = false)
@@ -153,25 +210,23 @@ namespace Singulink.IO
                 PathFormat.EnsureCurrent();
                 EnsureExists();
 
-                // Consistently throw DirectoryNotFoundException across platforms instead of IOException on Windows if path points to a file.
-
-                if (PathFormat == PathFormat.Windows) {
-                    try {
-                        Directory.Delete(PathExport, recursive);
-                    }
-                    catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
-                        EnsureExists(); // Will throw DirectoryNotFoundException if this path is not a dir.
-                        throw; // Otherwise throw whatever exception was caught.
-                    }
-                }
-                else {
+                try {
                     Directory.Delete(PathExport, recursive);
+                }
+                catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
+                    // Consistently throw DirectoryNotFoundException across platforms instead of IOException on Windows if path points to a file.
+
+                    EnsureExists(); // Convert to DirectoryNotFoundException if this path is a file.
+                    throw; // Otherwise throw whatever exception was caught.
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
                 }
             }
 
             public IAbsoluteDirectoryPath GetLastExistingDirectory()
             {
-                // Start at the root to prevent repeated potentially slow network accesses starting from the last dir.
+                // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
 
                 var lastExistingDir = RootDirectory;
 
@@ -270,6 +325,8 @@ namespace Singulink.IO
             #endregion
 
             #region Enumeration
+
+            // NOTE: Enumeration methods will never throw UnauthorizedAccessException
 
             private delegate IEnumerable<FileSystemInfo> Enumerator(DirectoryInfo info, string searchPattern, EnumerationOptions options);
 
@@ -410,7 +467,21 @@ namespace Singulink.IO
                 PathFormat.ValidateSearchPattern(searchPattern, nameof(searchPattern));
 
                 var info = new DirectoryInfo(PathExport);
-                return enumerator.Invoke(info, searchPattern, options.ToEnumerationOptions());
+
+                try {
+                    // Dummy enumeration first to ensure access is authorized on the root directory:
+                    info.EnumerateFileSystemInfos().FirstOrDefault();
+
+                    // Real enumeration which will ignore unauthorized access:
+                    return enumerator.Invoke(info, searchPattern, options.ToEnumerationOptions());
+                }
+                catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
+                    EnsureExists(); // Convert to DirectoryNotFoundException if path is a file
+                    throw;
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             #endregion
