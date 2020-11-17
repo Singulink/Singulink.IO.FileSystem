@@ -109,7 +109,14 @@ namespace Singulink.IO
                     PathFormat.EnsureCurrent();
 
                     if (PathFormat == PathFormat.Windows) {
-                        return Interop.Windows.GetFileSystem(this);
+                        // Get last dir that is either the root or a reparse point
+
+                        var dir = this;
+
+                        while (!dir.IsRoot && (dir.Attributes & FileAttributes.ReparsePoint) == 0)
+                            dir = (Impl)dir.ParentDirectory!;
+
+                        return Interop.Windows.GetFileSystem(dir);
                     }
                     else {
                         try {
@@ -475,8 +482,8 @@ namespace Singulink.IO
                     // Real enumeration which will ignore unauthorized access:
                     return enumerator.Invoke(info, searchPattern, options.ToEnumerationOptions());
                 }
-                catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
-                    EnsureExists(); // Convert to DirectoryNotFoundException if path is a file
+                catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
+                    EnsureExists(); // Convert to DirectoryNotFoundException if path is a file on both Unix and Windows
                     throw;
                 }
                 catch (UnauthorizedAccessException ex) {
