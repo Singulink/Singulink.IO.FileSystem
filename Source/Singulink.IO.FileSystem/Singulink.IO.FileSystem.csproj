@@ -5,7 +5,7 @@
     <RootNamespace>Singulink.IO</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.5</Version>
+    <Version>0.9.6</Version>
     <Authors>Singulink</Authors>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
     <Copyright>© Singulink. All rights reserved.</Copyright>
