@@ -3,7 +3,7 @@
 namespace Singulink.IO
 {
     /// <content>
-    /// Contains an implementation of IEntryPath.
+    /// Contains an implementation of IPath.
     /// </content>
     public partial interface IPath
     {
