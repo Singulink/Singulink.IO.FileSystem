@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO
@@ -36,7 +33,13 @@ namespace Singulink.IO
                     else
                         attributes &= ~FileAttributes.ReadOnly;
 
-                    File.SetAttributes(PathExport, attributes);
+                    try
+                    {
+                        File.SetAttributes(PathExport, attributes);
+                    }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
                 }
             }
 
@@ -57,7 +60,14 @@ namespace Singulink.IO
             public override FileAttributes Attributes {
                 get {
                     PathFormat.EnsureCurrent();
-                    var attributes = File.GetAttributes(PathExport); // Works for both files and dirs
+                    FileAttributes attributes;
+
+                    try {
+                        attributes = File.GetAttributes(PathExport); // Works for both files and dirs
+                    }
+                    catch (UnauthorizedAccessException ex) {
+                        throw ExceptionHelper.Convert(ex);
+                    }
 
                     if (attributes.HasFlag(FileAttributes.Directory))
                         throw ExceptionHelper.GetNotFoundException(this);
@@ -67,8 +77,14 @@ namespace Singulink.IO
                 set {
                     var current = Attributes; // Ensures that this is a file
 
-                    if (current != value)
-                        File.SetAttributes(PathExport, value); // Works for both files and dirs
+                    if (current != value) {
+                        try {
+                            File.SetAttributes(PathExport, value); // Works for both files and dirs
+                        }
+                        catch (UnauthorizedAccessException ex) {
+                            throw ExceptionHelper.Convert(ex);
+                        }
+                    }
                 }
             }
 
@@ -107,7 +123,13 @@ namespace Singulink.IO
                 FileOptions options = FileOptions.None)
             {
                 PathFormat.EnsureCurrent();
-                return new FileStream(PathExport, mode, access, share, bufferSize, options);
+
+                try {
+                    return new FileStream(PathExport, mode, access, share, bufferSize, options);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public void CopyTo(IAbsoluteFilePath destinationFile, bool overwrite = false)
@@ -115,7 +137,12 @@ namespace Singulink.IO
                 PathFormat.EnsureCurrent();
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
 
-                File.Copy(PathExport, destinationFile.PathExport, overwrite);
+                try {
+                    File.Copy(PathExport, destinationFile.PathExport, overwrite);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public void MoveTo(IAbsoluteFilePath destinationFile)
@@ -123,7 +150,12 @@ namespace Singulink.IO
                 PathFormat.EnsureCurrent();
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
 
-                File.Move(PathExport, destinationFile.PathExport);
+                try {
+                    File.Move(PathExport, destinationFile.PathExport);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public void Replace(IAbsoluteFilePath destinationFile, IAbsoluteFilePath backupFile, bool ignoreMetadataErrors = false)
@@ -132,14 +164,25 @@ namespace Singulink.IO
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
                 backupFile.PathFormat.EnsureCurrent(nameof(backupFile));
 
-                File.Replace(PathExport, destinationFile.PathExport, backupFile.PathExport, ignoreMetadataErrors);
+                try {
+                    File.Replace(PathExport, destinationFile.PathExport, backupFile.PathExport, ignoreMetadataErrors);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public void Delete()
             {
                 PathFormat.EnsureCurrent();
                 EnsureExists();
-                File.Delete(PathExport);
+
+                try {
+                    File.Delete(PathExport);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw ExceptionHelper.Convert(ex);
+                }
             }
 
             public IAbsoluteDirectoryPath GetLastExistingDirectory() => ParentDirectory.GetLastExistingDirectory();
