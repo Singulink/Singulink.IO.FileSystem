@@ -45,12 +45,7 @@ namespace Singulink.IO
         /// <param name="bufferSize">A positive value indicating the buffer size.</param>
         /// <param name="options">Additional file options.</param>
         /// <returns>A new <see cref="FileStream"/> to the opened file.</returns>
-        FileStream OpenStream(
-            FileMode mode = FileMode.Open,
-            FileAccess access = FileAccess.ReadWrite,
-            FileShare share = FileShare.None,
-            int bufferSize = 4096,
-            FileOptions options = FileOptions.None);
+        FileStream OpenStream(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, int bufferSize = 4096, FileOptions options = FileOptions.None);
 
         /// <summary>
         /// Opens an asynchronous file stream to a new or existing file (the <see cref="FileOptions.Asynchronous"/> option is always appended).
@@ -66,12 +61,7 @@ namespace Singulink.IO
         /// <para>Note that the underlying operating system might not support asynchronous I/O, so the handle might be opened synchronously depending on the
         /// platform.</para>
         /// </remarks>
-        sealed FileStream OpenAsyncStream(
-            FileMode mode = FileMode.Open,
-            FileAccess access = FileAccess.ReadWrite,
-            FileShare share = FileShare.None,
-            int bufferSize = 4096,
-            FileOptions options = FileOptions.None)
+        sealed FileStream OpenAsyncStream(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, int bufferSize = 4096, FileOptions options = FileOptions.None)
         {
             return OpenStream(mode, access, share, bufferSize, options | FileOptions.Asynchronous);
         }
