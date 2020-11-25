@@ -33,8 +33,7 @@ namespace Singulink.IO
                     else
                         attributes &= ~FileAttributes.ReadOnly;
 
-                    try
-                    {
+                    try {
                         File.SetAttributes(PathExport, attributes);
                     }
                     catch (UnauthorizedAccessException ex) {

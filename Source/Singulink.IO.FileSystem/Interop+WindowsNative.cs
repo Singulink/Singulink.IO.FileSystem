@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -16,17 +17,13 @@ namespace Singulink.IO
 
             [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool GetDiskFreeSpaceEx(
-                string lpDirectoryName,
-                out long lpFreeBytesAvailable,
-                out long lpTotalNumberOfBytes,
-                out long lpTotalNumberOfFreeBytes);
+            public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName, out long lpFreeBytesAvailable, out long lpTotalNumberOfBytes, out long lpTotalNumberOfFreeBytes);
 
             /// <summary>
             /// A trailing backslash is required.
             /// </summary>
             [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-            public static extern System.IO.DriveType GetDriveType(string lpRootPathName);
+            public static extern DriveType GetDriveType(string lpRootPathName);
 
             /// <summary>
             /// A trailing backslash is required.
