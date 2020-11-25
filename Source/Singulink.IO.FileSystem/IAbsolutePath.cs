@@ -7,6 +7,7 @@ namespace Singulink.IO
     /// <summary>
     /// Represents an absolute path to a file or directory.
     /// </summary>
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Properties need to be overriden by implementing types")]
     public partial interface IAbsolutePath : IPath
     {
         /// <summary>
@@ -54,7 +55,6 @@ namespace Singulink.IO
         IAbsoluteDirectoryPath RootDirectory { get; }
 
         /// <inheritdoc cref="IPath.ParentDirectory"/>
-        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
         new IAbsoluteDirectoryPath? ParentDirectory => throw new NotImplementedException();
 
         /// <inheritdoc/>
@@ -63,7 +63,6 @@ namespace Singulink.IO
         /// <summary>
         /// Gets the last directory in the path that exists.
         /// </summary>
-        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
         IAbsoluteDirectoryPath GetLastExistingDirectory() => throw new NotImplementedException();
     }
 }

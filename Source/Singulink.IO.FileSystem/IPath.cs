@@ -6,6 +6,7 @@ namespace Singulink.IO
     /// <summary>
     /// Represents an absolute or relative path to a file or directory.
     /// </summary>
+    [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Properties need to be overriden by implementing types")]
     public partial interface IPath : IEquatable<IPath?>
     {
         /// <summary>
@@ -37,13 +38,11 @@ namespace Singulink.IO
         /// <summary>
         /// Gets the parent directory of this file/directory.
         /// </summary>
-        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
         IDirectoryPath? ParentDirectory => throw new NotImplementedException();
 
         /// <summary>
         /// Gets a value indicating whether this path has a parent directory.
         /// </summary>
-        [SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Needs to be overriden by implementing types")]
         bool HasParentDirectory => throw new NotImplementedException();
 
         /// <summary>

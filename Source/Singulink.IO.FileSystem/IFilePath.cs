@@ -24,7 +24,6 @@ namespace Singulink.IO
         string Extension { get; }
 
         /// <inheritdoc/>
-        [SuppressMessage("Design", "CA1033:Interface methods should be callable by child types", Justification = "Base method throws NotImplementedException")]
         bool IPath.HasParentDirectory => true; // All files have parent directories.
 
         #region Path Manipulation
