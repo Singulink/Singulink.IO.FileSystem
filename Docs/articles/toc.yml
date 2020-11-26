@@ -2,5 +2,7 @@
   href: getting-started.md
 - name: Problems with System.IO
   href: problems-with-system-io.md
+- name: Exception Handling
+  href: exception-handling.md
 - name: Advanced PathOptions Handling
   href: advanced-pathoptions-handling.md
