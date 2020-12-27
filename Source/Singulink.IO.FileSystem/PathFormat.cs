@@ -302,7 +302,7 @@ namespace Singulink.IO
 
             int lastSeparatorIndex = path.Span.LastIndexOf(SeparatorChar);
 
-            var name = lastSeparatorIndex < 0 ? path : (StringOrSpan)path.Span[(lastSeparatorIndex + 1)..];
+            StringOrSpan name = lastSeparatorIndex < 0 ? path : path.Span[(lastSeparatorIndex + 1)..];
 
             if (name.Span.SequenceEqual(".."))
                 return string.Empty;
@@ -316,7 +316,7 @@ namespace Singulink.IO
         internal StringOrSpan GetFirstEntry(StringOrSpan path)
         {
             int separatorIndex = path.Span.IndexOf(SeparatorChar);
-            return separatorIndex < 0 ? path : (StringOrSpan)path.Span[..separatorIndex];
+            return separatorIndex < 0 ? path : path.Span[..separatorIndex];
         }
 
         internal StringOrSpan GetFileNameWithoutExtension(string path)
