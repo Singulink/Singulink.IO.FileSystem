@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Singulink.IO
 {
@@ -64,6 +65,25 @@ namespace Singulink.IO
         sealed FileStream OpenAsyncStream(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, int bufferSize = 4096, FileOptions options = FileOptions.None)
         {
             return OpenStream(mode, access, share, bufferSize, options | FileOptions.Asynchronous);
+        }
+
+        /// <summary>
+        /// Opens an asynchronous file stream to a new or existing file (the <see cref="FileOptions.Asynchronous"/> option is always appended).
+        /// </summary>
+        /// <param name="mode">A <see cref="FileMode"/> constant specifying the mode (for example, Open or Append) in which to open the file.</param>
+        /// <param name="access">A <see cref="FileAccess"/> constant specifying whether to open the file with <c>Read</c>, <c>Write</c>, or <c>ReadWrite</c>
+        /// file access.</param>
+        /// <param name="share">A <see cref="FileShare"/> constant specifying the type of access other <c>FileStream</c> objects have to this file.</param>
+        /// <param name="bufferSize">A positive value indicating the buffer size.</param>
+        /// <param name="options">Additional file options.</param>
+        /// <returns>A task with a new <see cref="FileStream"/> to the opened file.</returns>
+        /// <remarks>
+        /// <para>Note that the underlying operating system might not support asynchronous I/O, so the handle might be opened synchronously depending on the
+        /// platform.</para>
+        /// </remarks>
+        sealed Task<FileStream> OpenStreamAsync(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, int bufferSize = 4096, FileOptions options = FileOptions.None)
+        {
+            return Task.Run(() => OpenAsyncStream(mode, access, share, bufferSize, options));
         }
 
         /// <summary>
