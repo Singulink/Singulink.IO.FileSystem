@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <AnnotatedReferenceAssemblyVersion>3.1.0</AnnotatedReferenceAssemblyVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
