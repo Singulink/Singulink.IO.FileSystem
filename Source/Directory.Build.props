@@ -2,7 +2,7 @@
   <PropertyGroup>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AnnotatedReferenceAssemblyVersion>3.1.0</AnnotatedReferenceAssemblyVersion>
+    <AnnotatedReferenceAssemblyVersion>5.0.0</AnnotatedReferenceAssemblyVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
