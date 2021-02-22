@@ -17,6 +17,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100
+    - name: Clean
+      run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
+      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
       working-directory: Source
@@ -37,6 +40,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100
+    - name: Clean
+      run: dotnet clean --configuration Release && dotnet nuget locals all --clear
+      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
       working-directory: Source
@@ -57,6 +63,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100
+    - name: Clean
+      run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
+      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
       working-directory: Source
@@ -77,6 +86,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.100
+    - name: Clean
+      run: dotnet clean --configuration Release && dotnet nuget locals all --clear
+      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
       working-directory: Source
