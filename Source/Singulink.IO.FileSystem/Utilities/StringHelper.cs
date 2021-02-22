@@ -8,24 +8,12 @@ namespace Singulink.IO.Utilities
         {
             fixed (char* p1 = s1)
             fixed (char* p2 = s2) {
-                IntPtr* buffer = stackalloc IntPtr[]
+                var data = (p1: (IntPtr)p1, p2: (IntPtr)p2, length1: s1.Length, length2: s2.Length);
+
+                return string.Create(s1.Length + s2.Length, data, (span, data) =>
                 {
-                    (IntPtr)s1.Length,
-                    (IntPtr)s2.Length,
-                    (IntPtr)p1,
-                    (IntPtr)p2,
-                };
-
-                return string.Create(s1.Length + s2.Length, (IntPtr)buffer, (span, state) =>
-                {
-                    int length1 = (int)((IntPtr*)state)[0];
-                    int length2 = (int)((IntPtr*)state)[1];
-
-                    char* buffer1 = (char*)((IntPtr*)state)[2];
-                    char* buffer2 = (char*)((IntPtr*)state)[3];
-
-                    new ReadOnlySpan<char>(buffer1, length1).CopyTo(span);
-                    new ReadOnlySpan<char>(buffer2, length2).CopyTo(span.Slice(length1));
+                    new ReadOnlySpan<char>((char*)data.p1, data.length1).CopyTo(span);
+                    new ReadOnlySpan<char>((char*)data.p2, data.length2).CopyTo(span.Slice(data.length1));
                 });
             }
         }
@@ -35,27 +23,12 @@ namespace Singulink.IO.Utilities
             fixed (char* p1 = s1)
             fixed (char* p2 = s2)
             fixed (char* p3 = s3) {
-                IntPtr* buffer = stackalloc IntPtr[] {
-                    (IntPtr)s1.Length,
-                    (IntPtr)s2.Length,
-                    (IntPtr)s3.Length,
-                    (IntPtr)p1,
-                    (IntPtr)p2,
-                    (IntPtr)p3,
-                };
+                var data = (p1: (IntPtr)p1, p2: (IntPtr)p2, p3: (IntPtr)p3, length1: s1.Length, length2: s2.Length, length3: s3.Length);
 
-                return string.Create(s1.Length + s2.Length + s3.Length, (IntPtr)buffer, (span, state) => {
-                    int length1 = (int)((IntPtr*)state)[0];
-                    int length2 = (int)((IntPtr*)state)[1];
-                    int length3 = (int)((IntPtr*)state)[2];
-
-                    char* buffer1 = (char*)((IntPtr*)state)[3];
-                    char* buffer2 = (char*)((IntPtr*)state)[4];
-                    char* buffer3 = (char*)((IntPtr*)state)[5];
-
-                    new ReadOnlySpan<char>(buffer1, length1).CopyTo(span);
-                    new ReadOnlySpan<char>(buffer2, length2).CopyTo(span = span.Slice(length1));
-                    new ReadOnlySpan<char>(buffer3, length3).CopyTo(span.Slice(length2));
+                return string.Create(s1.Length + s2.Length + s3.Length, data, (span, data) => {
+                    new ReadOnlySpan<char>((char*)data.p1, data.length1).CopyTo(span);
+                    new ReadOnlySpan<char>((char*)data.p2, data.length2).CopyTo(span = span.Slice(data.length1));
+                    new ReadOnlySpan<char>((char*)data.p3, data.length3).CopyTo(span.Slice(data.length2));
                 });
             }
         }
