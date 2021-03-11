@@ -12,11 +12,7 @@
 
   <ItemGroup>
     <!-- Fody -->
-    <PackageReference Include="Fody" Version="6.2.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="RuntimeNullables.Fody" Version="0.9.3" PrivateAssets="all" />
+    <PackageReference Include="RuntimeNullables.Fody" Version="0.9.8" PrivateAssets="all" />
 
     <!-- Analyzers -->
     <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
