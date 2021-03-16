@@ -15,11 +15,13 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <PackageIcon>Singulink Icon 128x128.png</PackageIcon>
-    <!-- Source Link -->
+  </PropertyGroup>
+
+  <PropertyGroup Label="Source Link">
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <None Remove="stylecop.json" />
     <None Include="..\..\Resources\Singulink Icon 128x128.png">
