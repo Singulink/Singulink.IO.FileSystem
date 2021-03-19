@@ -37,7 +37,7 @@ namespace Singulink.IO
                         File.SetAttributes(PathExport, attributes);
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        throw Error.ConvertException(ex);
                     }
                 }
             }
@@ -65,11 +65,11 @@ namespace Singulink.IO
                         attributes = File.GetAttributes(PathExport); // Works for both files and dirs
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        throw Error.ConvertException(ex);
                     }
 
                     if (attributes.HasFlag(FileAttributes.Directory))
-                        throw ExceptionHelper.GetNotFoundException(this);
+                        throw Error.NotFoundException(this);
 
                     return attributes;
                 }
@@ -81,7 +81,7 @@ namespace Singulink.IO
                             File.SetAttributes(PathExport, value); // Works for both files and dirs
                         }
                         catch (UnauthorizedAccessException ex) {
-                            throw ExceptionHelper.Convert(ex);
+                            throw Error.ConvertException(ex);
                         }
                     }
                 }
@@ -122,7 +122,7 @@ namespace Singulink.IO
                     return new FileStream(PathExport, mode, access, share, bufferSize, options);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    throw Error.ConvertException(ex);
                 }
             }
 
@@ -135,7 +135,7 @@ namespace Singulink.IO
                     File.Copy(PathExport, destinationFile.PathExport, overwrite);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    throw Error.ConvertException(ex);
                 }
             }
 
@@ -148,7 +148,7 @@ namespace Singulink.IO
                     File.Move(PathExport, destinationFile.PathExport);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    throw Error.ConvertException(ex);
                 }
             }
 
@@ -162,26 +162,39 @@ namespace Singulink.IO
                     File.Replace(PathExport, destinationFile.PathExport, backupFile.PathExport, ignoreMetadataErrors);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    throw Error.ConvertException(ex);
                 }
             }
 
             public void Delete()
             {
                 PathFormat.EnsureCurrent();
-                EnsureExists();
 
                 try {
                     File.Delete(PathExport);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    ThrowExceptionIfFileIsDir(this);
+                    throw Error.ConvertException(ex);
                 }
             }
 
             public IAbsoluteDirectoryPath GetLastExistingDirectory() => ParentDirectory.GetLastExistingDirectory();
 
             IAbsoluteDirectoryPath IAbsolutePath.GetLastExistingDirectory() => GetLastExistingDirectory();
+
+            private static void ThrowExceptionIfFileIsDir(IAbsoluteFilePath path)
+            {
+                try {
+                    if ((File.GetAttributes(path.PathExport) & FileAttributes.Directory) == 0)
+                        return;
+                }
+                catch {
+                    return;
+                }
+
+                throw Error.FileIsDirException(path);
+            }
 
             #endregion
         }
