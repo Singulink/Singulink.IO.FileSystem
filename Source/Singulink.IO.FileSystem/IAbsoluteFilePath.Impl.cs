@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO
@@ -11,6 +12,8 @@ namespace Singulink.IO
     {
         internal new sealed class Impl : IAbsolutePath.Impl, IAbsoluteFilePath
         {
+            private static MethodInfo? _moveWithOverwriteMethod;
+
             internal Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
             {
             }
@@ -37,7 +40,7 @@ namespace Singulink.IO
                         File.SetAttributes(PathExport, attributes);
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw Error.ConvertException(ex);
+                        throw Ex.Convert(ex);
                     }
                 }
             }
@@ -65,11 +68,11 @@ namespace Singulink.IO
                         attributes = File.GetAttributes(PathExport); // Works for both files and dirs
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw Error.ConvertException(ex);
+                        throw Ex.Convert(ex);
                     }
 
                     if (attributes.HasFlag(FileAttributes.Directory))
-                        throw Error.NotFoundException(this);
+                        throw Ex.NotFound(this);
 
                     return attributes;
                 }
@@ -81,13 +84,13 @@ namespace Singulink.IO
                             File.SetAttributes(PathExport, value); // Works for both files and dirs
                         }
                         catch (UnauthorizedAccessException ex) {
-                            throw Error.ConvertException(ex);
+                            throw Ex.Convert(ex);
                         }
                     }
                 }
             }
 
-            public IAbsoluteDirectoryPath ParentDirectory {
+            public override IAbsoluteDirectoryPath ParentDirectory {
                 get {
                     var parentPath = PathFormat.GetPreviousDirectory(PathDisplay, RootLength);
                     return new IAbsoluteDirectoryPath.Impl(parentPath.ToString(), RootLength, PathFormat);
@@ -119,10 +122,12 @@ namespace Singulink.IO
                 PathFormat.EnsureCurrent();
 
                 try {
+                    // Throws UnauthorizedAccessException with a nonsense message if file is a dir, convert to FileNotFoundEx.
                     return new FileStream(PathExport, mode, access, share, bufferSize, options);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw Error.ConvertException(ex);
+                    ThrowNotFoundIfFileIsDir(this);
+                    throw Ex.Convert(ex);
                 }
             }
 
@@ -132,37 +137,90 @@ namespace Singulink.IO
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
 
                 try {
+                    // If this path is dir UnauthorizedAccessEx is thrown with nonsense message. Convert to FileNotFoundEx.
+                    // If destination is dir IOEx is thrown with "The target file is a directory, not a file." message, which is fine.
                     File.Copy(PathExport, destinationFile.PathExport, overwrite);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw Error.ConvertException(ex);
+                    ThrowNotFoundIfFileIsDir(this);
+                    throw Ex.Convert(ex);
                 }
             }
 
-            public void MoveTo(IAbsoluteFilePath destinationFile)
+            public void MoveTo(IAbsoluteFilePath destinationFile, bool overwrite = false)
             {
                 PathFormat.EnsureCurrent();
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
 
                 try {
-                    File.Move(PathExport, destinationFile.PathExport);
+                    // If this path is dir FileNotFoundEx is thrown.
+                    // If destination is dir then IOEx is thrown with "file already exists" message, except on Windows when overwrite is true, in which case
+                    // UnauthorizedAccessEx is thrown. Change that to IOEx for consistency.
+
+                    if (overwrite)
+                        GetOverwriteMethod().Invoke(null, new object[] { PathExport, destinationFile.PathExport, true });
+                    else
+                        File.Move(PathExport, destinationFile.PathExport);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw Error.ConvertException(ex);
+                    if (PathFormat == PathFormat.Windows && overwrite)
+                        ThrowIfFileIsDir(destinationFile);
+
+                    throw Ex.Convert(ex);
+                }
+
+                static MethodInfo GetOverwriteMethod()
+                {
+                    // Netstandard does not have a File.Move method with an overwrite flag. Use this temp hack until we move the lib off of netstandard.
+
+                    if (_moveWithOverwriteMethod == null) {
+                        _moveWithOverwriteMethod = typeof(File).GetMethod("Move", new[] { typeof(string), typeof(string), typeof(bool) });
+
+                        if (_moveWithOverwriteMethod == null)
+                            throw new NotSupportedException("Moving a file while overwriting the existing file is not supported on this .NET runtime.");
+                    }
+
+                    return _moveWithOverwriteMethod;
                 }
             }
 
-            public void Replace(IAbsoluteFilePath destinationFile, IAbsoluteFilePath backupFile, bool ignoreMetadataErrors = false)
+            public void Replace(IAbsoluteFilePath destinationFile, IAbsoluteFilePath? backupFile, bool ignoreMetadataErrors = false)
             {
                 PathFormat.EnsureCurrent();
                 destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
-                backupFile.PathFormat.EnsureCurrent(nameof(backupFile));
+                backupFile?.PathFormat.EnsureCurrent(nameof(backupFile));
+
+                // Windows throws IOEx if files are the same, Unix does not. Check if they are the same file paths for better consistency here.
+
+                if (PathDisplay == destinationFile.PathDisplay)
+                    throw new IOException("Source and destination file paths are the same.");
+
+                // Unix File.Replace works on directories so we need to guard against this.
+
+                if (PathFormat == PathFormat.Unix)
+                    EnsureExists();
 
                 try {
-                    File.Replace(PathExport, destinationFile.PathExport, backupFile.PathExport, ignoreMetadataErrors);
+                    // If this path is a dir Windows throws UnauthorizedAccessEx. Change to FileNotFoundEx for consistency. We guard against this on Unix
+                    // above with EnsureExists() which throws FileNotFoundEx as well.
+                    // If destinationFile path is a dir Unix throws IOEx, Windows throws UnauthorizedAccessEx. Change both to FileNotFoundEx.
+                    // If backupFile is a dir Unix throws IOEx, Windows throws UnauthorizedAccessEx. Change windows to IOEx for consistency.
+                    File.Replace(PathExport, destinationFile.PathExport, backupFile?.PathExport, ignoreMetadataErrors);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw Error.ConvertException(ex);
+                    if (PathFormat == PathFormat.Windows) {
+                        ThrowNotFoundIfFileIsDir(this);
+                        ThrowNotFoundIfFileIsDir(destinationFile);
+
+                        if (backupFile != null)
+                            ThrowIfFileIsDir(backupFile);
+                    }
+
+                    throw Ex.Convert(ex);
+                }
+                catch (IOException ex) when (PathFormat == PathFormat.Unix && ex.GetType() == typeof(IOException)) {
+                    ThrowNotFoundIfFileIsDir(destinationFile);
+                    throw;
                 }
             }
 
@@ -171,29 +229,41 @@ namespace Singulink.IO
                 PathFormat.EnsureCurrent();
 
                 try {
+                    // Throws UnauthorizedAccessException with a nonsense message if file is a dir.
                     File.Delete(PathExport);
                 }
                 catch (UnauthorizedAccessException ex) {
-                    ThrowExceptionIfFileIsDir(this);
-                    throw Error.ConvertException(ex);
+                    // File.Delete does not throw if the file is not found so makes more sense not to throw if the path is a dir.
+                    if (IsKnownToBeDir(this))
+                        return;
+
+                    throw Ex.Convert(ex);
                 }
             }
 
-            public IAbsoluteDirectoryPath GetLastExistingDirectory() => ParentDirectory.GetLastExistingDirectory();
+            public override IAbsoluteDirectoryPath GetLastExistingDirectory() => ParentDirectory.GetLastExistingDirectory();
 
-            IAbsoluteDirectoryPath IAbsolutePath.GetLastExistingDirectory() => GetLastExistingDirectory();
-
-            private static void ThrowExceptionIfFileIsDir(IAbsoluteFilePath path)
+            private static bool IsKnownToBeDir(IAbsoluteFilePath path)
             {
                 try {
-                    if ((File.GetAttributes(path.PathExport) & FileAttributes.Directory) == 0)
-                        return;
+                    if ((File.GetAttributes(path.PathExport) & FileAttributes.Directory) != 0)
+                        return true;
                 }
-                catch {
-                    return;
-                }
+                catch { }
 
-                throw Error.FileIsDirException(path);
+                return false;
+            }
+
+            private static void ThrowNotFoundIfFileIsDir(IAbsoluteFilePath path)
+            {
+                if (IsKnownToBeDir(path))
+                    throw Ex.NotFound(path);
+            }
+
+            private static void ThrowIfFileIsDir(IAbsoluteFilePath path)
+            {
+                if (IsKnownToBeDir(path))
+                    throw Ex.FileIsDir(path);
             }
 
             #endregion

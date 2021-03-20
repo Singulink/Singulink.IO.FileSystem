@@ -34,6 +34,8 @@ namespace Singulink.IO
                 }
             }
 
+            public abstract IAbsoluteDirectoryPath? ParentDirectory { get; }
+
             public DateTime CreationTime {
                 get {
                     EnsureExists();
@@ -66,6 +68,8 @@ namespace Singulink.IO
                     File.SetLastWriteTime(PathExport, value);
                 }
             }
+
+            public abstract IAbsoluteDirectoryPath GetLastExistingDirectory();
 
             /// <summary>
             /// This method is necessary before calling some operations because they work on both files and directories.

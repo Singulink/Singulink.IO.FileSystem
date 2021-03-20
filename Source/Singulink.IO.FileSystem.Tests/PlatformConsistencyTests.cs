@@ -35,7 +35,8 @@ namespace Singulink.IO.FileSystem.Tests
             Assert.ThrowsException<FileNotFoundException>(() => file.Attributes |= FileAttributes.Hidden);
             Assert.ThrowsException<FileNotFoundException>(() => file.Length);
 
-            Assert.ThrowsException<FileNotFoundException>(() => file.Delete());
+            // No exception should be thrown for files that don't exist
+            file.Delete();
         }
 
         [TestMethod]

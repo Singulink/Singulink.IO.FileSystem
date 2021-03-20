@@ -55,7 +55,7 @@ namespace Singulink.IO
         IAbsoluteDirectoryPath RootDirectory { get; }
 
         /// <inheritdoc cref="IPath.ParentDirectory"/>
-        new IAbsoluteDirectoryPath? ParentDirectory => throw new NotImplementedException();
+        new IAbsoluteDirectoryPath? ParentDirectory { get; }
 
         /// <inheritdoc/>
         IDirectoryPath? IPath.ParentDirectory => ParentDirectory;
@@ -63,6 +63,6 @@ namespace Singulink.IO
         /// <summary>
         /// Gets the last directory in the path that exists.
         /// </summary>
-        IAbsoluteDirectoryPath GetLastExistingDirectory() => throw new NotImplementedException();
+        IAbsoluteDirectoryPath GetLastExistingDirectory();
     }
 }

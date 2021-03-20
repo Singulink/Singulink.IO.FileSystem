@@ -35,7 +35,7 @@ namespace Singulink.IO
         IDirectoryPath Combine(IRelativeDirectoryPath path);
 
         /// <summary>
-        /// Combines this directory with a relative directory path parsed using the specified options and the current platform's format.
+        /// Combines this directory with a relative directory path parsed using the specified options and this directory's path format.
         /// </summary>
         /// <param name="path">The relative directory path to append to this directory.</param>
         /// <param name="options">The options to use for parsing the appended relative directory path.</param>
@@ -61,7 +61,7 @@ namespace Singulink.IO
         IFilePath Combine(IRelativeFilePath path);
 
         /// <summary>
-        /// Combines this directory with a relative file path parsed using the specified options and the current platform's format.
+        /// Combines this directory with a relative file path parsed using the specified options and this directory's path format.
         /// </summary>
         /// <param name="path">The relative file path to append to this directory.</param>
         /// <param name="options">The options to use for parsing the appended relative file path.</param>

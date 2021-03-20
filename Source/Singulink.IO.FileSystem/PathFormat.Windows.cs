@@ -13,7 +13,8 @@ namespace Singulink.IO
     {
         private sealed class WindowsPathFormat : PathFormat
         {
-            private static readonly HashSet<char> InvalidNameChars = GetInvalidNameChars();
+            private static readonly HashSet<char> InvalidNameChars = GetInvalidNameChars(true);
+            private static readonly HashSet<char> InvalidNameCharsWithoutWildcards = GetInvalidNameChars(false);
 
             internal WindowsPathFormat() : base('\\') { }
 
@@ -53,10 +54,20 @@ namespace Singulink.IO
                 if (!base.ValidateEntryName(name, options, allowWildcards, out error))
                     return false;
 
-                foreach (char c in name) {
-                    if (InvalidNameChars.Contains(c) && !(allowWildcards && (c == '*' || c == '?'))) {
-                        error = $"Invalid character '{c}' in path entry. Invalid characters include: < > : \" | ? * / \\";
-                        return false;
+                if (allowWildcards) {
+                    foreach (char c in name) {
+                        if (InvalidNameCharsWithoutWildcards.Contains(c)) {
+                            error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | / \\";
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    foreach (char c in name) {
+                        if (InvalidNameChars.Contains(c)) {
+                            error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | ? * / \\";
+                            return false;
+                        }
                     }
                 }
 
@@ -74,7 +85,7 @@ namespace Singulink.IO
                     if ((name.Length == 3 && (name.Equals("CON", comp) || name.Equals("PRN", comp) || name.Equals("AUX", comp) || name.Equals("NUL", comp))) ||
                         (name.Length == 4 && char.IsDigit(name[3]) && (name.StartsWith("COM", comp) || name.StartsWith("LPT", comp))))
                     {
-                        error = $"Cannot use reserved device name '{name.ToString()}' in path entry.";
+                        error = $"Invalid reserved device name in entry name '{name.ToString()}'.";
                         return false;
                     }
                 }
@@ -174,12 +185,17 @@ namespace Singulink.IO
                 return StringHelper.Concat(@"\\?\UNC\", pathDisplay[2..]);
             }
 
-            private static HashSet<char> GetInvalidNameChars()
+            private static HashSet<char> GetInvalidNameChars(bool includeWildcardChars)
             {
-                var invalidChars = new HashSet<char>() { '<', '>', ':', '"', '|', '?', '*', '/', '\\' };
+                var invalidChars = new HashSet<char>() { '<', '>', ':', '"', '|', '/', '\\' };
 
                 for (int i = 0; i <= 31; i++)
                     invalidChars.Add((char)i);
+
+                if (includeWildcardChars) {
+                    invalidChars.Add('?');
+                    invalidChars.Add('*');
+                }
 
                 return invalidChars;
             }

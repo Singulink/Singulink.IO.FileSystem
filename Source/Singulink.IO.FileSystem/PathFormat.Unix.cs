@@ -27,7 +27,7 @@ namespace Singulink.IO
                     return false;
 
                 if (name.IndexOfAny('/', (char)0) is int i && i >= 0) {
-                    error = $"Invalid character in path segment '{name.ToString()}' ({name[i]}).";
+                    error = $"Invalid character '{name[i]}' in entry name '{name.ToString()}'.";
                     return false;
                 }
 

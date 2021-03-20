@@ -94,10 +94,12 @@ namespace Singulink.IO
         void CopyTo(IAbsoluteFilePath destinationFile, bool overwrite = false);
 
         /// <summary>
-        /// Moves the file to a new location.
+        /// Moves the file to a new location, optionally allowing the overwriting of an existing file. Overwriting is only supported on .NET Core 3+ only,
+        /// other runtimes (i.e. Mono/Xamarin) will throw <see cref="NotSupportedException"/>).
         /// </summary>
         /// <param name="destinationFile">The new location for the file.</param>
-        void MoveTo(IAbsoluteFilePath destinationFile);
+        /// <param name="overwrite">True to allow an existing file to be overwritten, otherwise false.</param>
+        void MoveTo(IAbsoluteFilePath destinationFile, bool overwrite = false);
 
         /// <summary>
         /// Replaces the contents of a file with the current file, deleting the original file and creating a backup of the replaced file.

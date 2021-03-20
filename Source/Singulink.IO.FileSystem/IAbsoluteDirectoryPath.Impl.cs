@@ -33,7 +33,7 @@ namespace Singulink.IO
 
             public bool IsRoot => PathDisplay.Length == RootLength;
 
-            public IAbsoluteDirectoryPath? ParentDirectory {
+            public override IAbsoluteDirectoryPath? ParentDirectory {
                 get {
                     if (!HasParentDirectory)
                         return null;
@@ -42,8 +42,6 @@ namespace Singulink.IO
                     return new Impl(parentPath.ToString(), RootLength, PathFormat);
                 }
             }
-
-            IAbsoluteDirectoryPath? IAbsolutePath.ParentDirectory => ParentDirectory;
 
             public bool HasParentDirectory => !IsRoot;
 
@@ -62,11 +60,11 @@ namespace Singulink.IO
                         attributes = 0;
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        throw Ex.Convert(ex);
                     }
 
                     if (!attributes.HasFlag(FileAttributes.Directory))
-                        throw ExceptionHelper.GetNotFoundException(this);
+                        throw Ex.NotFound(this);
 
                     return attributes;
                 }
@@ -93,12 +91,12 @@ namespace Singulink.IO
                             type = new DriveInfo(PathDisplay).DriveType;
                         }
                         catch (UnauthorizedAccessException ex) {
-                            throw ExceptionHelper.Convert(ex);
+                            throw Ex.Convert(ex);
                         }
                     }
 
                     if (type == DriveType.NoRootDirectory)
-                        throw ExceptionHelper.GetNotFoundException(this);
+                        throw Ex.NotFound(this);
 
                     return type;
                 }
@@ -125,7 +123,7 @@ namespace Singulink.IO
                             return new DriveInfo(PathDisplay).DriveFormat;
                         }
                         catch (UnauthorizedAccessException ex) {
-                            throw ExceptionHelper.Convert(ex);
+                            throw Ex.Convert(ex);
                         }
                     }
                 }
@@ -139,14 +137,15 @@ namespace Singulink.IO
                         Interop.Windows.GetSpace(this, out long available, out _, out _);
                         return available;
                     }
+                    else {
+                        EnsureExists();
 
-                    EnsureExists();
-
-                    try {
-                        return new DriveInfo(PathExport).AvailableFreeSpace;
-                    }
-                    catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        try {
+                            return new DriveInfo(PathExport).AvailableFreeSpace;
+                        }
+                        catch (UnauthorizedAccessException ex) {
+                            throw Ex.Convert(ex);
+                        }
                     }
                 }
             }
@@ -166,7 +165,7 @@ namespace Singulink.IO
                         return new DriveInfo(PathExport).TotalFreeSpace;
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        throw Ex.Convert(ex);
                     }
                 }
             }
@@ -186,7 +185,7 @@ namespace Singulink.IO
                         return new DriveInfo(PathExport).TotalSize;
                     }
                     catch (UnauthorizedAccessException ex) {
-                        throw ExceptionHelper.Convert(ex);
+                        throw Ex.Convert(ex);
                     }
                 }
             }
@@ -205,72 +204,6 @@ namespace Singulink.IO
                     return path;
                 }
             }
-
-            #region File System Operations
-
-            public void Create()
-            {
-                PathFormat.EnsureCurrent();
-
-                try {
-                    Directory.CreateDirectory(PathExport);
-                }
-                catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
-                }
-            }
-
-            public void Delete(bool recursive = false)
-            {
-                PathFormat.EnsureCurrent();
-                EnsureExists();
-
-                try {
-                    Directory.Delete(PathExport, recursive);
-                }
-                catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
-                    // Consistently throw DirectoryNotFoundException across platforms instead of IOException on Windows if path points to a file.
-
-                    EnsureExists(); // Convert to DirectoryNotFoundException if this path is a file.
-                    throw; // Otherwise throw whatever exception was caught.
-                }
-                catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
-                }
-            }
-
-            public IAbsoluteDirectoryPath GetLastExistingDirectory()
-            {
-                // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
-
-                var lastExistingDir = RootDirectory;
-
-                // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.
-
-                if (!lastExistingDir.Exists)
-                    throw ExceptionHelper.GetNotFoundException(lastExistingDir);
-
-                foreach (var dir in GetPathsFromDirToRoot(this).Reverse()) {
-                    if (!dir.Exists)
-                        break;
-
-                    lastExistingDir = dir;
-                }
-
-                return lastExistingDir;
-
-                static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
-                {
-                    while (!path.IsRoot) {
-                        yield return path;
-                        path = path.ParentDirectory!;
-                    }
-                }
-            }
-
-            IAbsoluteDirectoryPath IAbsolutePath.GetLastExistingDirectory() => GetLastExistingDirectory();
-
-            #endregion
 
             #region Combine
 
@@ -457,7 +390,7 @@ namespace Singulink.IO
                         }
                     }
 
-                    string finalPath = currentPrefix.Length == 0 ? (string)entryPath : StringHelper.Concat(currentPrefix, PathFormat.SeparatorString, entryPath);
+                    string finalPath = currentPrefix.Length == 0 ? entryPath : StringHelper.Concat(currentPrefix, PathFormat.SeparatorString, entryPath);
 
                     if (entry.IsFile) {
                         yield return (TEntry)(object)new IRelativeFilePath.Impl(finalPath, 0, PathFormat);
@@ -484,19 +417,109 @@ namespace Singulink.IO
                 var info = new DirectoryInfo(PathExport);
 
                 try {
-                    // Dummy enumeration first to ensure access is authorized on the root directory:
+                    // Dummy enumeration first to ensure access is authorized on the root directory.
+                    // Throws IOEx if dir is a file. Change to DirNotFoundEx.
                     info.EnumerateFileSystemInfos().FirstOrDefault();
 
                     // Real enumeration which will ignore unauthorized access:
                     return enumerator.Invoke(info, searchPattern, options.ToEnumerationOptions());
                 }
+                catch (UnauthorizedAccessException ex) {
+                    throw Ex.Convert(ex);
+                }
                 catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
-                    EnsureExists(); // Convert to DirectoryNotFoundException if path is a file on both Unix and Windows
+                    ThrowNotFoundIfDirIsFile(this);
+                    throw;
+                }
+            }
+
+            #endregion
+
+            #region File System Operations
+
+            public void Create()
+            {
+                PathFormat.EnsureCurrent();
+
+                try {
+                    Directory.CreateDirectory(PathExport);
+                }
+                catch (UnauthorizedAccessException ex) {
+                    throw Ex.Convert(ex);
+                }
+            }
+
+            public void Delete(bool recursive = false)
+            {
+                PathFormat.EnsureCurrent();
+
+                try {
+                    // If path points to file then throws IOEx on Windows and DirNotFoundEx on Unix. Convert to DirNotFoundEx on Windows for consistency.
+                    Directory.Delete(PathExport, recursive);
+                }
+                catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
+                    ThrowNotFoundIfDirIsFile(this);
                     throw;
                 }
                 catch (UnauthorizedAccessException ex) {
-                    throw ExceptionHelper.Convert(ex);
+                    throw Ex.Convert(ex);
                 }
+            }
+
+            public override IAbsoluteDirectoryPath GetLastExistingDirectory()
+            {
+                // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.
+
+                IAbsoluteDirectoryPath lastExistingDir = null;
+
+                // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
+
+                foreach (var dir in GetPathsFromDirToRoot(this).Reverse()) {
+                    if (!dir.Exists)
+                        break;
+
+                    lastExistingDir = dir;
+                }
+
+                if (lastExistingDir == null)
+                    throw Ex.NotFound(RootDirectory);
+
+                return lastExistingDir;
+
+                static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
+                {
+                    while (true) {
+                        yield return path;
+
+                        if (path.IsRoot)
+                            yield break;
+
+                        path = path.ParentDirectory!;
+                    }
+                }
+            }
+
+            private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
+            {
+                try {
+                    if ((File.GetAttributes(path.PathExport) & FileAttributes.Directory) == 0)
+                        return true;
+                }
+                catch { }
+
+                return false;
+            }
+
+            private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath path)
+            {
+                if (IsKnownToBeFile(path))
+                    throw Ex.NotFound(path);
+            }
+
+            private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
+            {
+                if (IsKnownToBeFile(path))
+                    throw Ex.DirIsFile(path);
             }
 
             #endregion
