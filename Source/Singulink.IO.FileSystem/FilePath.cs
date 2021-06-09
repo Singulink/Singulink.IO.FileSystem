@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -103,6 +104,19 @@ namespace Singulink.IO
         #endregion
 
         #region Special Files
+
+        /// <summary>
+        /// Gets the file path to the specified assembly.
+        /// </summary>
+        public static IAbsoluteFilePath GetAssemblyLocation(Assembly assembly)
+        {
+            string location = assembly.Location;
+
+            if (string.IsNullOrEmpty(location))
+                throw new InvalidOperationException("Assembly does not have a location.");
+
+            return ParseAbsolute(location, PathOptions.None);
+        }
 
         /// <summary>
         /// Creates a new uniquely named zero-byte temporary file.

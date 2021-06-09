@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace Singulink.IO
 {
@@ -92,6 +93,11 @@ namespace Singulink.IO
         #endregion
 
         #region Special Directories
+
+        /// <summary>
+        /// Gets the directory path of the specified assembly.
+        /// </summary>
+        public static IAbsoluteDirectoryPath GetAssemblyLocation(Assembly assembly) => FilePath.GetAssemblyLocation(assembly).ParentDirectory;
 
         /// <summary>
         /// Gets the current working directory.
