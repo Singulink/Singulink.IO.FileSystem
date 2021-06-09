@@ -5,7 +5,7 @@
     <RootNamespace>Singulink.IO</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.9.8</Version>
+    <Version>1.0</Version>
     <Authors>Singulink</Authors>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
     <Copyright>© Singulink. All rights reserved.</Copyright>
@@ -21,7 +21,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <None Remove="stylecop.json" />
     <None Include="..\..\Resources\Singulink Icon 128x128.png">
