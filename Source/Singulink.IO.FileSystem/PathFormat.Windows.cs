@@ -182,7 +182,7 @@ namespace Singulink.IO
                 if (pathDisplay[1] == ':')
                     return @"\\?\" + pathDisplay;
 
-                return StringHelper.Concat(@"\\?\UNC\", pathDisplay[2..]);
+                return StringHelper.Concat(@"\\?\UNC\", pathDisplay.AsSpan()[2..]);
             }
 
             private static HashSet<char> GetInvalidNameChars(bool includeWildcardChars)
