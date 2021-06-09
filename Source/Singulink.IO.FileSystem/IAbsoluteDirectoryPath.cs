@@ -139,53 +139,38 @@ namespace Singulink.IO
         // Directories
 
         /// <summary>
-        /// Gets the child directories that directly reside in this directory.
-        /// </summary>
-        sealed IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories() => GetChildDirectories("*", SearchOptions.Default);
-
-        /// <summary>
         /// Gets the child directories that reside in this directory and match the specified search options.
         /// </summary>
-        sealed IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(SearchOptions options) => GetChildDirectories("*", options);
+        sealed IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(SearchOptions? options = null) => GetChildDirectories("*", options);
 
         /// <summary>
         /// Gets the child directories that reside in this directory and match the specified search pattern and search options.
         /// </summary>
-        IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions options);
+        IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions? options = null);
 
         // Files
 
         /// <summary>
-        /// Gets the child files that directly reside in this directory.
-        /// </summary>
-        sealed IEnumerable<IAbsoluteFilePath> GetChildFiles() => GetChildFiles("*", SearchOptions.Default);
-
-        /// <summary>
         /// Gets the child files that reside in this directory and match the specified search options.
         /// </summary>
-        sealed IEnumerable<IAbsoluteFilePath> GetChildFiles(SearchOptions options) => GetChildFiles("*", options);
+        sealed IEnumerable<IAbsoluteFilePath> GetChildFiles(SearchOptions? options = null) => GetChildFiles("*", options);
 
         /// <summary>
         /// Gets the child files that reside in this directory and match the specified search pattern and search options.
         /// </summary>
-        IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions options);
+        IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions? options = null);
 
         // Entries
 
         /// <summary>
-        /// Gets the child files/directories that directly reside in this directory.
-        /// </summary>
-        sealed IEnumerable<IAbsolutePath> GetChildEntries() => GetChildEntries("*", SearchOptions.Default);
-
-        /// <summary>
         /// Gets the child files/directories that reside in this directory and match the specified search options.
         /// </summary>
-        sealed IEnumerable<IAbsolutePath> GetChildEntries(SearchOptions options) => GetChildEntries("*", options);
+        sealed IEnumerable<IAbsolutePath> GetChildEntries(SearchOptions? options = null) => GetChildEntries("*", options);
 
         /// <summary>
         /// Gets the child files/directories that reside in this directory and match the specified search pattern and search options.
         /// </summary>
-        IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions options);
+        IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions? options = null);
 
         #endregion
 
@@ -194,55 +179,40 @@ namespace Singulink.IO
         // Directories
 
         /// <summary>
-        /// Gets the child directories that directly reside in this directory, relative to this directory.
-        /// </summary>
-        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories() => GetRelativeChildDirectories("*", SearchOptions.Default);
-
-        /// <summary>
         /// Gets the child directories that reside in this directory, relative to this directory, which match the specified search options.
         /// </summary>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(SearchOptions options) => GetRelativeChildDirectories("*", options);
+        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(SearchOptions? options = null) => GetRelativeChildDirectories("*", options);
 
         /// <summary>
         /// Gets the child directories that reside in this directory, relative to this directory, which match the specified search pattern and search options.
         /// </summary>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions options);
+        IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions? options = null);
 
         // Files
-
-        /// <summary>
-        /// Gets the child files that directly reside in this directory, relative to this directory.
-        /// </summary>
-        sealed IEnumerable<IRelativeFilePath> GetRelativeChildFiles() => GetRelativeChildFiles("*", SearchOptions.Default);
 
         /// <summary>
         /// Gets the child files that reside in this directory, relative to this directory, which match the specified search options.
         /// </summary>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativeFilePath> GetRelativeChildFiles(SearchOptions options) => GetRelativeChildFiles("*", options);
+        sealed IEnumerable<IRelativeFilePath> GetRelativeChildFiles(SearchOptions? options = null) => GetRelativeChildFiles("*", options);
 
         /// <summary>
         /// Gets the child files that reside in this directory, relative to this directory, which match the specified search pattern and search options.
         /// </summary>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions options);
+        IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions? options = null);
 
         // Entries
-
-        /// <summary>
-        /// Gets the child files/directories that directly reside in this directory, relative to this directory.
-        /// </summary>
-        sealed IEnumerable<IRelativePath> GetRelativeChildEntries() => GetRelativeChildEntries("*", SearchOptions.Default);
 
         /// <summary>
         /// Gets the child files/directories that reside in this directory, relative to this directory, which match the specified search options.
         /// </summary>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativePath> GetRelativeChildEntries(SearchOptions options) => GetRelativeChildEntries("*", options);
+        sealed IEnumerable<IRelativePath> GetRelativeChildEntries(SearchOptions? options = null) => GetRelativeChildEntries("*", options);
 
         /// <summary>
         /// Gets the child files/directories that reside in this directory, relative to this directory, which match the specified search pattern and search
@@ -250,20 +220,11 @@ namespace Singulink.IO
         /// </summary>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions options);
+        IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions? options = null);
 
         #endregion
 
         #region Relative Enumeration
-
-        /// <summary>
-        /// Gets the files that reside in the combination of this directory and the search location, relative to this directory.
-        /// </summary>
-        /// <param name="searchLocation">The relative location from this directory to search.</param>
-        sealed IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation)
-        {
-            return GetRelativeFiles(searchLocation, "*", SearchOptions.Default);
-        }
 
         /// <summary>
         /// Gets the files that reside in the combination of this directory and the search location, relative to this directory, which match
@@ -271,7 +232,7 @@ namespace Singulink.IO
         /// </summary>
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, SearchOptions options)
+        sealed IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, SearchOptions? options = null)
         {
             return GetRelativeFiles(searchLocation, "*", options);
         }
@@ -283,16 +244,7 @@ namespace Singulink.IO
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options);
-
-        /// <summary>
-        /// Gets the directories that reside in the combination of this directory and the search location, relative to this directory.
-        /// </summary>
-        /// <param name="searchLocation">The relative location from this directory to search.</param>
-        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation)
-        {
-            return GetRelativeDirectories(searchLocation, "*", SearchOptions.Default);
-        }
+        IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options = null);
 
         /// <summary>
         /// Gets the directories that reside in the combination of this directory and the search location, relative to this directory, which match
@@ -300,7 +252,7 @@ namespace Singulink.IO
         /// </summary>
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, SearchOptions options)
+        sealed IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, SearchOptions? options = null)
         {
             return GetRelativeDirectories(searchLocation, "*", options);
         }
@@ -312,16 +264,7 @@ namespace Singulink.IO
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options);
-
-        /// <summary>
-        /// Gets the files/directories that reside in the combination of this directory and the search location, relative to this directory.
-        /// </summary>
-        /// <param name="searchLocation">The relative location from this directory to search.</param>
-        sealed IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation)
-        {
-            return GetRelativeEntries(searchLocation, "*", SearchOptions.Default);
-        }
+        IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options = null);
 
         /// <summary>
         /// Gets the files/directories that reside in the combination of this directory and the search location, relative to this directory, which match
@@ -329,7 +272,7 @@ namespace Singulink.IO
         /// </summary>
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        sealed IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, SearchOptions options)
+        sealed IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, SearchOptions? options = null)
         {
             return GetRelativeEntries(searchLocation, "*", options);
         }
@@ -341,7 +284,7 @@ namespace Singulink.IO
         /// <param name="searchLocation">The relative location from this directory to search.</param>
         /// <param name="searchPattern">The pattern that describes the names to search, which can contain wildcards <c>*</c> and <c>?</c>.</param>
         /// <param name="options">The options to use when searching the directory.</param>
-        IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options);
+        IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options = null);
 
         #endregion
     }

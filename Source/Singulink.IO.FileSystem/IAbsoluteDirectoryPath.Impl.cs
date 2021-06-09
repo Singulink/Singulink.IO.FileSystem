@@ -27,7 +27,7 @@ namespace Singulink.IO
             public bool IsEmpty {
                 get {
                     PathFormat.EnsureCurrent();
-                    return GetFileSystemInfos("*", SearchOptions.Default, EntryEnumerator).Any();
+                    return GetFileSystemInfos("*", null, EntryEnumerator).Any();
                 }
             }
 
@@ -284,52 +284,52 @@ namespace Singulink.IO
 
             private static readonly Enumerator EntryEnumerator = (info, searchPattern, options) => info.EnumerateFileSystemInfos(searchPattern, options);
 
-            public IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions options)
+            public IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions? options)
             {
                 return GetChildEntries<IAbsoluteDirectoryPath>(searchPattern, options, DirectoryEnumerator);
             }
 
-            public IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions options)
+            public IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions? options)
             {
                 return GetChildEntries<IAbsoluteFilePath>(searchPattern, options, FileEnumerator);
             }
 
-            public IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions options)
+            public IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions? options)
             {
                 return GetChildEntries<IAbsolutePath>(searchPattern, options, EntryEnumerator);
             }
 
-            public IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions? options)
             {
                 return GetRelativeChildEntries<IRelativeDirectoryPath>(searchPattern, options, DirectoryEnumerator);
             }
 
-            public IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions? options)
             {
                 return GetRelativeChildEntries<IRelativeFilePath>(searchPattern, options, FileEnumerator);
             }
 
-            public IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions? options)
             {
                 return GetRelativeChildEntries<IRelativePath>(searchPattern, options, EntryEnumerator);
             }
 
-            public IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
             {
                 return GetRelativeEntries<IRelativeFilePath>(searchLocation, searchPattern, options, EntryEnumerator);
             }
 
-            public IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
             {
                 return GetRelativeEntries<IRelativeDirectoryPath>(searchLocation, searchPattern, options, EntryEnumerator);
             }
 
-            public IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options)
+            public IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
             {
                 return GetRelativeEntries<IRelativePath>(searchLocation, searchPattern, options, EntryEnumerator);
             }
 
-            private IEnumerable<TEntry> GetChildEntries<TEntry>(string searchPattern, SearchOptions options, Enumerator enumerator)
+            private IEnumerable<TEntry> GetChildEntries<TEntry>(string searchPattern, SearchOptions? options, Enumerator enumerator)
                 where TEntry : IAbsolutePath
             {
                 foreach (var entryInfo in GetFileSystemInfos(searchPattern, options, enumerator)) {
@@ -342,7 +342,7 @@ namespace Singulink.IO
                 }
             }
 
-            private IEnumerable<TEntry> GetRelativeChildEntries<TEntry>(string searchPattern, SearchOptions options, Enumerator enumerator)
+            private IEnumerable<TEntry> GetRelativeChildEntries<TEntry>(string searchPattern, SearchOptions? options, Enumerator enumerator)
                 where TEntry : IRelativePath
             {
                 foreach (var entryInfo in GetFileSystemInfos(searchPattern, options, enumerator)) {
@@ -355,7 +355,7 @@ namespace Singulink.IO
                 }
             }
 
-            private IEnumerable<TEntry> GetRelativeEntries<TEntry>(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions options, Enumerator enumerator)
+            private IEnumerable<TEntry> GetRelativeEntries<TEntry>(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options, Enumerator enumerator)
                 where TEntry : IRelativePath
             {
                 var searchDir = (Impl)Combine(searchLocation);
@@ -409,7 +409,7 @@ namespace Singulink.IO
                 }
             }
 
-            private IEnumerable<FileSystemInfo> GetFileSystemInfos(string searchPattern, SearchOptions options, Enumerator enumerator)
+            private IEnumerable<FileSystemInfo> GetFileSystemInfos(string searchPattern, SearchOptions? options, Enumerator enumerator)
             {
                 PathFormat.EnsureCurrent();
                 PathFormat.ValidateSearchPattern(searchPattern, nameof(searchPattern));
@@ -422,7 +422,7 @@ namespace Singulink.IO
                     info.EnumerateFileSystemInfos().FirstOrDefault();
 
                     // Real enumeration which will ignore unauthorized access:
-                    return enumerator.Invoke(info, searchPattern, options.ToEnumerationOptions());
+                    return enumerator.Invoke(info, searchPattern, options == null ? SearchOptions.DefaultEnumerationOptions : options.ToEnumerationOptions());
                 }
                 catch (UnauthorizedAccessException ex) {
                     throw Ex.Convert(ex);

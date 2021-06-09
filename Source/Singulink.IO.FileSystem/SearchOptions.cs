@@ -8,7 +8,12 @@ namespace Singulink.IO
     /// </summary>
     public class SearchOptions
     {
-        internal static readonly SearchOptions Default = new SearchOptions();
+        internal static readonly EnumerationOptions DefaultEnumerationOptions = new EnumerationOptions() {
+            AttributesToSkip = default,
+            MatchCasing = MatchCasing.CaseInsensitive,
+            BufferSize = 0,
+            RecurseSubdirectories = false,
+        };
 
         /// <summary>
         /// Gets or sets the attributes that will cause entries to be skipped. Default is none.
