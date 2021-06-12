@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Singulink.IO.FileSystem.Tests
 {
+    [TestClass]
     public class AbsoluteFileParseTests
     {
         [TestMethod]
@@ -25,8 +26,25 @@ namespace Singulink.IO.FileSystem.Tests
         [TestMethod]
         public void NoUniversal()
         {
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.Parse("/test.asdf", PathFormat.Universal));
-            Assert.ThrowsException<ArgumentException>(() => DirectoryPath.ParseAbsolute("/test.sdf", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.Parse("/test.asdf", PathFormat.Universal));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/test.sdf", PathFormat.Universal));
+        }
+
+        [TestMethod]
+        public void NoMissingFilePaths()
+        {
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("C:", PathFormat.Windows));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute(@"C:\", PathFormat.Windows));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute(@"C:\test\", PathFormat.Windows));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute(@"C:\test\..", PathFormat.Windows));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute(@"C:\test.txt\.", PathFormat.Windows));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute(@"C:\test\test.txt\..", PathFormat.Windows));
+
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/", PathFormat.Unix));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/test/", PathFormat.Unix));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/test/..", PathFormat.Unix));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/test.txt/.", PathFormat.Unix));
+            Assert.ThrowsException<ArgumentException>(() => FilePath.ParseAbsolute("/test/test.txt/..", PathFormat.Unix));
         }
     }
 }
