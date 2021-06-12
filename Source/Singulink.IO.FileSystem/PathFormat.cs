@@ -123,7 +123,7 @@ namespace Singulink.IO
             return true;
         }
 
-        internal string NormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, out int rootLength)
+        internal string NormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, bool isFile, out int rootLength)
         {
             SetPathFormatDependentOptions(ref options);
 
@@ -151,7 +151,7 @@ namespace Singulink.IO
                 return string.Empty;
             }
 
-            var segments = SplitNonRootedRelativePath(path, options);
+            var segments = SplitNonRootedRelativePath(path, isFile, options);
 
             if (pathKind == PathKind.RelativeRooted) {
                 if (segments.Count > 0 && segments[0] == "..")
@@ -171,7 +171,7 @@ namespace Singulink.IO
             return string.Join(SeparatorString, segments);
         }
 
-        internal string NormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, out int rootLength)
+        internal string NormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, bool isFile, out int rootLength)
         {
             SetPathFormatDependentOptions(ref options);
 
@@ -181,7 +181,7 @@ namespace Singulink.IO
                 throw new ArgumentException("Path is not an absolute path.", nameof(path));
 
             var root = SplitAbsoluteRoot(path, out var rest);
-            var segments = SplitNonRootedRelativePath(rest, options);
+            var segments = SplitNonRootedRelativePath(rest, isFile, options);
 
             if (segments.Count > 0 && segments[0] == "..")
                 throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
@@ -371,7 +371,7 @@ namespace Singulink.IO
         /// <summary>
         /// Splits a non-rooted relative path into a list of parts.
         /// </summary>
-        private List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, PathOptions options)
+        private List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, bool isFile, PathOptions options)
         {
             int maxSegmentCount = 1;
 
@@ -401,6 +401,9 @@ namespace Singulink.IO
                         throw new ArgumentException("Invalid empty directory in path.", nameof(path));
                 }
                 else if (segment.SequenceEqual(".") || segment.SequenceEqual("..")) {
+                    if (isFile && path.Length == 0)
+                        throw new ArgumentException("File paths cannot end in a navigational path segment.", nameof(path));
+
                     if (options.HasFlag(PathOptions.NoNavigation))
                         throw new ArgumentException("Invalid navigational path segment.", nameof(path));
 

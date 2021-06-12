@@ -62,7 +62,7 @@ namespace Singulink.IO
         public static IAbsoluteFilePath ParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
         {
             path = format.NormalizeSeparators(path);
-            string finalPath = format.NormalizeAbsolutePath(path, options, out int rootLength);
+            string finalPath = format.NormalizeAbsolutePath(path, options, true, out int rootLength);
 
             if (path.EndsWith(format.SeparatorString, StringComparison.Ordinal) || rootLength == finalPath.Length)
                 throw new ArgumentException("No file name in path.", nameof(path));
@@ -94,10 +94,10 @@ namespace Singulink.IO
         {
             path = format.NormalizeSeparators(path);
 
-            if (path.EndsWith(format.SeparatorString, StringComparison.Ordinal))
+            if (path.Length == 0 || path.EndsWith(format.SeparatorString, StringComparison.Ordinal))
                 throw new ArgumentException("No file name in path.", nameof(path));
 
-            string finalPath = format.NormalizeRelativePath(path, options, out int rootLength);
+            string finalPath = format.NormalizeRelativePath(path, options, true, out int rootLength);
             return new IRelativeFilePath.Impl(finalPath, rootLength, format);
         }
 

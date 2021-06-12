@@ -59,7 +59,7 @@ namespace Singulink.IO
         public static IAbsoluteDirectoryPath ParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
         {
             path = format.NormalizeSeparators(path);
-            string finalPath = format.NormalizeAbsolutePath(path, options, out int rootLength);
+            string finalPath = format.NormalizeAbsolutePath(path, options, false, out int rootLength);
             return new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format);
         }
 
@@ -86,7 +86,7 @@ namespace Singulink.IO
         public static IRelativeDirectoryPath ParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
         {
             path = format.NormalizeSeparators(path);
-            string finalPath = format.NormalizeRelativePath(path, options, out int rootLength);
+            string finalPath = format.NormalizeRelativePath(path, options, false, out int rootLength);
             return new IRelativeDirectoryPath.Impl(finalPath, rootLength, format);
         }
 
