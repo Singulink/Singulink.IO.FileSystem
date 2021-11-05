@@ -1,6 +1,6 @@
 # Singulink.IO.FileSystem
 
-[![Join the chat](https://badges.gitter.im/Singulink/community.svg)](https://gitter.im/Singulink/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Chat on Discord](https://img.shields.io/discord/906246067773923490)](https://discord.gg/EkQhJFsBu6)
 [![View nuget packages](https://img.shields.io/nuget/v/Singulink.IO.FileSystem.svg)](https://www.nuget.org/packages/Singulink.IO.FileSystem/)
 [![Build and Test](https://github.com/Singulink/Singulink.IO.FileSystem/workflows/build%20and%20test/badge.svg)](https://github.com/Singulink/Singulink.IO.FileSystem/actions?query=workflow%3A%22build+and+test%22)
 
@@ -8,7 +8,7 @@
 
 ### About Singulink
 
-*Shameless plug*: We are a small team of engineers and designers dedicated to building beautiful, functional and well-engineered software solutions. We offer very competitive rates as well as fixed-price contracts and welcome inquiries to discuss any custom development / project support needs you may have.
+We are a small team of engineers and designers dedicated to building beautiful, functional and well-engineered software solutions. We offer very competitive rates as well as fixed-price contracts and welcome inquiries to discuss any custom development / project support needs you may have.
 
 This package is part of our **Singulink Libraries** collection. Visit https://github.com/Singulink to see our full list of publicly available libraries and other open-source projects.
 
