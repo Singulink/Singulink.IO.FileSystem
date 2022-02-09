@@ -1,8 +1,19 @@
-- name: Getting Started
-  href: getting-started.md
-- name: Problems with System.IO
-  href: problems-with-system-io.md
-- name: Exception Handling
-  href: exception-handling.md
-- name: Advanced PathOptions Handling
-  href: advanced-pathoptions-handling.md
+- name: Guides
+  href: guides/toc.yml
+  # items:
+  #   - name: Getting Started
+  #     href: getting-started.md
+
+- name: System.IO
+  href: system.io/toc.yml
+  # items:
+  #   - name: Problems with System.IO
+  #     href: problems-with-system-io.md
+  #   - name: Exception Handling Differences
+  #     href: exception-handling-differences.md
+
+- name: Advanced
+  href: advanced/toc.yml
+  # items:
+  #   - name: PathOptions Handling
+  #     href: pathoptions-handling.md
