@@ -18,13 +18,11 @@
     "globalMetadata": {
       "_appTitle": "Singulink.IO.FileSystem",
       "_appName": "File System",
-      "_appFaviconPath": "images/favicon.png",
       "_appLogoPath": "images/logo.png",
+      "_appFaviconPath": "images/favicon.png",
       "_copyrightFooter": "© Singulink. All rights reserved.",
       "_enableSearch": true,
-      "_disableSideFilter": false,
-      "_enableNewTab": true,
-      "_disableContribution": false
+      "_enableNewTab": true
     },
     "template": ["default", "templates/singulinkfx", "plugins/memberpage.2.59.0/content"],
     "xrefService": [ "https://xref.docs.microsoft.com/query?uid={uid}" ],
