@@ -70,7 +70,7 @@ There is no way to determine whether a path will be cross-platform friendly usin
 
 #### UNC Path Handling
 
-There are numerous methods and operations that throw exceptions or do work correctly with UNC paths.
+There are numerous methods and operations that throw exceptions or do not work correctly with UNC paths.
 
 ### And more...
 
