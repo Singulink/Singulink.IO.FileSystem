@@ -1,29 +1,29 @@
 <Project>
-  <PropertyGroup>
-    <LangVersion>9.0</LangVersion>
-    <Nullable>enable</Nullable>
-    <AnnotatedReferenceAssemblyVersion>5.0.0</AnnotatedReferenceAssemblyVersion>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<LangVersion>9.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<AnnotatedReferenceAssemblyVersion>5.0.0</AnnotatedReferenceAssemblyVersion>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <!-- Fody -->
-    <PackageReference Include="RuntimeNullables.Fody" Version="1.0.1" PrivateAssets="all" />
+	<ItemGroup>
+		<!-- Fody -->
+		<PackageReference Include="RuntimeNullables.Fody" Version="1.0.2" PrivateAssets="all" />
 
-    <!-- Analyzers -->
-    <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="5.0.3" PrivateAssets="all" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.333" PrivateAssets="all" />
-    <PackageReference Include="Roslynator.Analyzers" Version="3.2.0-rc" PrivateAssets="all" />
+		<!-- Analyzers -->
+		<PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0" PrivateAssets="all" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.354" PrivateAssets="all" />
+		<PackageReference Include="Roslynator.Analyzers" Version="3.3.0-rc" PrivateAssets="all" />
 
-    <!-- Nullable Annotations -->
-    <PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" PrivateAssets="all">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(AnnotatedReferenceAssemblyVersion)]"/>
-  </ItemGroup>
+		<!-- Nullable Annotations -->
+		<PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" PrivateAssets="all">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(AnnotatedReferenceAssemblyVersion)]"/>
+	</ItemGroup>
 </Project>
