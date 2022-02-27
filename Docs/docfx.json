@@ -27,7 +27,6 @@
       "_disableContribution": false
     },
     "template": ["default", "templates/singulinkfx", "plugins/memberpage.2.59.0/content"],
-    "x-template": ["default", "plugins/memberpage.2.59.0/content"],
     "xrefService": [ "https://xref.docs.microsoft.com/query?uid={uid}" ],
     "content": [
       {
