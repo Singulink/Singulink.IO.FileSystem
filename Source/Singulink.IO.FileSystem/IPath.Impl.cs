@@ -28,7 +28,7 @@ namespace Singulink.IO
 
             int IPath.RootLength => RootLength;
 
-            #region Equality and String Formatting
+            #region Equality
 
             public bool Equals(IPath? other)
             {
@@ -37,11 +37,11 @@ namespace Singulink.IO
 
                 return (this is IFilePath) == (other is IFilePath) &&
                     PathFormat == other.PathFormat &&
-                    PathDisplay.AsSpan(0, RootLength).Equals(PathDisplay.AsSpan(0, other.RootLength), StringComparison.OrdinalIgnoreCase) &&
-                    PathDisplay.AsSpan(RootLength).Equals(PathDisplay.AsSpan(other.RootLength), StringComparison.Ordinal);
+                    PathDisplay.AsSpan(0, RootLength).Equals(other.PathDisplay.AsSpan(0, other.RootLength), StringComparison.OrdinalIgnoreCase) &&
+                    PathDisplay.AsSpan(RootLength).Equals(other.PathDisplay.AsSpan(other.RootLength), StringComparison.Ordinal);
             }
 
-            public override bool Equals(object? obj) => Equals(obj as Impl);
+            public override bool Equals(object? obj) => Equals(obj as IPath);
 
             // TODO: Combine case-insensitive root with case-sensitive remainder hash codes to avoid hash collisions with different case paths when new
             // ReadOnlySpan<char> StringComparer APIs become available: https://github.com/dotnet/runtime/issues/27229
