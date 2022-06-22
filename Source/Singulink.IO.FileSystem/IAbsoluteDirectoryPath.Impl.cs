@@ -336,9 +336,9 @@ namespace Singulink.IO
                     string relativePath = entryInfo.FullName[PathExport.Length..];
 
                     if (entryInfo is DirectoryInfo dirInfo)
-                        yield return (TEntry)(object)new Impl(StringHelper.Concat(PathDisplay, relativePath), 0, PathFormat);
+                        yield return (TEntry)(object)new Impl(StringHelper.Concat(PathDisplay, relativePath), RootLength, PathFormat);
                     else if (entryInfo is FileInfo fileInfo)
-                        yield return (TEntry)(object)new IAbsoluteFilePath.Impl(StringHelper.Concat(PathDisplay, relativePath), 0, PathFormat);
+                        yield return (TEntry)(object)new IAbsoluteFilePath.Impl(StringHelper.Concat(PathDisplay, relativePath), RootLength, PathFormat);
                 }
             }
 

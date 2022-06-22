@@ -68,8 +68,9 @@ namespace Singulink.IO.FileSystem.Tests
             var recursive = new SearchOptions { Recursive = true };
             var nonRecursive = new SearchOptions();
 
-            int dirCount = dir.GetChildDirectories("?_?_subdir", recursive).Count();
-            Assert.AreEqual(DirCount * SubDirCount, dirCount);
+            var dirs = dir.GetChildDirectories("?_?_subdir", recursive).ToList();
+            Assert.AreEqual(DirCount * SubDirCount, dirs.Count());
+            Assert.AreEqual(dir.RootDirectory, dirs[0].RootDirectory); // Ensure RootLength is set correctly
 
             int fileCount = dir
                 .GetChildDirectories("1_dir", nonRecursive).Single()
