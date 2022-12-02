@@ -13,10 +13,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 5.0
+    - name: Setup .NET 7.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.408
+        dotnet-version: 7.0.100
     - name: Clean
       run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
       working-directory: Source
@@ -36,10 +36,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 5.0
+    - name: Setup .NET 7.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.408
+        dotnet-version: 7.0.100
     - name: Clean
       run: dotnet clean --configuration Release && dotnet nuget locals all --clear
       working-directory: Source
@@ -59,10 +59,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 5.0
+    - name: Setup .NET 7.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.408
+        dotnet-version: 7.0.100
     - name: Clean
       run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
       working-directory: Source
@@ -82,10 +82,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET 5.0
+    - name: Setup .NET 7.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.408
+        dotnet-version: 7.0.100
     - name: Clean
       run: dotnet clean --configuration Release && dotnet nuget locals all --clear
       working-directory: Source
