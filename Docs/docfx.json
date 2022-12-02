@@ -24,7 +24,7 @@
       "_enableSearch": true,
       "_enableNewTab": true
     },
-    "template": ["default", "templates/singulinkfx", "plugins/memberpage.2.59.0/content"],
+    "template": ["default", "templates/singulinkfx", "plugins/memberpage.2.59.4", "plugins/memberpage-extras"],
     "xrefService": [ "https://xref.docs.microsoft.com/query?uid={uid}" ],
     "content": [
       {
