@@ -1,3 +1,1 @@
-﻿using System;
-
-// [assembly: ]
+﻿// [assembly: ]

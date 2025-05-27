@@ -1,63 +1,61 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Singulink.IO.FileSystem.Tests
+namespace Singulink.IO.FileSystem.Tests;
+
+[TestClass]
+public class PlatformConsistencyTests
 {
-    [TestClass]
-    public class PlatformConsistencyTests
+    private const string FileName = "test.file";
+
+    private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        private const string FileName = "test.file";
+        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test");
 
-        private static IAbsoluteDirectoryPath SetupTestDirectory()
-        {
-            var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test");
+        if (testDir.Exists)
+            testDir.Delete(true);
 
-            if (testDir.Exists)
-                testDir.Delete(true);
+        testDir.Create();
+        testDir.CombineFile(FileName).OpenStream(FileMode.CreateNew).Dispose();
 
-            testDir.Create();
-            testDir.CombineFile(FileName).OpenStream(FileMode.CreateNew).Dispose();
+        return testDir;
+    }
 
-            return testDir;
-        }
+    [TestMethod]
+    public void FileIsDirectory()
+    {
+        var file = FilePath.ParseAbsolute(SetupTestDirectory().PathExport);
 
-        [TestMethod]
-        public void FileIsDirectory()
-        {
-            var file = FilePath.ParseAbsolute(SetupTestDirectory().PathExport);
+        Assert.IsFalse(file.Exists);
+        Assert.ThrowsException<FileNotFoundException>(() => _ = file.Attributes);
+        Assert.ThrowsException<FileNotFoundException>(() => _ = file.CreationTime);
+        Assert.ThrowsException<FileNotFoundException>(() => file.IsReadOnly = true);
+        Assert.ThrowsException<FileNotFoundException>(() => file.Attributes |= FileAttributes.Hidden);
+        Assert.ThrowsException<FileNotFoundException>(() => file.Length);
 
-            Assert.IsFalse(file.Exists);
-            Assert.ThrowsException<FileNotFoundException>(() => _ = file.Attributes);
-            Assert.ThrowsException<FileNotFoundException>(() => _ = file.CreationTime);
-            Assert.ThrowsException<FileNotFoundException>(() => file.IsReadOnly = true);
-            Assert.ThrowsException<FileNotFoundException>(() => file.Attributes |= FileAttributes.Hidden);
-            Assert.ThrowsException<FileNotFoundException>(() => file.Length);
+        // No exception should be thrown for files that don't exist
+        file.Delete();
+    }
 
-            // No exception should be thrown for files that don't exist
-            file.Delete();
-        }
+    [TestMethod]
+    public void DirectoryIsFile()
+    {
+        var dir = SetupTestDirectory().CombineDirectory(FileName);
 
-        [TestMethod]
-        public void DirectoryIsFile()
-        {
-            var dir = SetupTestDirectory().CombineDirectory(FileName);
+        Assert.IsFalse(dir.Exists);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.IsEmpty);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.Attributes);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.CreationTime);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.AvailableFreeSpace);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalFreeSpace);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalSize);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => dir.Attributes |= FileAttributes.Hidden);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.DriveType);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.FileSystem);
 
-            Assert.IsFalse(dir.Exists);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.IsEmpty);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.Attributes);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.CreationTime);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.AvailableFreeSpace);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalFreeSpace);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.TotalSize);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => dir.Attributes |= FileAttributes.Hidden);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.DriveType);
-            Assert.ThrowsException<DirectoryNotFoundException>(() => _ = dir.FileSystem);
+        Assert.ThrowsException<DirectoryNotFoundException>(() => dir.GetChildEntries().FirstOrDefault());
 
-            Assert.ThrowsException<DirectoryNotFoundException>(() => dir.GetChildEntries().FirstOrDefault());
-
-            Assert.ThrowsException<DirectoryNotFoundException>(() => dir.Delete(true));
-        }
+        Assert.ThrowsException<DirectoryNotFoundException>(() => dir.Delete(true));
     }
 }

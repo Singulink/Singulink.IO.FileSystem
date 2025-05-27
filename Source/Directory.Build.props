@@ -1,8 +1,7 @@
 <Project>
 	<PropertyGroup>
-		<LangVersion>11.0</LangVersion>
+		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
-		<AnnotatedReferenceAssemblyVersion>6.0.0</AnnotatedReferenceAssemblyVersion>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 
@@ -12,18 +11,12 @@
 
 	<ItemGroup>
 		<!-- Fody -->
-		<PackageReference Include="RuntimeNullables.Fody" Version="1.0.2" PrivateAssets="all" />
+		<PackageReference Include="RuntimeNullables.Fody" Version="2.0.0" PrivateAssets="all" />
 
 		<!-- Analyzers -->
 		<PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0-preview1.22518.1" PrivateAssets="all" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all" />
-		<PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all" />
-
-		<!-- Nullable Annotations -->
-		<PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="1.0.0-alpha.160" PrivateAssets="all">
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(AnnotatedReferenceAssemblyVersion)]"/>
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+		<PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all" />
 	</ItemGroup>
 </Project>
