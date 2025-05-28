@@ -17,10 +17,9 @@ This package is part of our **Singulink Libraries** collection. Visit https://gi
 The package is available on NuGet - simply install the `Singulink.IO.FileSystem` package.
 
 **Supported Runtimes**: Anywhere .NET Standard 2.1+ is supported, including:
-- .NET Core 3.0+
-- Mono 6.4+
-- Xamarin.iOS 12.16+
-- Xamarin.Android 10.0+
+- .NET
+- Mono
+- Xamarin
 
 ## Further Reading
 
