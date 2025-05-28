@@ -26,8 +26,8 @@
       "_enableSearch": true,
       "_enableNewTab": true
     },
-    "template": ["default", "templates/singulinkfx"],
-    "xrefService": [ "https://xref.docs.microsoft.com/query?uid={uid}" ],
+    "template": [ "default", "templates/singulinkfx" ],
+    "xref": [ "https://learn.microsoft.com/en-us/dotnet/.xrefmap.json" ],
     "content": [
       {
         "files": [

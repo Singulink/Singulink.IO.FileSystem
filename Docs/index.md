@@ -10,6 +10,15 @@ You can visit the [Problems with System.IO](articles/system.io/problems-with-sys
 
 **Singulink.IO.FileSystem** is part of the **Singulink Libraries** collection. Visit https://github.com/Singulink/ to see the full list of libraries available.
 
+## Installation
+
+The package is available on NuGet - simply install the `Singulink.IO.FileSystem` package.
+
+**Supported Runtimes**: Anywhere .NET Standard 2.1+ is supported, including:
+- .NET
+- Mono
+- Xamarin
+
 ## Information and Links
 
 Here are some additonal links to get you started:

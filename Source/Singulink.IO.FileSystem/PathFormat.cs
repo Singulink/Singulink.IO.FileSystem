@@ -356,7 +356,7 @@ public abstract partial class PathFormat
     /// <summary>
     /// Returns the root of the absolute path and outputs the remaining non-rooted relative component of the path.
     /// </summary>
-    protected abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
+    private protected abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
 
     /// <summary>
     /// Appends NoUnfriendlyNames if the PathFormatDependent flag is set for the Universal and Windows path formats. Must be called at the start of all

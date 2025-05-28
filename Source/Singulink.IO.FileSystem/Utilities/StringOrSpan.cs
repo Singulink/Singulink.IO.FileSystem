@@ -35,9 +35,9 @@ internal ref struct StringOrSpan
 
     public static implicit operator StringOrSpan(ReadOnlySpan<char> value) => new StringOrSpan(value);
 
-    public unsafe StringOrSpan Replace(char oldChar, char newChar)
+    public StringOrSpan Replace(char oldChar, char newChar)
     {
-        if (_string == null && Span.IndexOf(oldChar) < 0)
+        if (_string is null && Span.IndexOf(oldChar) < 0)
             return this;
 
         return String.Replace(oldChar, newChar);

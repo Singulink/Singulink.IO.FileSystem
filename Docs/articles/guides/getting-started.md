@@ -2,21 +2,11 @@
 
 # Getting Started
 
-## Installation
-
-The package is available on NuGet - simply install the `Singulink.IO.FileSystem` package.
-
-**Supported Runtimes**: Anywhere .NET Standard 2.1+ is supported, including:
-- .NET Core 3.0+
-- Mono 6.4+
-- Xamarin.iOS 12.16+
-- Xamarin.Android 10.0+
-
 ## Usage
 
 ### Path Creation
 
-Your main entry point into creating file and directory paths is the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `ParseAbsolute()` and `ParseRelative()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
+Your main entry points into creating file and directory paths are the `DirectoryPath` and `FilePath` classes. They contain parsing methods such as `ParseAbsolute()` and `ParseRelative()` as well as conveniece methods to retrieve special files and folders such as a temporary file or the current directory.
 
 ### Strong Typing
 
@@ -153,7 +143,10 @@ using (Stream usersStream = usersFilePath.OpenStream())
         // Try to convert the format to universal:
         try
         {
-            relativeDataFile = relativeDataFile.ToPathFormat(PathFormat.Universal);
+            var universalPath = relativeDataFile.ToPathFormat(PathFormat.Universal);
+
+            // Conversion to relative universal path was successful
+            usersData.DataFiles.Add(universalPath.PathDisplay);
         }
         catch (ArgumentException ex)
         {
@@ -161,12 +154,6 @@ using (Stream usersStream = usersFilePath.OpenStream())
             // characters or an unfriendly name - ex.Message contains a detailed 
             // message as to what caused it to fail.
             LogWarning($"Skipping data file '{relativeDataFile.PathDisplay}': {ex.Message}");
-        }
-
-        // Conversion was successful
-        if (relativeDataFile.PathFormat == PathFormat.Universal)
-        {
-            usersData.DataFiles.Add(relativeDataFile.PathDisplay);
         }
     }
 

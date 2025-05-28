@@ -34,7 +34,7 @@ public class SearchOptions
     /// </summary>
     public bool Recursive { get; set; }
 
-    internal EnumerationOptions ToEnumerationOptions() => new EnumerationOptions()
+    internal EnumerationOptions ToEnumerationOptions() => new()
     {
         AttributesToSkip = AttributesToSkip,
         MatchCasing = MatchCasing,

@@ -24,50 +24,40 @@ public enum PathOptions
     None = 0,
 
     /// <summary>
-    /// Allows paths with empty directories to be processed without throwing an exception by removing them from the path.
-    /// </summary>
-    /// <remarks>
+    /// <para>Allows paths with empty directories to be processed without throwing an exception by removing them from the path.</para>
     /// <para>If this flag is set then paths like <c>some///path</c> get parsed to <c>some/path</c>.</para>
-    /// </remarks>
+    /// </summary>
     AllowEmptyDirectories = 1,
 
     /// <summary>
-    /// Disallows entry names that match reserved device names. This flag has no effect on the <see cref="PathFormat.Unix"/> path format.
-    /// </summary>
-    /// <remarks>
+    /// <para>Disallows entry names that match reserved device names. This flag has no effect on the <see cref="PathFormat.Unix"/> path format.</para>
     /// <para>Reserved device names in paths can cause problems for many Windows applications and are not supported by File Explorer. Reserved device
     /// names include CON, PRN, AUX, NUL, COM1 to COM9 and LPT1 to LPT9.</para>
-    /// </remarks>
+    /// </summary>
     NoReservedDeviceNames = 1 << 8,
 
     /// <summary>
-    /// Disallows entry names with a leading space.
-    /// </summary>
-    /// <remarks>
+    /// <para>Disallows entry names with a leading space.</para>
     /// <para>Leading spaces can cause problems for many Windows applications and are not fully supported by File Explorer. They can be difficult to handle
     /// correctly in application code, i.e. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
     /// nice with them on Windows.</para>
-    /// </remarks>
+    /// </summary>
     NoLeadingSpaces = 1 << 9,
 
     /// <summary>
-    /// Disallows entry names with a trailing space.
-    /// </summary>
-    /// <remarks>
+    /// <para>Disallows entry names with a trailing space.</para>
     /// <para>Trailing spaces can cause problems for many Windows applications and are not supported by File Explorer. They can be difficult to handle
     /// correctly in application code, i.e. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
     /// nice with them on Windows.</para>
-    /// </remarks>
+    /// </summary>
     NoTrailingSpaces = 1 << 10,
 
     /// <summary>
-    /// Disallows entry names with a trailing dot. This flag has no effect on the <see cref="PathFormat.Unix"/> path format.
-    /// </summary>
-    /// <remarks>
+    /// <para>Disallows entry names with a trailing dot. This flag has no effect on the <see cref="PathFormat.Unix"/> path format.</para>
     /// <para>Trailing dots can cause problems for many Windows applications, are not supported by File Explorer and <see cref="System.IO"/> often doesn't
     /// play nice with them on Windows. Trailing dots do not pose any problems in Unix-based file systems and they don't pose potential trimming bugs so
     /// this flag has no effect when the <see cref="PathFormat.Unix"/> path format is used.</para>
-    /// </remarks>
+    /// </summary>
     NoTrailingDots = 1 << 11,
 
     /// <summary>
@@ -83,8 +73,10 @@ public enum PathOptions
     NoUnfriendlyNames = NoReservedDeviceNames | NoLeadingSpaces | NoTrailingSpaces | NoTrailingDots,
 
     /// <summary>
-    /// Causes the <see cref="NoUnfriendlyNames"/> flags to be appended when using the <see cref="PathFormat.Windows"/> and <see
-    /// cref="PathFormat.Universal"/> path formats.
+    /// <para>Effectively causes the <see cref="NoUnfriendlyNames"/> flags to be appended when using the <see cref="PathFormat.Windows"/> and <see
+    /// cref="PathFormat.Universal"/> path formats.</para>
+    /// <para>Unix-based file systems tend to handle "unfriendly" paths much better than Windows-based file systems, so you can use this flag if you only want
+    /// to disallow unfriendly paths on Windows and universal paths.</para>
     /// </summary>
     PathFormatDependent = 1 << 31,
 }

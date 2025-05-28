@@ -35,7 +35,7 @@ public abstract partial class PathFormat
             return true;
         }
 
-        protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
+        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
         {
             var root = path[0..1];
             rest = path[1..];
