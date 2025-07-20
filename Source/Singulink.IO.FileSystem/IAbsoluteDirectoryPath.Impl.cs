@@ -27,7 +27,7 @@ public partial interface IAbsoluteDirectoryPath
 
                 try
                 {
-                    return new DirectoryInfo(PathExport).EnumerateFileSystemInfos().Any();
+                    return Directory.EnumerateFileSystemEntries(PathExport).Any();
                 }
                 catch (IOException ex) when (ex.GetType() == typeof(IOException))
                 {
@@ -445,62 +445,64 @@ public partial interface IAbsoluteDirectoryPath
             PathFormat.EnsureCurrent();
             PathFormat.ValidateSearchPattern(searchPattern, nameof(searchPattern));
 
-            var searchDirInfo = new DirectoryInfo(PathExport);
-            var enumerationOptions = SearchOptions.ToEnumerationOptions(options, out bool requiresExtraAccessCheck);
-            IEnumerator<FileSystemInfo> enumerator;
+            IEnumerator<FileSystemInfo> enumerator = GetEnumerator(out bool requiresExtraAccessCheck);
+            bool yielded = false;
 
             try
             {
-                // Throws IOEx if dir is a file on windows, DirectoryNotFoundEx on Unix. Convert to IOEx.
-                enumerator = getInfos(searchDirInfo, searchPattern, enumerationOptions).GetEnumerator();
-            }
-            catch (DirectoryNotFoundException) when (PathFormat == PathFormat.Unix)
-            {
-                ThrowIfDirIsFile(this);
-                throw;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw Ex.Convert(ex);
-            }
-
-            bool yielded = false;
-
-            while (true)
-            {
-                FileSystemInfo entryInfo = null;
-
-                try
+                while (true)
                 {
-                    if (enumerator.MoveNext())
-                        entryInfo = enumerator.Current;
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    enumerator.Dispose();
-                    throw Ex.Convert(ex);
-                }
-                catch (Exception)
-                {
-                    enumerator.Dispose();
-                    throw;
-                }
+                    FileSystemInfo entryInfo = null;
 
-                if (entryInfo is null)
-                    break;
+                    try
+                    {
+                        if (enumerator.MoveNext())
+                            entryInfo = enumerator.Current;
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        throw Ex.Convert(ex);
+                    }
 
-                yield return entryInfo;
-                yielded = true;
+                    if (entryInfo is null)
+                        break;
+
+                    yield return entryInfo;
+                    yielded = true;
+                }
             }
-
-            enumerator.Dispose();
+            finally
+            {
+                enumerator.Dispose();
+            }
 
             if (!yielded && requiresExtraAccessCheck)
             {
                 try
                 {
                     // Create dummy enumerator to check access to the directory.
-                    using var e = searchDirInfo.EnumerateFileSystemInfos("*", CheckAccessEnumerationOptions).GetEnumerator();
+                    using var e = Directory.EnumerateFileSystemEntries(PathExport, "*", CheckAccessEnumerationOptions).GetEnumerator();
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    throw Ex.Convert(ex);
+                }
+            }
+
+            IEnumerator<FileSystemInfo> GetEnumerator(out bool requiresExtraAccessCheck)
+            {
+                var dirInfo = new DirectoryInfo(PathExport);
+                var enumerationOptions = SearchOptions.ToEnumerationOptions(options, out requiresExtraAccessCheck);
+
+                try
+                {
+                    // Throws IOEx if dir is a file on windows, DirectoryNotFoundEx on Unix. Convert to IOEx.
+                    return getInfos(dirInfo, searchPattern, enumerationOptions).GetEnumerator();
+                }
+                catch (DirectoryNotFoundException) when (PathFormat == PathFormat.Unix)
+                {
+                    ThrowIfDirIsFile(this);
+                    throw;
                 }
                 catch (UnauthorizedAccessException ex)
                 {
