@@ -14,10 +14,7 @@ You can visit the [Problems with System.IO](articles/system.io/problems-with-sys
 
 The package is available on NuGet - simply install the `Singulink.IO.FileSystem` package.
 
-**Supported Runtimes**: Anywhere .NET Standard 2.1+ is supported, including:
-- .NET
-- Mono
-- Xamarin
+**Supported Runtimes**: .NET 8.0+
 
 ## Information and Links
 
