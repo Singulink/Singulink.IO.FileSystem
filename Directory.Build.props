@@ -1,0 +1,33 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <DebugType>portable</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+
+    <DefaultLanguage>en</DefaultLanguage>
+
+    <WeaverConfiguration>
+      <Weavers>
+        <RuntimeNullables />
+      </Weavers>
+    </WeaverConfiguration>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Fody -->
+    <PackageReference Include="RuntimeNullables.Fody" Version="2.0.0" PrivateAssets="all" />
+
+    <!-- Analyzers -->
+    <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
+    <PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

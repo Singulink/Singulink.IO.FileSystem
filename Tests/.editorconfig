@@ -1,0 +1,9 @@
+# Editor config overrides specifically for test projects
+
+
+########### C# files ###########
+[*.cs]
+
+#### Analyzer diagnostics ####
+
+stylecop.documentation.documentExposedElements = false

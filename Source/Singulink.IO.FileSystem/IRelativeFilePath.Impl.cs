@@ -1,23 +1,18 @@
-﻿namespace Singulink.IO;
+namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IRelativeFilePath.
+/// Contains the implementation of IRelativeFilePath.
 /// </content>
 public partial interface IRelativeFilePath
 {
-    internal new sealed class Impl : IRelativePath.Impl, IRelativeFilePath
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IRelativePath.Impl(path, rootLength, pathFormat), IRelativeFilePath
     {
-        internal Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
+        public override bool HasParentDirectory => true;
+
+        public override IRelativeDirectoryPath ParentDirectory
         {
-        }
-
-        public string NameWithoutExtension => PathFormat.GetFileNameWithoutExtension(PathDisplay);
-
-        public string Extension => PathFormat.GetFileNameExtension(PathDisplay);
-
-        public IRelativeDirectoryPath ParentDirectory {
             get {
-                var parentPath = PathFormat.GetPreviousDirectory(PathDisplay, RootLength);
+                var parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength);
                 return new IRelativeDirectoryPath.Impl(parentPath.ToString(), RootLength, PathFormat);
             }
         }
@@ -28,14 +23,10 @@ public partial interface IRelativeFilePath
             return new Impl(newPath, RootLength, PathFormat);
         }
 
-        #region Path Format Conversion
-
-        public IRelativeFilePath ToPathFormat(PathFormat format, PathOptions options)
+        public override IRelativeFilePath ToPathFormat(PathFormat format, PathOptions options)
         {
             var path = PathFormat.ConvertRelativePathFormat(PathDisplay, PathFormat, format);
             return FilePath.ParseRelative(path.Span, format, options);
         }
-
-        #endregion
     }
 }

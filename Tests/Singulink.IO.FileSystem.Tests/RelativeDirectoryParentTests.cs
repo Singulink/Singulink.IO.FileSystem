@@ -1,70 +1,66 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-#pragma warning disable SA1122 // Use string.Empty for empty strings
-
 namespace Singulink.IO.FileSystem.Tests;
 
-[TestClass]
+[PrefixTestClass]
 public class RelativeDirectoryParentTests
 {
     [TestMethod]
     public void SpecialCurrent()
     {
         var dir = DirectoryPath.ParseRelative("", PathOptions.None);
-        Assert.IsTrue(dir.HasParentDirectory);
-        Assert.AreEqual("..", dir.ParentDirectory!.PathDisplay);
+        dir.HasParentDirectory.ShouldBeTrue();
+        dir.ParentDirectory!.PathDisplay.ShouldBe("..");
 
         dir = DirectoryPath.ParseRelative(".", PathOptions.None);
-        Assert.IsTrue(dir.HasParentDirectory);
-        Assert.AreEqual("..", dir.ParentDirectory!.PathDisplay);
+        dir.HasParentDirectory.ShouldBeTrue();
+        dir.ParentDirectory!.PathDisplay.ShouldBe("..");
     }
 
     [TestMethod]
     public void SpecialParent()
     {
         var dir = DirectoryPath.ParseRelative("..", PathFormat.Windows, PathOptions.None);
-        Assert.IsTrue(dir.HasParentDirectory);
-        Assert.AreEqual(@"..\..", dir.ParentDirectory!.PathDisplay);
+        dir.HasParentDirectory.ShouldBeTrue();
+        dir.ParentDirectory!.PathDisplay.ShouldBe(@"..\..");
 
         dir = DirectoryPath.ParseRelative("../..", PathFormat.Unix, PathOptions.None);
-        Assert.IsTrue(dir.HasParentDirectory);
-        Assert.AreEqual("../../..", dir.ParentDirectory!.PathDisplay);
+        dir.HasParentDirectory.ShouldBeTrue();
+        dir.ParentDirectory!.PathDisplay.ShouldBe("../../..");
     }
 
     [TestMethod]
     public void Rooted()
     {
         var dir = DirectoryPath.ParseRelative("/", PathFormat.Windows, PathOptions.None);
-        Assert.IsFalse(dir.HasParentDirectory);
-        Assert.IsNull(dir.ParentDirectory);
+        dir.HasParentDirectory.ShouldBeFalse();
+        dir.ParentDirectory.ShouldBeNull();
 
         dir = DirectoryPath.ParseRelative("/test", PathFormat.Windows, PathOptions.None);
-        Assert.IsTrue(dir.HasParentDirectory);
+        dir.HasParentDirectory.ShouldBeTrue();
 
         dir = dir.ParentDirectory!;
-        Assert.AreEqual(@"\", dir.PathDisplay);
-        Assert.IsFalse(dir.HasParentDirectory);
+        dir.PathDisplay.ShouldBe(@"\");
+        dir.HasParentDirectory.ShouldBeFalse();
     }
 
     [TestMethod]
     public void NavigatingPastEmpty()
     {
         var dir = DirectoryPath.ParseRelative("dir1/dir2", PathFormat.Universal, PathOptions.None);
-        Assert.AreEqual("dir1/dir2", dir.PathDisplay);
+        dir.PathDisplay.ShouldBe("dir1/dir2");
 
         var parent = dir.ParentDirectory!;
-        Assert.AreEqual("dir1", parent.PathDisplay);
+        parent.PathDisplay.ShouldBe("dir1");
 
         parent = parent.ParentDirectory!;
-        Assert.AreEqual("", parent.PathDisplay);
+        parent.PathDisplay.ShouldBe("");
 
         parent = parent.ParentDirectory!;
-        Assert.AreEqual("..", parent.PathDisplay);
+        parent.PathDisplay.ShouldBe("..");
 
         parent = parent.ParentDirectory!;
-        Assert.AreEqual("../..", parent.PathDisplay);
+        parent.PathDisplay.ShouldBe("../..");
 
         parent = parent.ParentDirectory!;
-        Assert.AreEqual("../../..", parent.PathDisplay);
+        parent.PathDisplay.ShouldBe("../../..");
     }
 }

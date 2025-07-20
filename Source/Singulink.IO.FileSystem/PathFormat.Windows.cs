@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using Singulink.IO.Utilities;
+using Singulink.Enums;
 
 namespace Singulink.IO;
 
@@ -13,8 +11,8 @@ public abstract partial class PathFormat
 {
     private sealed class WindowsPathFormat : PathFormat
     {
-        private static readonly HashSet<char> InvalidNameChars = GetInvalidNameChars(true);
-        private static readonly HashSet<char> InvalidNameCharsWithoutWildcards = GetInvalidNameChars(false);
+        private static readonly FrozenSet<char> InvalidNameChars = GetInvalidNameChars(true);
+        private static readonly FrozenSet<char> InvalidNameCharsWithoutWildcards = GetInvalidNameChars(false);
 
         internal WindowsPathFormat() : base('\\') { }
 
@@ -31,9 +29,10 @@ public abstract partial class PathFormat
 
             char[] normalizedPath = path.ToArray();
 
-            for (int i = altSeparatorIndex; i < normalizedPath.Length; i++) {
+            for (int i = altSeparatorIndex; i < normalizedPath.Length; i++)
+            {
                 if (normalizedPath[i] == AltPathSeparatorChar)
-                    normalizedPath[i] = SeparatorChar;
+                    normalizedPath[i] = Separator;
             }
 
             return normalizedPath;
@@ -41,37 +40,50 @@ public abstract partial class PathFormat
 
         internal override PathKind GetPathKind(ReadOnlySpan<char> path)
         {
-            if (path.Length >= 2) {
-                if (path[1] == ':' || path.StartsWith(@"\\") || path.StartsWith("//"))
+            if (path.Length >= 2)
+            {
+                if (path[1] is ':' || path.StartsWith(@"\\") || path.StartsWith("//"))
                     return PathKind.Absolute;
             }
 
-            return path.Length > 0 && path[0] == SeparatorChar ? PathKind.RelativeRooted : PathKind.Relative;
+            return path.Length > 0 && path[0] == Separator ? PathKind.RelativeRooted : PathKind.Relative;
         }
 
         internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
         {
+            options = options.SetFlags(PathOptions.NoControlCharacters);
+
+            if (options.HasAllFlags(PathOptions.PathFormatDependent))
+                options = options.SetFlags(PathOptions.NoUnfriendlyNames);
+
             if (!base.ValidateEntryName(name, options, allowWildcards, out error))
                 return false;
 
-            if (allowWildcards) {
-                foreach (char c in name) {
-                    if (InvalidNameCharsWithoutWildcards.Contains(c)) {
+            if (allowWildcards)
+            {
+                foreach (char c in name)
+                {
+                    if (InvalidNameCharsWithoutWildcards.Contains(c))
+                    {
                         error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | / \\";
                         return false;
                     }
                 }
             }
-            else {
-                foreach (char c in name) {
-                    if (InvalidNameChars.Contains(c)) {
+            else
+            {
+                foreach (char c in name)
+                {
+                    if (InvalidNameChars.Contains(c))
+                    {
                         error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | ? * / \\";
                         return false;
                     }
                 }
             }
 
-            if (options.HasFlag(PathOptions.NoReservedDeviceNames)) {
+            if (options.HasAllFlags(PathOptions.NoReservedDeviceNames))
+            {
                 const StringComparison comp = StringComparison.OrdinalIgnoreCase;
 
                 // File name without extension also cannot match a reserved device name.
@@ -98,21 +110,23 @@ public abstract partial class PathFormat
 
         private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
         {
-            if (path.StartsWith(@"\\?\", StringComparison.Ordinal) || path.StartsWith(@"\\.\", StringComparison.Ordinal)) {
-                path = path.Slice(4);
+            if (path.StartsWith(@"\\?\") || path.StartsWith(@"\\.\"))
+            {
+                path = path[4..];
 
-                if (path.StartsWith(@"UNC\", StringComparison.Ordinal))
-                    path = StringHelper.Concat(@"\\", path[4..]);
+                if (path.StartsWith(@"UNC\"))
+                    path = $@"\\{path[4..]}";
             }
 
             ReadOnlySpan<char> root;
-            int firstIndex = path.IndexOf(SeparatorChar);
+            int firstIndex = path.IndexOf(Separator);
 
-            if (firstIndex == 0) {
-                if (path.Length < 5 || path[1] != SeparatorChar)
+            if (firstIndex == 0)
+            {
+                if (path.Length < 5 || path[1] != Separator)
                     ThrowInvalidPathRoot();
 
-                int serverLength = path.Slice(2).IndexOf(SeparatorChar);
+                int serverLength = path[2..].IndexOf(Separator);
                 int shareStart = 3 + serverLength;
 
                 if (serverLength <= 0 || path.Length <= shareStart)
@@ -123,18 +137,20 @@ public abstract partial class PathFormat
                 if (!IsValidServerName(server))
                     throw new ArgumentException("Invalid UNC server name.", nameof(path));
 
-                int shareLength = path.Slice(shareStart).IndexOf(SeparatorChar);
+                int shareLength = path[shareStart..].IndexOf(Separator);
 
                 ReadOnlySpan<char> share;
 
-                if (shareLength <= 0) {
-                    root = StringHelper.Concat(path, SeparatorString);
+                if (shareLength <= 0)
+                {
+                    root = $"{path}{Separator}";
                     rest = default;
-                    share = path.Slice(shareStart);
+                    share = path[shareStart..];
                 }
-                else {
-                    root = path.Slice(0, shareStart + shareLength + 1);
-                    rest = path.Slice(root.Length);
+                else
+                {
+                    root = path[..(shareStart + shareLength + 1)];
+                    rest = path[root.Length..];
                     share = path.Slice(shareStart, shareLength);
                 }
 
@@ -143,17 +159,20 @@ public abstract partial class PathFormat
                 if (!ValidateEntryName(share, PathOptions.NoLeadingSpaces | PathOptions.NoTrailingSpaces, false, out string error))
                     throw new ArgumentException($"Invalid UNC share name: {error}");
             }
-            else {
-                if (path.Length < 2 || (path.Length >= 3 && firstIndex != 2) || !(char.ToUpper(path[0], CultureInfo.InvariantCulture) is char drive && drive >= 'A' && drive <= 'Z') || path[1] != ':')
+            else
+            {
+                if (path.Length < 2 || (path.Length >= 3 && firstIndex is not 2) || (char.ToUpperInvariant(path[0]) is < 'A' or > 'Z') || path[1] is not ':')
                     ThrowInvalidPathRoot();
 
-                if (path.Length == 2) {
-                    root = StringHelper.Concat(path, SeparatorString);
+                if (path.Length is 2)
+                {
+                    root = $"{path}{Separator}";
                     rest = default;
                 }
-                else {
-                    root = path.Slice(0, 3);
-                    rest = path.Slice(3);
+                else
+                {
+                    root = path[..3];
+                    rest = path[3..];
                 }
             }
 
@@ -166,7 +185,8 @@ public abstract partial class PathFormat
                 if (server[0] == '.' || server[^1] == '.' || server.IndexOf("..", StringComparison.Ordinal) >= 0)
                     return false;
 
-                foreach (char c in server) {
+                foreach (char c in server)
+                {
                     if (!char.IsLetter(c) && !char.IsDigit(c) && c != '.' && c != '-')
                         return false;
                 }
@@ -177,27 +197,20 @@ public abstract partial class PathFormat
             static void ThrowInvalidPathRoot() => throw new ArgumentException("Invalid absolute path root.", nameof(path));
         }
 
-        internal override string GetAbsolutePathExportString(string pathDisplay)
+        internal override string GetAbsolutePathExportString(string pathDisplay) =>
+            pathDisplay[1] == ':' ? @"\\?\" + pathDisplay : $@"\\?\UNC\{pathDisplay.AsSpan()[2..]}";
+
+        private static FrozenSet<char> GetInvalidNameChars(bool includeWildcardChars)
         {
-            if (pathDisplay[1] == ':')
-                return @"\\?\" + pathDisplay;
+            var invalidChars = new List<char>() { '<', '>', ':', '"', '|', '/', '\\' };
 
-            return StringHelper.Concat(@"\\?\UNC\", pathDisplay.AsSpan()[2..]);
-        }
-
-        private static HashSet<char> GetInvalidNameChars(bool includeWildcardChars)
-        {
-            var invalidChars = new HashSet<char>() { '<', '>', ':', '"', '|', '/', '\\' };
-
-            for (int i = 0; i <= 31; i++)
-                invalidChars.Add((char)i);
-
-            if (includeWildcardChars) {
+            if (includeWildcardChars)
+            {
                 invalidChars.Add('?');
                 invalidChars.Add('*');
             }
 
-            return invalidChars;
+            return invalidChars.ToFrozenSet();
         }
 
         public override string ToString() => "Windows";

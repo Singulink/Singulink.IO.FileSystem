@@ -1,7 +1,5 @@
-﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Singulink.IO;
@@ -30,9 +28,7 @@ internal static partial class Interop
                 case WindowsNative.Errors.FILENAME_EXCED_RANGE:
                     return new PathTooLongException(message, win32Ex);
                 default:
-                    if (path.PathFormat == PathFormat.Windows)
-                        path.EnsureExists(); // Throw DirectoryNotFound exception instead of IOException if path is a file.
-
+                    path.EnsureExists(); // Throw DirectoryNotFound exception instead of IOException if path is a file.
                     return new IOException(message, win32Ex);
             }
         }

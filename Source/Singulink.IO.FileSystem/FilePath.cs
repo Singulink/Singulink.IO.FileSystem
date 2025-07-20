@@ -1,5 +1,3 @@
-﻿using System;
-using System.IO;
 using System.Reflection;
 
 namespace Singulink.IO;
@@ -106,7 +104,9 @@ public static class FilePath
     /// </summary>
     public static IAbsoluteFilePath GetAssemblyLocation(Assembly assembly)
     {
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
         string location = assembly.Location;
+#pragma warning restore IL3000
 
         if (string.IsNullOrEmpty(location))
             throw new InvalidOperationException("Assembly does not have a location.");

@@ -1,6 +1,4 @@
-﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 
 namespace Singulink.IO;
 
@@ -14,7 +12,7 @@ public partial interface IAbsolutePath : IPath
     /// Gets a path string that is specially formatted for reliably accessing this path through file system calls.
     /// </summary>
     /// <remarks>
-    /// <para>This is the value that should always be used when a path string is needed for passing into file system calls (i.e. opening file streams).</para>
+    /// <para>This is the value that should always be used when a path string is needed for passing into file system calls (e.g. opening file streams).</para>
     /// </remarks>
     string PathExport { get; }
 

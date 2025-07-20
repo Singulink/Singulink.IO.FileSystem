@@ -1,0 +1,17 @@
+apiRules:
+
+ # Hide Uno Platform generated code
+
+- exclude:
+    uidRegex: GlobalStaticResources
+    type: Class
+
+# Hide inherited object/ValueType members
+
+- exclude:
+      uidRegex: ^System\.Object
+      type: Type
+
+- exclude:
+      uidRegex: ^System\.ValueType
+      type: Type

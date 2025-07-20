@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
+using Singulink.Enums;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO;
@@ -47,7 +45,9 @@ public abstract partial class PathFormat
     /// <summary>
     /// Gets the standard path separator character. Alternate path characters are normalized to use the standard path separator.
     /// </summary>
-    public char SeparatorChar { get; }
+    public char Separator { get; }
+
+    internal string SeparatorString { get; }
 
     /// <summary>
     /// Gets a value indicating whether the path format supports relative rooted paths, i.e. relative paths that start with a path separator.
@@ -55,24 +55,27 @@ public abstract partial class PathFormat
     public abstract bool SupportsRelativeRootedPaths { get; }
 
     /// <summary>
-    /// Gets the relative directory that represents the current directory.
+    /// Gets the relative directory that represents the current directory (i.e. <c>"."</c>).
     /// </summary>
     public IRelativeDirectoryPath RelativeCurrentDirectory { get; }
 
     /// <summary>
-    /// Gets the relative directory that represents the parent directory.
+    /// Gets the relative directory that represents the parent directory (i.e. <c>".."</c>).
     /// </summary>
     public IRelativeDirectoryPath RelativeParentDirectory { get; }
 
-    internal string SeparatorString { get; }
+    /// <summary>
+    /// Gets the name of the path format.
+    /// </summary>
+    public abstract override string ToString();
 
     internal string ParentDirectoryWithSeparator { get; }
 
     internal PathFormat(char separator)
     {
-        SeparatorChar = separator;
-        SeparatorString = SeparatorChar.ToString();
-        ParentDirectoryWithSeparator = ".." + SeparatorString;
+        Separator = separator;
+        SeparatorString = separator.ToString();
+        ParentDirectoryWithSeparator = $"..{separator}";
 
         RelativeCurrentDirectory = DirectoryPath.ParseRelative(".", this, PathOptions.None);
         RelativeParentDirectory = DirectoryPath.ParseRelative("..", this, PathOptions.None);
@@ -97,24 +100,36 @@ public abstract partial class PathFormat
 
     internal virtual bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
     {
-        SetPathFormatDependentOptions(ref options);
-
         if (name.IsEmpty) {
             error = "Empty entry name.";
             return false;
         }
 
-        if (options.HasFlag(PathOptions.NoLeadingSpaces) && name[0] == ' ') {
+        if (name.IndexOfAny(Separator, (char)0) is int i and >= 0) {
+            error = $"Invalid character '{name[i]}' in entry name '{name.ToString()}'.";
+            return false;
+        }
+
+        if (options.HasAllFlags(PathOptions.NoControlCharacters)) {
+            foreach (char c in name) {
+                if (c < 32) {
+                    error = $"Invalid control character '{c}' in entry name '{name.ToString()}'.";
+                    return false;
+                }
+            }
+        }
+
+        if (options.HasAllFlags(PathOptions.NoLeadingSpaces) && name[0] is ' ') {
             error = "Entry name starts with a space.";
             return false;
         }
 
-        if (options.HasFlag(PathOptions.NoTrailingDots) && name[^1] == '.') {
+        if (options.HasAllFlags(PathOptions.NoTrailingDots) && name[^1] is '.') {
             error = "Entry name ends with a dot.";
             return false;
         }
 
-        if (options.HasFlag(PathOptions.NoTrailingSpaces) && name[^1] == ' ') {
+        if (options.HasAllFlags(PathOptions.NoTrailingSpaces) && name[^1] is ' ') {
             error = "Entry name ends with a space.";
             return false;
         }
@@ -125,15 +140,13 @@ public abstract partial class PathFormat
 
     internal string NormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, bool isFile, out int rootLength)
     {
-        SetPathFormatDependentOptions(ref options);
-
         var pathKind = GetPathKind(path);
 
-        if (pathKind == PathKind.Absolute)
+        if (pathKind is PathKind.Absolute)
             throw new ArgumentException("Path is not a relative path.", nameof(path));
 
-        if (pathKind == PathKind.RelativeRooted) {
-            if (options.HasFlag(PathOptions.NoNavigation))
+        if (pathKind is PathKind.RelativeRooted) {
+            if (options.HasAllFlags(PathOptions.NoNavigation))
                 throw new ArgumentException("Rooted relative paths are not allowed for this path.");
 
             if (path.Length == 1) {
@@ -143,8 +156,8 @@ public abstract partial class PathFormat
 
             path = path[1..];
         }
-        else if (path.Length == 0 || path.SequenceEqual(".")) {
-            if (path.Length == 1 && options.HasFlag(PathOptions.NoNavigation))
+        else if (path.Length is 0 || path.SequenceEqual(".")) {
+            if (path.Length is 1 && options.HasAllFlags(PathOptions.NoNavigation))
                 throw new ArgumentException("Invalid navigational path segment.", nameof(path));
 
             rootLength = 0;
@@ -153,13 +166,13 @@ public abstract partial class PathFormat
 
         var segments = SplitNonRootedRelativePath(path, isFile, options);
 
-        if (pathKind == PathKind.RelativeRooted) {
-            if (segments.Count > 0 && segments[0] == "..")
+        if (pathKind is PathKind.RelativeRooted) {
+            if (segments.Count > 0 && segments[0] is "..")
                 throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
 
             rootLength = 1;
 
-            if (segments.Count == 0)
+            if (segments.Count is 0)
                 return SeparatorString;
 
             segments.Insert(0, string.Empty);
@@ -173,21 +186,19 @@ public abstract partial class PathFormat
 
     internal string NormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, bool isFile, out int rootLength)
     {
-        SetPathFormatDependentOptions(ref options);
-
         var pathKind = GetPathKind(path);
 
-        if (pathKind != PathKind.Absolute)
+        if (pathKind is not PathKind.Absolute)
             throw new ArgumentException("Path is not an absolute path.", nameof(path));
 
         var root = SplitAbsoluteRoot(path, out var rest);
         var segments = SplitNonRootedRelativePath(rest, isFile, options);
 
-        if (segments.Count > 0 && segments[0] == "..")
+        if (segments.Count > 0 && segments[0] is "..")
             throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
 
         rootLength = root.Length;
-        return StringHelper.Concat(root, string.Join(SeparatorString, segments));
+        return $"{root}{string.Join(Separator, segments)}";
     }
 
     internal abstract string GetAbsolutePathExportString(string pathDisplay);
@@ -197,14 +208,14 @@ public abstract partial class PathFormat
     /// </summary>
     internal StringOrSpan SplitRelativeNavigation(StringOrSpan path, out int parentDirs)
     {
-        if (GetPathKind(path) == PathKind.RelativeRooted) {
+        if (GetPathKind(path) is PathKind.RelativeRooted) {
             parentDirs = -1;
             return path.Span[1..];
         }
 
         parentDirs = 0;
 
-        while (path.Span.SequenceEqual("..") || path.Span.StartsWith(ParentDirectoryWithSeparator)) {
+        while (path.Span is ".." || path.Span.StartsWith(ParentDirectoryWithSeparator)) {
             parentDirs++;
             int nextStartIndex = path.Length == 2 ? 2 : 3;
             path = path.Span[nextStartIndex..];
@@ -215,10 +226,10 @@ public abstract partial class PathFormat
 
     internal void ValidateSearchPattern(ReadOnlySpan<char> searchPattern, string paramName)
     {
-        if (searchPattern.Length == 1 && searchPattern[0] == '*')
+        if (searchPattern is "*")
             return;
 
-        if (!ValidateEntryName(searchPattern, PathOptions.None, true, out string error))
+        if (!ValidateEntryName(searchPattern, PathOptions.None, allowWildcards: true, out string error))
             throw new ArgumentException($"Invalid search pattern: {error}", paramName);
     }
 
@@ -242,21 +253,21 @@ public abstract partial class PathFormat
 
     internal static StringOrSpan ConvertRelativePathToMutualFormat(StringOrSpan path, PathFormat sourceFormat, PathFormat destinationFormat)
     {
-        if (sourceFormat.SeparatorChar != destinationFormat.SeparatorChar)
-            path = path.Replace(sourceFormat.SeparatorChar, destinationFormat.SeparatorChar);
+        if (sourceFormat.Separator != destinationFormat.Separator)
+            path = path.Replace(sourceFormat.Separator, destinationFormat.Separator);
 
         return path;
     }
 
     internal static StringOrSpan ConvertRelativePathFormat(StringOrSpan path, PathFormat sourceFormat, PathFormat destinationFormat)
     {
-        if (sourceFormat.SeparatorChar != destinationFormat.SeparatorChar) {
+        if (sourceFormat.Separator != destinationFormat.Separator) {
             if (path.Span.Contains(destinationFormat.SeparatorString, StringComparison.Ordinal))
-                throw new ArgumentException($"Invalid separator character '{destinationFormat.SeparatorChar}' in path entry.");
+                throw new ArgumentException($"Invalid separator character '{destinationFormat.Separator}' in path entry.");
             else if (sourceFormat.GetPathKind(path) == PathKind.RelativeRooted && !destinationFormat.SupportsRelativeRootedPaths)
                 throw new ArgumentException("Destination path format does not support relative rooted paths.");
             else
-                path = path.Replace(sourceFormat.SeparatorChar, destinationFormat.SeparatorChar);
+                path = path.Replace(sourceFormat.Separator, destinationFormat.Separator);
         }
 
         return path;
@@ -264,43 +275,43 @@ public abstract partial class PathFormat
 
     internal string ChangeFileNameExtension(string path, string? newExtension, PathOptions options)
     {
-        if (newExtension == null)
+        if (newExtension is null)
             newExtension = string.Empty;
-        else if (newExtension.Length > 0 && newExtension[0] != '.')
-            throw new ArgumentException("New extension must either be empty or start with a dot '.' character.", nameof(newExtension));
+        else if (newExtension.Length > 0 && newExtension.LastIndexOf('.') is not 0)
+            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(newExtension));
 
-        var parentDir = GetPreviousDirectory(path, 0);
+        var parentDir = GetParentDirectoryPath(path, 0);
         var fileNameWithoutExtension = GetFileNameWithoutExtension(path);
 
-        string newFileName = StringHelper.Concat(fileNameWithoutExtension, newExtension);
+        string newFileName = $"{fileNameWithoutExtension.Span}{newExtension}";
 
-        if (!ValidateEntryName(newFileName, options, false, out string error))
+        if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
             throw new ArgumentException($"Invalid new file name: {error}", nameof(newExtension));
 
-        return StringHelper.Concat(parentDir, newFileName);
+        return $"{parentDir}{newFileName}";
     }
 
-    internal ReadOnlySpan<char> GetPreviousDirectory(ReadOnlySpan<char> path, int rootLength)
+    internal ReadOnlySpan<char> GetParentDirectoryPath(ReadOnlySpan<char> path, int rootLength)
     {
-        int lastSeparatorIndex = path.LastIndexOf(SeparatorChar);
+        int lastSeparatorIndex = path.LastIndexOf(Separator);
         return lastSeparatorIndex >= 0 ? path[..Math.Max(lastSeparatorIndex, rootLength)] : string.Empty;
     }
 
     internal StringOrSpan GetEntryName(StringOrSpan path, int rootLength)
     {
-        if (path.Length == 0)
+        if (path.Length is 0)
             return path;
 
-        if (path.Length == 1)
+        if (path.Length is 1)
             return GetPathKind(path) == PathKind.RelativeRooted ? StringOrSpan.Empty : path;
 
-        if (path.Span[^1] == SeparatorChar)
+        if (path.Span[^1] == Separator)
             path = path.Span[..^1];
 
         if (path.Length <= rootLength)
             return path;
 
-        int lastSeparatorIndex = path.Span.LastIndexOf(SeparatorChar);
+        int lastSeparatorIndex = path.Span.LastIndexOf(Separator);
 
         StringOrSpan name = lastSeparatorIndex < 0 ? path : path.Span[(lastSeparatorIndex + 1)..];
 
@@ -315,7 +326,7 @@ public abstract partial class PathFormat
     /// </summary>
     internal StringOrSpan GetFirstEntry(StringOrSpan path)
     {
-        int separatorIndex = path.Span.IndexOf(SeparatorChar);
+        int separatorIndex = path.Span.IndexOf(Separator);
         return separatorIndex < 0 ? path : path.Span[..separatorIndex];
     }
 
@@ -359,16 +370,6 @@ public abstract partial class PathFormat
     private protected abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
 
     /// <summary>
-    /// Appends NoUnfriendlyNames if the PathFormatDependent flag is set for the Universal and Windows path formats. Must be called at the start of all
-    /// non-private entry points into PathFormat methods that accept a PathOptions parameter.
-    /// </summary>
-    private void SetPathFormatDependentOptions(ref PathOptions options)
-    {
-        if (options.HasFlag(PathOptions.PathFormatDependent) && this != Unix)
-            options |= PathOptions.NoUnfriendlyNames;
-    }
-
-    /// <summary>
     /// Splits a non-rooted relative path into a list of parts.
     /// </summary>
     private List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, bool isFile, PathOptions options)
@@ -376,14 +377,14 @@ public abstract partial class PathFormat
         int maxSegmentCount = 1;
 
         foreach (char c in path) {
-            if (c == SeparatorChar)
+            if (c == Separator)
                 maxSegmentCount++;
         }
 
         var segments = new List<string>(maxSegmentCount);
 
         while (path.Length > 0) {
-            int separatorIndex = path.IndexOf(SeparatorChar);
+            int separatorIndex = path.IndexOf(Separator);
 
             ReadOnlySpan<char> segment;
 
@@ -396,25 +397,25 @@ public abstract partial class PathFormat
                 path = path[(separatorIndex + 1)..];
             }
 
-            if (segment.Length == 0) {
-                if (!options.HasFlag(PathOptions.AllowEmptyDirectories))
+            if (segment.Length is 0) {
+                if (!options.HasAllFlags(PathOptions.AllowEmptyDirectories))
                     throw new ArgumentException("Invalid empty directory in path.", nameof(path));
             }
-            else if (segment.SequenceEqual(".") || segment.SequenceEqual("..")) {
-                if (isFile && path.Length == 0)
+            else if (segment is "." or "..") {
+                if (isFile && path.Length is 0)
                     throw new ArgumentException("File paths cannot end in a navigational path segment.", nameof(path));
 
-                if (options.HasFlag(PathOptions.NoNavigation))
+                if (options.HasAllFlags(PathOptions.NoNavigation))
                     throw new ArgumentException("Invalid navigational path segment.", nameof(path));
 
-                if (segment.Length == 2) {
-                    if (segments.Count == 0 || segments[^1].Equals("..", StringComparison.Ordinal))
+                if (segment.Length is 2) {
+                    if (segments.Count is 0 || segments[^1] is "..")
                         segments.Add("..");
                     else
                         segments.RemoveAt(segments.Count - 1);
                 }
             }
-            else if (!ValidateEntryName(segment, options, false, out string error)) {
+            else if (!ValidateEntryName(segment, options, allowWildcards: false, out string error)) {
                 throw new ArgumentException(error, nameof(path));
             }
             else {

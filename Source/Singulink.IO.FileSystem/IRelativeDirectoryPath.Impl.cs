@@ -1,42 +1,35 @@
-﻿using System;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IRelativeDirectoryPath.
+/// Contains the implementation of IRelativeDirectoryPath.
 /// </content>
 public partial interface IRelativeDirectoryPath
 {
-    internal new sealed class Impl : IRelativePath.Impl, IRelativeDirectoryPath
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IRelativePath.Impl(path, rootLength, pathFormat), IRelativeDirectoryPath
     {
-        internal Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
-        {
-        }
+        public override bool HasParentDirectory => !IsRooted || PathDisplay.Length > RootLength;
 
-        public IRelativeDirectoryPath? ParentDirectory {
+        public override IRelativeDirectoryPath? ParentDirectory
+        {
             get {
                 if (!HasParentDirectory)
                     return null;
 
+                if (PathDisplay.Length is 0)
+                    return PathFormat.RelativeParentDirectory;
+
                 string parentPath;
 
-                if (!IsRooted && PathFormat.GetEntryName(PathDisplay, 0).Length == 0)
-                    parentPath = PathDisplay.Length == 0 ? ".." : StringHelper.Concat(PathDisplay, PathFormat.SeparatorString, "..");
+                if (!IsRooted && PathFormat.GetEntryName(PathDisplay, 0).Length is 0)
+                    parentPath = $"{PathDisplay}{PathFormat.Separator}..";
                 else
-                    parentPath = PathFormat.GetPreviousDirectory(PathDisplay, RootLength).ToString();
+                    parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength).ToString();
 
                 return new Impl(parentPath, RootLength, PathFormat);
             }
         }
-
-        IRelativeDirectoryPath? IRelativePath.ParentDirectory => ParentDirectory;
-
-        public bool HasParentDirectory => !IsRooted || PathDisplay.Length > RootLength;
-
-        bool IPath.HasParentDirectory => HasParentDirectory;
-
-        #region Combining
 
         public IRelativeDirectoryPath Combine(IRelativeDirectoryPath dir) => (IRelativeDirectoryPath)Combine(dir, nameof(dir), nameof(dir));
 
@@ -76,9 +69,9 @@ public partial interface IRelativeDirectoryPath
             basePath = PathFormat.ConvertRelativePathToMutualFormat(basePath, PathFormat, mutualFormat);
 
             string newPath = appendPath.Length > 0 || parentDirs == -1 ?
-                StringHelper.Concat(basePath, PathFormat.SeparatorString, appendPath) : (string)basePath;
+                $"{basePath.Span}{PathFormat.Separator}{appendPath.Span}" : (string)basePath;
 
-            if (entry.IsDirectory)
+            if (entry is IDirectoryPath)
                 return new Impl(newPath, RootLength, PathFormat);
             else
                 return new IRelativeFilePath.Impl(newPath, RootLength, PathFormat);
@@ -93,7 +86,8 @@ public partial interface IRelativeDirectoryPath
 
             IRelativeDirectoryPath currentDir = this;
 
-            for (int i = 0; i < parentDirs; i++) {
+            for (int i = 0; i < parentDirs; i++)
+            {
                 currentDir = currentDir.ParentDirectory;
 
                 if (currentDir == null)
@@ -103,16 +97,10 @@ public partial interface IRelativeDirectoryPath
             return currentDir.PathDisplay;
         }
 
-        #endregion
-
-        #region Path Format Conversion
-
-        public IRelativeDirectoryPath ToPathFormat(PathFormat format, PathOptions options)
+        public override IRelativeDirectoryPath ToPathFormat(PathFormat format, PathOptions options)
         {
             var path = PathFormat.ConvertRelativePathFormat(PathDisplay, PathFormat, format);
             return DirectoryPath.ParseRelative(path.Span, format, options);
         }
-
-        #endregion
     }
 }

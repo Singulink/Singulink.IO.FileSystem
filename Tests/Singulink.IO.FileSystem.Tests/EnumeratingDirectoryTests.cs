@@ -1,13 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-#pragma warning disable SA1122 // Use string.Empty for empty strings
-
 namespace Singulink.IO.FileSystem.Tests;
 
-[TestClass]
+[PrefixTestClass]
 public class EnumeratingDirectoryTests
 {
     private const int DirCount = 5;
@@ -26,10 +19,12 @@ public class EnumeratingDirectoryTests
 
         testDir.Create();
 
-        for (int i = 0; i < DirCount; i++) {
+        for (int i = 0; i < DirCount; i++)
+        {
             var dirLevel1 = testDir.CombineDirectory($"{i}_dir");
 
-            for (int j = 0; j < SubDirCount; j++) {
+            for (int j = 0; j < SubDirCount; j++)
+            {
                 var dirLevel2 = dirLevel1.CombineDirectory($"{i}_{j}_subdir");
                 dirLevel2.Create();
 
@@ -48,13 +43,13 @@ public class EnumeratingDirectoryTests
         var recursive = new SearchOptions { Recursive = true };
 
         int entryCount = dir.GetChildEntries(recursive).Count();
-        Assert.AreEqual(TotalDirCount + TotalFileCount, entryCount);
+        entryCount.ShouldBe(TotalDirCount + TotalFileCount);
 
         int fileCount = dir.GetChildFiles(recursive).Count();
-        Assert.AreEqual(TotalFileCount, fileCount);
+        fileCount.ShouldBe(TotalFileCount);
 
         int dirCount = dir.GetChildDirectories(recursive).Count();
-        Assert.AreEqual(TotalDirCount, dirCount);
+        dirCount.ShouldBe(TotalDirCount);
     }
 
     [TestMethod]
@@ -65,15 +60,15 @@ public class EnumeratingDirectoryTests
         var nonRecursive = new SearchOptions();
 
         var dirs = dir.GetChildDirectories("?_?_subdir", recursive).ToList();
-        Assert.AreEqual(DirCount * SubDirCount, dirs.Count());
-        Assert.AreEqual(dir.RootDirectory, dirs[0].RootDirectory); // Ensure RootLength is set correctly
+        dirs.Count().ShouldBe(DirCount * SubDirCount);
+        dirs[0].RootDirectory.ShouldBe(dir.RootDirectory); // Ensure RootLength is set correctly
 
         int fileCount = dir
             .GetChildDirectories("1_dir", nonRecursive).Single()
             .GetChildDirectories("1_1_subdir", nonRecursive).Single()
             .GetChildFiles("*file.txt", nonRecursive).Count();
 
-        Assert.AreEqual(FileCount, fileCount);
+        fileCount.ShouldBe(FileCount);
     }
 
     [TestMethod]
@@ -88,14 +83,15 @@ public class EnumeratingDirectoryTests
             .GetChildDirectories("1_1_subdir", nonRecursive).Single()
             .GetRelativeChildFiles("*_1_file.txt", nonRecursive).Single();
 
-        Assert.AreEqual("1_1_1_file.txt", file.PathDisplay);
+        file.PathDisplay.ShouldBe("1_1_1_file.txt");
 
         var files = dir.GetRelativeChildFiles("*_1_file.txt", recursive).ToArray();
-        Assert.AreEqual(DirCount * SubDirCount, files.Length);
+        files.Length.ShouldBe(DirCount * SubDirCount);
 
-        foreach (var f in files) {
-            Assert.AreEqual("", f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay);
-            Assert.AreEqual(false, f.IsRooted);
+        foreach (var f in files)
+        {
+            f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay.ShouldBe("");
+            f.IsRooted.ShouldBeFalse();
         }
     }
 
@@ -108,11 +104,12 @@ public class EnumeratingDirectoryTests
         var parentDir = DirectoryPath.ParseRelative("..");
 
         var files = dir.GetRelativeEntries(parentDir, "*_1_file.txt", recursive).ToArray();
-        Assert.AreEqual(DirCount * SubDirCount, files.Length);
+        files.Length.ShouldBe(DirCount * SubDirCount);
 
-        foreach (var f in files) {
-            Assert.AreEqual("", f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay);
-            Assert.AreEqual(false, f.IsRooted);
+        foreach (var f in files)
+        {
+            f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay.ShouldBe("");
+            f.IsRooted.ShouldBeFalse();
         }
     }
 
@@ -125,11 +122,12 @@ public class EnumeratingDirectoryTests
         var dirLevel1 = DirectoryPath.ParseRelative("1_dir");
 
         var files = dir.GetRelativeEntries(dirLevel1, "*_1_file.txt", recursive).ToArray();
-        Assert.AreEqual(SubDirCount, files.Length);
+        files.Length.ShouldBe(SubDirCount);
 
-        foreach (var f in files) {
-            Assert.AreEqual("", f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay);
-            Assert.AreEqual(false, f.IsRooted);
+        foreach (var f in files)
+        {
+            f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay.ShouldBe("");
+            f.IsRooted.ShouldBeFalse();
         }
     }
 
@@ -143,11 +141,12 @@ public class EnumeratingDirectoryTests
 
         var currentDir = DirectoryPath.ParseRelative(currentDirPath);
         var files = dir.GetRelativeEntries(currentDir, "*_1_file.txt", recursive).ToArray();
-        Assert.AreEqual(DirCount * SubDirCount, files.Length);
+        files.Length.ShouldBe(DirCount * SubDirCount);
 
-        foreach (var f in files) {
-            Assert.AreEqual(currentDir.PathDisplay, f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay);
-            Assert.AreEqual(false, f.IsRooted);
+        foreach (var f in files)
+        {
+            f.ParentDirectory!.ParentDirectory!.ParentDirectory!.PathDisplay.ShouldBe(currentDir.PathDisplay);
+            f.IsRooted.ShouldBeFalse();
         }
     }
 }

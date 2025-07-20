@@ -1,4 +1,3 @@
-﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Singulink.IO;
@@ -30,11 +29,14 @@ public abstract partial class PathFormat
 
         #region Not Supported
 
-        internal override bool IsUncPath(string path) => throw new NotSupportedException();
+        internal override bool IsUncPath(string path) =>
+            throw new NotSupportedException("Operation not supported in universal path format.");
 
-        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest) => throw new NotSupportedException();
+        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest) =>
+            throw new NotSupportedException("Operation not supported in universal path format.");
 
-        internal override string GetAbsolutePathExportString(string pathDisplay) => throw new NotSupportedException();
+        internal override string GetAbsolutePathExportString(string pathDisplay) =>
+            throw new NotSupportedException("Operation not supported in universal path format.");
 
         #endregion
 

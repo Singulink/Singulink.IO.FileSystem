@@ -1,0 +1,10 @@
+﻿<Project Sdk="MSTest.Sdk/3.6.4">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <UseVSTest>true</UseVSTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Source\Singulink.IO.FileSystem\Singulink.IO.FileSystem.csproj" />
+  </ItemGroup>
+</Project>

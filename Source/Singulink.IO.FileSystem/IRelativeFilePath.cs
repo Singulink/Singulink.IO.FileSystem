@@ -1,4 +1,4 @@
-﻿namespace Singulink.IO;
+namespace Singulink.IO;
 
 /// <summary>
 /// Represents a relative path to a file.

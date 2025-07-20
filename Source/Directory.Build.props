@@ -1,22 +1,40 @@
 <Project>
-	<PropertyGroup>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	</PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	</PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\key.snk</AssemblyOriginatorKeyFile>
+    <AnalysisLevel>latest-Recommended</AnalysisLevel>
 
-	<ItemGroup>
-		<!-- Fody -->
-		<PackageReference Include="RuntimeNullables.Fody" Version="2.0.0" PrivateAssets="all" />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
 
-		<!-- Analyzers -->
-		<PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" PrivateAssets="all" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all" />
-		<PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all" />
-	</ItemGroup>
+    <Authors>Singulink</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© Singulink. All rights reserved.</Copyright>
+    <PackageIcon>Singulink Icon 128x128.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/Singulink/Singulink.IO.FileSystem</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <PropertyGroup Label="AOT Compatibility" Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">
+    <IsAotCompatible>true</IsAotCompatible>
+    <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Source Link" Condition="'$(Configuration)' == 'Release'">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\Resources\Singulink Icon 128x128.png" Pack="true" PackagePath="\"/>
+    <None Include="..\key.snk" Link="key.snk" />
+  </ItemGroup>
 </Project>

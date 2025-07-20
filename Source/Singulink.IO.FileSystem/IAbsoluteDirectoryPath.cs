@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-
 namespace Singulink.IO;
 
 /// <summary>
@@ -35,7 +31,7 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     bool IsEmpty { get; }
 
     /// <summary>
-    /// Gets the drive type that the directory points to, i.e. CD-ROM, removable, network or fixed.
+    /// Gets the drive type that the directory points to, e.g. CD-ROM, removable, network or fixed.
     /// </summary>
     DriveType DriveType { get; }
 
@@ -69,8 +65,10 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <summary>
     /// Deletes the specified directory and, if indicated, any subdirectories and files in the directory.
     /// </summary>
-    /// <param name="recursive">True to remove directories, subdirectories and files in path; otherwise, false.</param>
-    void Delete(bool recursive = false);
+    /// <param name="recursive"><see langword="true"/> to remove directories, subdirectories and files in path; otherwise, <see langword="false"/>.</param>
+    /// <param name="ignoreNotFound"><see langword="true"/> to ignore directory not found errors; otherwise, <see langword="false"/> to throw <see
+    /// cref="DirectoryNotFoundException"/> if the file was not found.</param>
+    void Delete(bool recursive = false, bool ignoreNotFound = true);
 
     #endregion
 

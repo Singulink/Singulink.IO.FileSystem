@@ -1,4 +1,3 @@
-﻿using System.IO;
 using System.Runtime.InteropServices;
 
 #pragma warning disable SA1310 // Field names should not contain underscore

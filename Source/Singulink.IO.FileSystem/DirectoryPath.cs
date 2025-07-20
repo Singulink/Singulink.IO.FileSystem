@@ -1,6 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 
 namespace Singulink.IO;
@@ -95,6 +92,20 @@ public static class DirectoryPath
     #region Special Directories
 
     /// <summary>
+    /// Gets the base directory of the application that the assembly resolver users to probe for assemblies, which is typically the directory where the
+    /// application's executable resides.
+    /// </summary>
+    public static IAbsoluteDirectoryPath GetAppBase()
+    {
+        string path = AppContext.BaseDirectory;
+
+        if (path.Length is 0)
+            throw new InvalidOperationException("Application does not have a base directory.");
+
+        return ParseAbsolute(path, PathOptions.None);
+    }
+
+    /// <summary>
     /// Gets the directory path of the specified assembly.
     /// </summary>
     public static IAbsoluteDirectoryPath GetAssemblyLocation(Assembly assembly) => FilePath.GetAssemblyLocation(assembly).ParentDirectory;
@@ -128,7 +139,7 @@ public static class DirectoryPath
     }
 
     /// <summary>
-    /// Gets the list of directory paths that represent mounting points (drives in Windows).
+    /// Gets the list of directory paths that represent mounting points (i.e. drives in Windows).
     /// </summary>
     public static IEnumerable<IAbsoluteDirectoryPath> GetMountingPoints()
     {

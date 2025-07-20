@@ -1,19 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30114.105
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36212.18 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Singulink.IO.FileSystem", "Singulink.IO.FileSystem\Singulink.IO.FileSystem.csproj", "{C4076254-20A2-4038-A216-789EC3B2CAE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Singulink.IO.FileSystem", "Source\Singulink.IO.FileSystem\Singulink.IO.FileSystem.csproj", "{C4076254-20A2-4038-A216-789EC3B2CAE5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5C70A00C-3119-4E0F-9F87-636636602B07}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		Directory.Build.props = Directory.Build.props
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Singulink.IO.FileSystem.Tests", "Tests\Singulink.IO.FileSystem.Tests\Singulink.IO.FileSystem.Tests.csproj", "{ECD95980-56B0-4D4C-BB12-2822A2EB1A2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Singulink.IO.FileSystem.Tests", "Singulink.IO.FileSystem.Tests\Singulink.IO.FileSystem.Tests.csproj", "{ECD95980-56B0-4D4C-BB12-2822A2EB1A2C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{DA4F4FCC-2874-4B22-A833-40875C4B5963}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{DA4F4FCC-2874-4B22-A833-40875C4B5963}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source", "Source", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +30,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C4076254-20A2-4038-A216-789EC3B2CAE5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{ECD95980-56B0-4D4C-BB12-2822A2EB1A2C} = {DA4F4FCC-2874-4B22-A833-40875C4B5963}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

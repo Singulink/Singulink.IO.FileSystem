@@ -1,5 +1,3 @@
-﻿using System;
-
 #pragma warning disable RCS1154 // Sort enum members.
 
 namespace Singulink.IO;
@@ -39,7 +37,7 @@ public enum PathOptions
     /// <summary>
     /// <para>Disallows entry names with a leading space.</para>
     /// <para>Leading spaces can cause problems for many Windows applications and are not fully supported by File Explorer. They can be difficult to handle
-    /// correctly in application code, i.e. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
+    /// correctly in application code, e.g. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
     /// nice with them on Windows.</para>
     /// </summary>
     NoLeadingSpaces = 1 << 9,
@@ -47,30 +45,35 @@ public enum PathOptions
     /// <summary>
     /// <para>Disallows entry names with a trailing space.</para>
     /// <para>Trailing spaces can cause problems for many Windows applications and are not supported by File Explorer. They can be difficult to handle
-    /// correctly in application code, i.e. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
+    /// correctly in application code, e.g. trimming input from users/data needs to be handled with care and <see cref="System.IO"/> often doesn't play
     /// nice with them on Windows.</para>
     /// </summary>
     NoTrailingSpaces = 1 << 10,
 
     /// <summary>
-    /// <para>Disallows entry names with a trailing dot. This flag has no effect on the <see cref="PathFormat.Unix"/> path format.</para>
-    /// <para>Trailing dots can cause problems for many Windows applications, are not supported by File Explorer and <see cref="System.IO"/> often doesn't
-    /// play nice with them on Windows. Trailing dots do not pose any problems in Unix-based file systems and they don't pose potential trimming bugs so
-    /// this flag has no effect when the <see cref="PathFormat.Unix"/> path format is used.</para>
+    /// <para>Disallows entry names with a trailing dot.</para>
+    /// <para>Trailing dots can cause problems for many Windows applications, are not supported by File Explorer, and <see cref="System.IO"/> often doesn't
+    /// play nice with them.</para>
     /// </summary>
     NoTrailingDots = 1 << 11,
 
     /// <summary>
-    /// Disallows navigational path segments (i.e. <c>.</c> or <c>..</c>) and rooted relative paths (i.e. <c>/Some/Path</c> when using the <see
+    /// Disallows navigational path segments (e.g. <c>.</c> or <c>..</c>) and rooted relative paths (e.g. <c>/Some/Path</c> when using the <see
     /// cref="PathFormat.Windows"/> path format). Regular non-rooted relative paths are permitted.
     /// </summary>
     NoNavigation = 1 << 12,
 
     /// <summary>
-    /// A combination of the <see cref="NoReservedDeviceNames"/>, <see cref="NoLeadingSpaces"/>, <see cref="NoTrailingSpaces"/> and <see
-    /// cref="NoTrailingDots"/> flags. This is the default value used for all parsing operations if no value is specified.
+    /// Disallows control characters in entry names. Control characters are characters with ASCII codes 1-31. This flag has no effect on the <see
+    /// cref="PathFormat.Windows"/> path format (control characters are always disallowed in Windows paths).
     /// </summary>
-    NoUnfriendlyNames = NoReservedDeviceNames | NoLeadingSpaces | NoTrailingSpaces | NoTrailingDots,
+    NoControlCharacters = 1 << 13,
+
+    /// <summary>
+    /// A combination of the <see cref="NoReservedDeviceNames"/>, <see cref="NoLeadingSpaces"/>, <see cref="NoTrailingSpaces"/>, <see
+    /// cref="NoTrailingDots"/> and <see cref="NoControlCharacters"/> flags. This is the default value used for all parsing operations if no value is specified.
+    /// </summary>
+    NoUnfriendlyNames = NoReservedDeviceNames | NoLeadingSpaces | NoTrailingSpaces | NoTrailingDots | NoControlCharacters,
 
     /// <summary>
     /// <para>Effectively causes the <see cref="NoUnfriendlyNames"/> flags to be appended when using the <see cref="PathFormat.Windows"/> and <see

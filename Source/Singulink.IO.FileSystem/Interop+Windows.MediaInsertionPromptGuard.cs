@@ -1,5 +1,3 @@
-﻿using System;
-
 namespace Singulink.IO;
 
 internal static partial class Interop

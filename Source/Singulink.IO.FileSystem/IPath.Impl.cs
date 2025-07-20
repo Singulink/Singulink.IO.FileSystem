@@ -1,41 +1,37 @@
-﻿using System;
+#if NET9_0_OR_GREATER
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+#endif
 
 namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IPath.
+/// Contains the implementation of IPath.
 /// </content>
 public partial interface IPath
 {
-    internal abstract class Impl : IPath
+    internal abstract class Impl(string pathDisplay, int rootLength, PathFormat pathFormat) : IPath
     {
-        protected Impl(string pathDisplay, int rootLength, PathFormat pathFormat)
-        {
-            PathDisplay = pathDisplay;
-            RootLength = rootLength;
-            PathFormat = pathFormat;
-        }
+        public string PathDisplay { get; } = pathDisplay;
 
-        public string PathDisplay { get; }
+        public int RootLength { get; } = rootLength;
 
-        public int RootLength { get; }
-
-        public PathFormat PathFormat { get; }
+        public PathFormat PathFormat { get; } = pathFormat;
 
         public string Name => PathFormat.GetEntryName(PathDisplay, RootLength);
 
-        public bool IsRooted => PathFormat.GetPathKind(PathDisplay) != PathKind.Relative;
+        public bool IsRooted => PathFormat.GetPathKind(PathDisplay) is not PathKind.Relative;
 
-        int IPath.RootLength => RootLength;
+        public abstract bool HasParentDirectory { get; }
 
-        #region Equality
+        public abstract IDirectoryPath? ParentDirectory { get; }
 
         public bool Equals(IPath? other)
         {
             if (other == null)
                 return false;
 
-            return (this is IFilePath) == (other is IFilePath) &&
+            return GetType() == other.GetType() &&
                 PathFormat == other.PathFormat &&
                 PathDisplay.AsSpan(0, RootLength).Equals(other.PathDisplay.AsSpan(0, other.RootLength), StringComparison.OrdinalIgnoreCase) &&
                 PathDisplay.AsSpan(RootLength).Equals(other.PathDisplay.AsSpan(other.RootLength), StringComparison.Ordinal);
@@ -43,21 +39,12 @@ public partial interface IPath
 
         public override bool Equals(object? obj) => Equals(obj as IPath);
 
-        // TODO: Combine case-insensitive root with case-sensitive remainder hash codes to avoid hash collisions with different case paths when new
-        // ReadOnlySpan<char> StringComparer APIs become available: https://github.com/dotnet/runtime/issues/27229
-        public override int GetHashCode() => PathDisplay.GetHashCode(StringComparison.OrdinalIgnoreCase);
+        public override int GetHashCode() => HashCode.Combine(
+            GetType(),
+            PathFormat,
+            string.GetHashCode(PathDisplay.AsSpan(0, RootLength), StringComparison.OrdinalIgnoreCase),
+            string.GetHashCode(PathDisplay.AsSpan(RootLength)));
 
-        #endregion
-
-        #region String Formatting
-
-        public override string ToString()
-        {
-            // Intentionally thwart users from using ToString() to get a usable path, rather force them to consider whether PathExport or PathDisplay is
-            // more suitable.
-            return (this is IFilePath ? "[File] " : "[Directory] ") + PathDisplay;
-        }
-
-        #endregion
+        public override string ToString() => $"[{PathFormat}] {(this is IFilePath ? "File: " : "Directory: ")} {PathDisplay}";
     }
 }

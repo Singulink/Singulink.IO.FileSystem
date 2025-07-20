@@ -12,7 +12,7 @@ Your main entry points into creating file and directory paths are the `Directory
 
 Paths are always strongly typed to the kind of path they represent. Every path implements `IPath`, but there are two main sub-branches of interface hierarchies that represent the possible path types. The first branches on whether the path is relative or absolute via `IRelativePath` and `IAbsolutePath`, and the second branches on whether the path points to a file or a directory via `IFilePath` and `IDirectoryPath`. These are then combined into all possible specific combinations with `IRelativeFilePath`, `IRelativeDirectoryPath`, `IAbsoluteFilePath` and `IAbsoluteDirectoryPath`. Every instance of a path implements one of those final 4 specific interfaces. 
 
-Some methods or operations may return a less specific interface if all the information is not statically available about the resulting path, but the result can always be cast to one of the 4 specific interfaces. There are 4 helper properties available on every path to help you determine what it can be cast to: `IsAbsolute`, `IsRelative`, `IsFile`, and `IsDirectory`.
+Some methods or operations may return a less specific interface if all the information is not statically available about the resulting path, but the result can always be cast to one of the 4 specific interfaces.
 
 ### Explicit Intent
 
@@ -23,13 +23,13 @@ string userEnteredPath = GetPathFromUser();
 
 // Parses both relative and absolute file paths:
 
-IFilePath parsedFilePath = FilePath.Parse(userEnteredPath, PathOptions.NoUnfriendlyNames);
+IFilePath filePath = FilePath.Parse(userEnteredPath, PathOptions.NoUnfriendlyNames);
 
 IAbsoluteFilePath finalFilePath;
 
-if (parsedFilePath.IsAbsolute)
+if (filePath is IAbsoluteFilePath absFilePath)
 {
-    finalFilePath = (IAbsoluteFilePath)parsedFilePath;
+    finalFilePath = absFilePath;
 }
 else
 {
@@ -38,7 +38,7 @@ else
     // that we can do file system operations on:
 
     IAbsoluteDirectoryPath currentDirectory = DirectoryPath.GetCurrent();
-    finalFilePath = currentDirectory + (IRelativeFilePath)parsedFilePath;
+    finalFilePath = currentDirectory + (IRelativeFilePath)filePath;
 }
 
 // Create the file and do something with it:

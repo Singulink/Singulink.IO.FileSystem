@@ -1,0 +1,2 @@
+T:Microsoft.VisualStudio.TestTools.UnitTesting.TestClassAttribute; Use [PrefixTestClass] instead.
+T:Microsoft.VisualStudio.TestTools.UnitTesting.Assert; Use Shouldly instead.

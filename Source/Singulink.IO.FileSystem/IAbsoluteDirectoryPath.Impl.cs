@@ -1,69 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using Singulink.Enums;
 using Singulink.IO.Utilities;
 
 namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IAbsoluteDirectoryPath.
+/// Contains the implementation of IAbsoluteDirectoryPath.
 /// </content>
 public partial interface IAbsoluteDirectoryPath
 {
-    internal new sealed class Impl : IAbsolutePath.Impl, IAbsoluteDirectoryPath
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IAbsolutePath.Impl(path, rootLength, pathFormat), IAbsoluteDirectoryPath
     {
-        internal Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
-        {
-        }
+        private static readonly EnumerationOptions CheckAccessEnumerationOptions = new() { IgnoreInaccessible = false };
 
-        public override bool Exists {
+        public override bool Exists
+        {
             get {
                 PathFormat.EnsureCurrent();
-                return Directory.Exists(PathExport);
+                return Directory.Exists(PathExport); // Only returns true for actual dirs, not files
             }
         }
 
-        public bool IsEmpty {
+        public bool IsEmpty
+        {
             get {
                 PathFormat.EnsureCurrent();
-                return GetFileSystemInfos("*", null, EntryEnumerator).Any();
+
+                try
+                {
+                    return new DirectoryInfo(PathExport).EnumerateFileSystemInfos().Any();
+                }
+                catch (IOException ex) when (ex.GetType() == typeof(IOException))
+                {
+                    ThrowNotFoundIfDirIsFile(this);
+                    throw;
+                }
             }
         }
 
         public bool IsRoot => PathDisplay.Length == RootLength;
 
-        public override IAbsoluteDirectoryPath? ParentDirectory {
+        public override IAbsoluteDirectoryPath? ParentDirectory
+        {
             get {
                 if (!HasParentDirectory)
                     return null;
 
-                var parentPath = PathFormat.GetPreviousDirectory(PathDisplay, RootLength);
+                var parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength);
                 return new Impl(parentPath.ToString(), RootLength, PathFormat);
             }
         }
 
-        public bool HasParentDirectory => !IsRoot;
+        public override bool HasParentDirectory => !IsRoot;
 
-        bool IPath.HasParentDirectory => HasParentDirectory;
-
-        public override FileAttributes Attributes {
+        public override FileAttributes Attributes
+        {
             get {
                 PathFormat.EnsureCurrent();
 
                 FileAttributes attributes;
 
-                try {
+                try
+                {
                     attributes = File.GetAttributes(PathExport);
                 }
-                catch (FileNotFoundException) {
+                catch (FileNotFoundException)
+                {
                     attributes = 0;
                 }
-                catch (UnauthorizedAccessException ex) {
+                catch (UnauthorizedAccessException ex)
+                {
                     throw Ex.Convert(ex);
                 }
 
-                if (!attributes.HasFlag(FileAttributes.Directory))
+                if (!attributes.HasAllFlags(FileAttributes.Directory))
                     throw Ex.NotFound(this);
 
                 return attributes;
@@ -76,37 +85,44 @@ public partial interface IAbsoluteDirectoryPath
             }
         }
 
-        public DriveType DriveType {
+        public DriveType DriveType
+        {
             get {
                 PathFormat.EnsureCurrent();
                 EnsureExists();
 
                 DriveType type;
 
-                if (PathFormat == PathFormat.Windows) {
+                if (PathFormat == PathFormat.Windows)
+                {
                     type = IsUnc ? DriveType.Network : Interop.Windows.GetDriveType(this);
                 }
-                else {
-                    try {
+                else
+                {
+                    try
+                    {
                         type = new DriveInfo(PathDisplay).DriveType;
                     }
-                    catch (UnauthorizedAccessException ex) {
+                    catch (UnauthorizedAccessException ex)
+                    {
                         throw Ex.Convert(ex);
                     }
                 }
 
-                if (type == DriveType.NoRootDirectory)
+                if (type is DriveType.NoRootDirectory)
                     throw Ex.NotFound(this);
 
                 return type;
             }
         }
 
-        public string FileSystem {
+        public string FileSystem
+        {
             get {
                 PathFormat.EnsureCurrent();
 
-                if (PathFormat == PathFormat.Windows) {
+                if (PathFormat == PathFormat.Windows)
+                {
                     // Get last dir that is either the root or a reparse point
 
                     var dir = this;
@@ -116,75 +132,91 @@ public partial interface IAbsoluteDirectoryPath
 
                     return Interop.Windows.GetFileSystem(dir);
                 }
-                else {
+                else
+                {
                     EnsureExists();
 
-                    try {
+                    try
+                    {
                         return new DriveInfo(PathDisplay).DriveFormat;
                     }
-                    catch (UnauthorizedAccessException ex) {
+                    catch (UnauthorizedAccessException ex)
+                    {
                         throw Ex.Convert(ex);
                     }
                 }
             }
         }
 
-        public long AvailableFreeSpace {
+        public long AvailableFreeSpace
+        {
             get {
                 PathFormat.EnsureCurrent();
 
-                if (PathFormat == PathFormat.Windows) {
+                if (PathFormat == PathFormat.Windows)
+                {
                     Interop.Windows.GetSpace(this, out long available, out _, out _);
                     return available;
                 }
-                else {
+                else
+                {
                     EnsureExists();
 
-                    try {
+                    try
+                    {
                         return new DriveInfo(PathExport).AvailableFreeSpace;
                     }
-                    catch (UnauthorizedAccessException ex) {
+                    catch (UnauthorizedAccessException ex)
+                    {
                         throw Ex.Convert(ex);
                     }
                 }
             }
         }
 
-        public long TotalFreeSpace {
+        public long TotalFreeSpace
+        {
             get {
                 PathFormat.EnsureCurrent();
 
-                if (PathFormat == PathFormat.Windows) {
+                if (PathFormat == PathFormat.Windows)
+                {
                     Interop.Windows.GetSpace(this, out _, out _, out long totalFree);
                     return totalFree;
                 }
 
                 EnsureExists();
 
-                try {
+                try
+                {
                     return new DriveInfo(PathExport).TotalFreeSpace;
                 }
-                catch (UnauthorizedAccessException ex) {
+                catch (UnauthorizedAccessException ex)
+                {
                     throw Ex.Convert(ex);
                 }
             }
         }
 
-        public long TotalSize {
+        public long TotalSize
+        {
             get {
                 PathFormat.EnsureCurrent();
 
-                if (PathFormat == PathFormat.Windows) {
+                if (PathFormat == PathFormat.Windows)
+                {
                     Interop.Windows.GetSpace(this, out _, out long totalSize, out _);
                     return totalSize;
                 }
 
                 EnsureExists();
 
-                try {
+                try
+                {
                     return new DriveInfo(PathExport).TotalSize;
                 }
-                catch (UnauthorizedAccessException ex) {
+                catch (UnauthorizedAccessException ex)
+                {
                     throw Ex.Convert(ex);
                 }
             }
@@ -193,7 +225,8 @@ public partial interface IAbsoluteDirectoryPath
         /// <summary>
         /// Gets the export path with a trailing separator, which is required for some Win32 functions.
         /// </summary>
-        internal string PathExportWithTrailingSeparator {
+        internal string PathExportWithTrailingSeparator
+        {
             get {
                 string path = PathExport;
                 string separator = PathFormat.SeparatorString; // Avoid extra string alloc when appending char
@@ -231,21 +264,17 @@ public partial interface IAbsoluteDirectoryPath
             var appendPath = path.PathFormat.SplitRelativeNavigation(path.PathDisplay, out int parentDirs);
             appendPath = PathFormat.ConvertRelativePathToMutualFormat(appendPath, path.PathFormat, PathFormat);
 
-            string basePath = GetBasePathForAppending(parentDirs);
-
-            if (basePath == null)
-                throw new ArgumentException("Invalid path combination: Attempt to navigate past root directory.", nameof(path));
-
+            string basePath = GetBasePathForAppending(parentDirs) ?? throw new ArgumentException("Invalid path combination: Attempt to navigate past root directory.", nameof(path));
             string newPath;
 
-            if (appendPath.Length == 0)
+            if (appendPath.Length is 0)
                 newPath = basePath;
             else if (basePath.Length == RootLength)
-                newPath = StringHelper.Concat(basePath, appendPath);
+                newPath = $"{basePath}{appendPath.Span}";
             else
-                newPath = StringHelper.Concat(basePath, PathFormat.SeparatorString, appendPath);
+                newPath = $"{basePath}{PathFormat.Separator}{appendPath.Span}";
 
-            if (path.IsDirectory)
+            if (path is IDirectoryPath)
                 return new Impl(newPath, RootLength, PathFormat);
             else
                 return new IAbsoluteFilePath.Impl(newPath, RootLength, PathFormat);
@@ -255,12 +284,13 @@ public partial interface IAbsoluteDirectoryPath
         {
             // TODO: this can be optimized so parent directory instances aren't created.
 
-            if (parentDirs == -1)
+            if (parentDirs is -1)
                 return RootDirectory.PathDisplay;
 
             IAbsoluteDirectoryPath currentDir = this;
 
-            for (int i = 0; i < parentDirs; i++) {
+            for (int i = 0; i < parentDirs; i++)
+            {
                 currentDir = currentDir.ParentDirectory;
 
                 if (currentDir == null)
@@ -276,76 +306,61 @@ public partial interface IAbsoluteDirectoryPath
 
         // NOTE: Enumeration methods will never throw UnauthorizedAccessException
 
-        private delegate IEnumerable<FileSystemInfo> Enumerator(DirectoryInfo info, string searchPattern, EnumerationOptions options);
+        private delegate IEnumerable<FileSystemInfo> GetSystemInfosFunc(DirectoryInfo info, string searchPattern, EnumerationOptions options);
 
-        private static readonly Enumerator DirectoryEnumerator = (info, searchPattern, options) => info.EnumerateDirectories(searchPattern, options);
+        private static readonly GetSystemInfosFunc GetSystemDirectoryInfos = (info, searchPattern, options) => info.EnumerateDirectories(searchPattern, options);
 
-        private static readonly Enumerator FileEnumerator = (info, searchPattern, options) => info.EnumerateFiles(searchPattern, options);
+        private static readonly GetSystemInfosFunc GetSystemFileInfos = (info, searchPattern, options) => info.EnumerateFiles(searchPattern, options);
 
-        private static readonly Enumerator EntryEnumerator = (info, searchPattern, options) => info.EnumerateFileSystemInfos(searchPattern, options);
+        private static readonly GetSystemInfosFunc GetSystemEntryInfos = (info, searchPattern, options) => info.EnumerateFileSystemInfos(searchPattern, options);
 
-        public IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions? options)
-        {
-            return GetChildEntries<IAbsoluteDirectoryPath>(searchPattern, options, DirectoryEnumerator);
-        }
+        public IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions? options) =>
+            GetChildEntries<IAbsoluteDirectoryPath>(searchPattern, options, GetSystemDirectoryInfos);
 
-        public IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions? options)
-        {
-            return GetChildEntries<IAbsoluteFilePath>(searchPattern, options, FileEnumerator);
-        }
+        public IEnumerable<IAbsoluteFilePath> GetChildFiles(string searchPattern, SearchOptions? options) =>
+            GetChildEntries<IAbsoluteFilePath>(searchPattern, options, GetSystemFileInfos);
 
-        public IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions? options)
-        {
-            return GetChildEntries<IAbsolutePath>(searchPattern, options, EntryEnumerator);
-        }
+        public IEnumerable<IAbsolutePath> GetChildEntries(string searchPattern, SearchOptions? options) =>
+            GetChildEntries<IAbsolutePath>(searchPattern, options, GetSystemEntryInfos);
 
-        public IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeChildEntries<IRelativeDirectoryPath>(searchPattern, options, DirectoryEnumerator);
-        }
+        public IEnumerable<IRelativeDirectoryPath> GetRelativeChildDirectories(string searchPattern, SearchOptions? options) =>
+            GetRelativeChildEntries<IRelativeDirectoryPath>(searchPattern, options, GetSystemDirectoryInfos);
 
-        public IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeChildEntries<IRelativeFilePath>(searchPattern, options, FileEnumerator);
-        }
+        public IEnumerable<IRelativeFilePath> GetRelativeChildFiles(string searchPattern, SearchOptions? options) =>
+            GetRelativeChildEntries<IRelativeFilePath>(searchPattern, options, GetSystemFileInfos);
 
-        public IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeChildEntries<IRelativePath>(searchPattern, options, EntryEnumerator);
-        }
+        public IEnumerable<IRelativePath> GetRelativeChildEntries(string searchPattern, SearchOptions? options) =>
+            GetRelativeChildEntries<IRelativePath>(searchPattern, options, GetSystemEntryInfos);
 
-        public IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeEntries<IRelativeFilePath>(searchLocation, searchPattern, options, EntryEnumerator);
-        }
+        public IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options) =>
+            GetRelativeEntries<IRelativeDirectoryPath>(searchLocation, searchPattern, options, GetSystemDirectoryInfos);
 
-        public IEnumerable<IRelativeDirectoryPath> GetRelativeDirectories(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeEntries<IRelativeDirectoryPath>(searchLocation, searchPattern, options, EntryEnumerator);
-        }
+        public IEnumerable<IRelativeFilePath> GetRelativeFiles(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options) =>
+            GetRelativeEntries<IRelativeFilePath>(searchLocation, searchPattern, options, GetSystemFileInfos);
 
-        public IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options)
-        {
-            return GetRelativeEntries<IRelativePath>(searchLocation, searchPattern, options, EntryEnumerator);
-        }
+        public IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options) =>
+            GetRelativeEntries<IRelativePath>(searchLocation, searchPattern, options, GetSystemEntryInfos);
 
-        private IEnumerable<TEntry> GetChildEntries<TEntry>(string searchPattern, SearchOptions? options, Enumerator enumerator)
+        private IEnumerable<TEntry> GetChildEntries<TEntry>(string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
             where TEntry : IAbsolutePath
         {
-            foreach (var entryInfo in GetFileSystemInfos(searchPattern, options, enumerator)) {
-                string relativePath = entryInfo.FullName[PathExport.Length..];
+            foreach (var entryInfo in GetEntryInfos(searchPattern, options, getInfos))
+            {
+                var relativePath = entryInfo.FullName.AsSpan()[PathExport.Length..];
+                string resultPath = $"{PathDisplay}{relativePath}";
 
-                if (entryInfo is DirectoryInfo dirInfo)
-                    yield return (TEntry)(object)new Impl(StringHelper.Concat(PathDisplay, relativePath), RootLength, PathFormat);
-                else if (entryInfo is FileInfo fileInfo)
-                    yield return (TEntry)(object)new IAbsoluteFilePath.Impl(StringHelper.Concat(PathDisplay, relativePath), RootLength, PathFormat);
+                if (entryInfo is DirectoryInfo)
+                    yield return (TEntry)(object)new Impl(resultPath, RootLength, PathFormat);
+                else if (entryInfo is FileInfo)
+                    yield return (TEntry)(object)new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat);
             }
         }
 
-        private IEnumerable<TEntry> GetRelativeChildEntries<TEntry>(string searchPattern, SearchOptions? options, Enumerator enumerator)
+        private IEnumerable<TEntry> GetRelativeChildEntries<TEntry>(string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
             where TEntry : IRelativePath
         {
-            foreach (var entryInfo in GetFileSystemInfos(searchPattern, options, enumerator)) {
+            foreach (var entryInfo in GetEntryInfos(searchPattern, options, getInfos))
+            {
                 string relativePath = entryInfo.FullName[(PathExport.Length + 1)..];
 
                 if (entryInfo is DirectoryInfo)
@@ -355,81 +370,142 @@ public partial interface IAbsoluteDirectoryPath
             }
         }
 
-        private IEnumerable<TEntry> GetRelativeEntries<TEntry>(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options, Enumerator enumerator)
+        private IEnumerable<TEntry> GetRelativeEntries<TEntry>(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
             where TEntry : IRelativePath
         {
             var searchDir = (Impl)Combine(searchLocation);
-            string[] matchDirs = Array.Empty<string>();
-            string prefix = searchLocation.PathDisplay;
+            string[] matchDirs;
+            string prefix;
 
-            if (prefix.Length > 0 && searchLocation.Name.Length == 0) {
+            if (searchLocation.PathDisplay.Length > 0 && searchLocation.Name.Length is 0)
+            {
                 searchLocation.PathFormat.SplitRelativeNavigation(searchLocation.PathDisplay, out int parentDirs);
 
-                if (parentDirs == -1) {
+                if (parentDirs is -1)
+                {
                     matchDirs = GetAllDirNames(this).Reverse().ToArray();
-                    prefix = string.Join(PathFormat.SeparatorChar, Enumerable.Repeat("..", matchDirs.Length));
+                    prefix = string.Join(PathFormat.Separator, Enumerable.Repeat("..", matchDirs.Length));
                 }
-                else {
+                else
+                {
                     matchDirs = GetAllDirNames(this).Take(parentDirs).Reverse().ToArray();
+                    prefix = searchLocation.PathDisplay;
                 }
             }
+            else
+            {
+                matchDirs = [];
+                prefix = searchLocation.PathDisplay;
+            }
 
-            foreach (var entry in searchDir.GetRelativeChildEntries<TEntry>(searchPattern, options, enumerator)) {
+            foreach (var entry in searchDir.GetRelativeChildEntries<TEntry>(searchPattern, options, getInfos))
+            {
                 StringOrSpan currentPrefix = prefix;
                 StringOrSpan entryPath = entry.PathDisplay;
 
-                foreach (string matchDir in matchDirs) {
+                foreach (string matchDir in matchDirs)
+                {
                     var firstEntryName = PathFormat.GetFirstEntry(entryPath);
 
-                    if (firstEntryName.Span.SequenceEqual(matchDir)) {
+                    if (firstEntryName.Span.SequenceEqual(matchDir))
+                    {
                         currentPrefix = currentPrefix.Span[Math.Min(3, currentPrefix.Length)..];
                         entryPath = entryPath.Span[(firstEntryName.Length + 1)..];
                     }
-                    else {
+                    else
+                    {
                         break;
                     }
                 }
 
-                string finalPath = currentPrefix.Length == 0 ? entryPath : StringHelper.Concat(currentPrefix, PathFormat.SeparatorString, entryPath);
+                string finalPath = currentPrefix.Length is 0 ? entryPath : $"{currentPrefix}{PathFormat.Separator}{entryPath}";
 
-                if (entry.IsFile) {
+                if (entry is IFilePath)
+                {
                     yield return (TEntry)(object)new IRelativeFilePath.Impl(finalPath, 0, PathFormat);
                 }
-                else {
+                else
+                {
                     yield return (TEntry)(object)new IRelativeDirectoryPath.Impl(finalPath, 0, PathFormat);
                 }
             }
 
             static IEnumerable<string> GetAllDirNames(IAbsoluteDirectoryPath path)
             {
-                while (!path.IsRoot) {
+                while (!path.IsRoot)
+                {
                     yield return path.Name;
                     path = path.ParentDirectory!;
                 }
             }
         }
 
-        private IEnumerable<FileSystemInfo> GetFileSystemInfos(string searchPattern, SearchOptions? options, Enumerator enumerator)
+        private IEnumerable<FileSystemInfo> GetEntryInfos(string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
         {
             PathFormat.EnsureCurrent();
             PathFormat.ValidateSearchPattern(searchPattern, nameof(searchPattern));
 
-            var info = new DirectoryInfo(PathExport);
+            var searchDirInfo = new DirectoryInfo(PathExport);
+            var enumerationOptions = SearchOptions.ToEnumerationOptions(options, out bool requiresExtraAccessCheck);
+            IEnumerator<FileSystemInfo> enumerator;
 
-            try {
-                // Dummy enumeration first to ensure access is authorized on the root directory.
-                // Throws IOEx if dir is a file. Change to DirNotFoundEx.
-                info.EnumerateFileSystemInfos().FirstOrDefault();
-
-                // Real enumeration which will ignore unauthorized access:
-                return enumerator.Invoke(info, searchPattern, options == null ? SearchOptions.DefaultEnumerationOptions : options.ToEnumerationOptions());
+            try
+            {
+                // Throws IOEx if dir is a file on windows, DirectoryNotFoundEx on Unix. Convert to IOEx.
+                enumerator = getInfos(searchDirInfo, searchPattern, enumerationOptions).GetEnumerator();
             }
-            catch (UnauthorizedAccessException ex) {
+            catch (DirectoryNotFoundException) when (PathFormat == PathFormat.Unix)
+            {
+                ThrowIfDirIsFile(this);
+                throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
                 throw Ex.Convert(ex);
             }
-            catch (IOException ex) when (ex.GetType() == typeof(IOException)) {
-                ThrowNotFoundIfDirIsFile(this);
-                throw;
+
+            bool yielded = false;
+
+            while (true)
+            {
+                FileSystemInfo entryInfo = null;
+
+                try
+                {
+                    if (enumerator.MoveNext())
+                        entryInfo = enumerator.Current;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    enumerator.Dispose();
+                    throw Ex.Convert(ex);
+                }
+                catch (Exception)
+                {
+                    enumerator.Dispose();
+                    throw;
+                }
+
+                if (entryInfo is null)
+                    break;
+
+                yield return entryInfo;
+                yielded = true;
+            }
+
+            enumerator.Dispose();
+
+            if (!yielded && requiresExtraAccessCheck)
+            {
+                try
+                {
+                    // Create dummy enumerator to check access to the directory.
+                    using var e = searchDirInfo.EnumerateFileSystemInfos("*", CheckAccessEnumerationOptions).GetEnumerator();
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    throw Ex.Convert(ex);
+                }
             }
         }
 
@@ -441,27 +517,43 @@ public partial interface IAbsoluteDirectoryPath
         {
             PathFormat.EnsureCurrent();
 
-            try {
+            try
+            {
                 Directory.CreateDirectory(PathExport);
             }
-            catch (UnauthorizedAccessException ex) {
+            catch (UnauthorizedAccessException ex)
+            {
                 throw Ex.Convert(ex);
             }
         }
 
-        public void Delete(bool recursive = false)
+        public void Delete(bool recursive = false, bool ignoreNotFound = true)
         {
             PathFormat.EnsureCurrent();
 
-            try {
-                // If path points to file then throws IOEx on Windows and DirNotFoundEx on Unix. Convert to DirNotFoundEx on Windows for consistency.
+            try
+            {
+                // If path points to file then IOEx is thrown with nonsense message on Windows and DirNotFoundEx on Unix. Always throw IOEx.
                 Directory.Delete(PathExport, recursive);
             }
-            catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException)) {
-                ThrowNotFoundIfDirIsFile(this);
+            catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException))
+            {
+                ThrowIfDirIsFile(this); // Get a better error message on windows if path points to a file
                 throw;
             }
-            catch (UnauthorizedAccessException ex) {
+            catch (DirectoryNotFoundException)
+            {
+                // On Windows, this means the directory does not exist. On Unix, this means either the directory does not exist or the path points to a file, so
+                // we check if it is a file and throw IOex if we should.
+
+                if (PathFormat == PathFormat.Unix)
+                    ThrowIfDirIsFile(this);
+
+                if (!ignoreNotFound)
+                    throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
                 throw Ex.Convert(ex);
             }
         }
@@ -474,21 +566,23 @@ public partial interface IAbsoluteDirectoryPath
 
             // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
 
-            foreach (var dir in GetPathsFromDirToRoot(this).Reverse()) {
+            foreach (var dir in GetPathsFromDirToRoot(this).Reverse())
+            {
                 if (!dir.Exists)
                     break;
 
                 lastExistingDir = dir;
             }
 
-            if (lastExistingDir == null)
+            if (lastExistingDir is null)
                 throw Ex.NotFound(RootDirectory);
 
             return lastExistingDir;
 
             static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
             {
-                while (true) {
+                while (true)
+                {
                     yield return path;
 
                     if (path.IsRoot)
@@ -499,15 +593,16 @@ public partial interface IAbsoluteDirectoryPath
             }
         }
 
-        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
+        internal override void EnsureExists()
         {
-            try {
-                if ((File.GetAttributes(path.PathExport) & FileAttributes.Directory) == 0)
-                    return true;
-            }
-            catch { }
+            if (!Directory.Exists(PathExport))
+                throw Ex.NotFound(this);
+        }
 
-            return false;
+        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
+        {
+            if (IsKnownToBeFile(path))
+                throw Ex.DirIsFile(path);
         }
 
         private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath path)
@@ -516,10 +611,15 @@ public partial interface IAbsoluteDirectoryPath
                 throw Ex.NotFound(path);
         }
 
-        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
+        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
         {
-            if (IsKnownToBeFile(path))
-                throw Ex.DirIsFile(path);
+            try
+            {
+                return File.Exists(path.PathExport);
+            }
+            catch { }
+
+            return false;
         }
 
         #endregion

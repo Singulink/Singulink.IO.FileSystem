@@ -1,9 +1,6 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Singulink.IO.FileSystem.Tests;
 
-[TestClass]
+[PrefixTestClass]
 public class AbsoluteDirectoryCombineTests
 {
     [TestMethod]
@@ -11,15 +8,15 @@ public class AbsoluteDirectoryCombineTests
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
         var combined = dir.CombineDirectory("../", PathOptions.None);
-        Assert.AreEqual(@"C:\dir1", combined.PathDisplay);
-        Assert.IsFalse(combined.IsRoot);
+        combined.PathDisplay.ShouldBe(@"C:\dir1");
+        combined.IsRoot.ShouldBeFalse();
 
         combined = dir.CombineDirectory("../../", PathOptions.None);
-        Assert.AreEqual(@"C:\", combined.PathDisplay);
-        Assert.IsTrue(combined.IsRoot);
+        combined.PathDisplay.ShouldBe(@"C:\");
+        combined.IsRoot.ShouldBeTrue();
 
         combined = dir.CombineDirectory(".", PathOptions.None);
-        Assert.AreEqual(@"C:\dir1\dir2", combined.PathDisplay);
+        combined.PathDisplay.ShouldBe(@"C:\dir1\dir2");
     }
 
     [TestMethod]
@@ -28,10 +25,10 @@ public class AbsoluteDirectoryCombineTests
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
 
         var combined = dir.CombineDirectory("/", PathOptions.None);
-        Assert.AreEqual(@"C:\", combined.PathDisplay);
+        combined.PathDisplay.ShouldBe(@"C:\");
 
         combined = dir.CombineDirectory("/test", PathOptions.None);
-        Assert.AreEqual(@"C:\test", combined.PathDisplay);
+        combined.PathDisplay.ShouldBe(@"C:\test");
     }
 
     [TestMethod]
@@ -39,29 +36,29 @@ public class AbsoluteDirectoryCombineTests
     {
         var dir = DirectoryPath.ParseAbsolute("/dir1/dir2", PathFormat.Unix, PathOptions.None);
         var combined = dir.CombineDirectory("../", PathOptions.None);
-        Assert.AreEqual("/dir1", combined.PathDisplay);
-        Assert.IsFalse(combined.IsRoot);
+        combined.PathDisplay.ShouldBe("/dir1");
+        combined.IsRoot.ShouldBeFalse();
 
         combined = dir.CombineDirectory("../../", PathOptions.None);
-        Assert.AreEqual("/", combined.PathDisplay);
-        Assert.IsTrue(combined.IsRoot);
+        combined.PathDisplay.ShouldBe("/");
+        combined.IsRoot.ShouldBeTrue();
 
         combined = dir.CombineDirectory(".", PathOptions.None);
-        Assert.AreEqual("/dir1/dir2", combined.PathDisplay);
+        combined.PathDisplay.ShouldBe("/dir1/dir2");
     }
 
     [TestMethod]
     public void NavigatePastRootWindows()
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
-        Assert.ThrowsException<ArgumentException>(() => dir.CombineDirectory("../../..", PathOptions.None));
+        Should.Throw<ArgumentException>(() => dir.CombineDirectory("../../..", PathOptions.None));
     }
 
     [TestMethod]
     public void NavigatePastRootUnix()
     {
         var dir = DirectoryPath.ParseAbsolute("/dir1/dir2", PathFormat.Unix, PathOptions.None);
-        Assert.ThrowsException<ArgumentException>(() => dir.CombineDirectory("../../..", PathOptions.None));
+        Should.Throw<ArgumentException>(() => dir.CombineDirectory("../../..", PathOptions.None));
     }
 
     [TestMethod]
@@ -69,8 +66,8 @@ public class AbsoluteDirectoryCombineTests
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
         var file = dir.CombineFile("../file.txt", PathFormat.Universal, PathOptions.None);
-        Assert.AreEqual(PathFormat.Windows, file.PathFormat);
-        Assert.AreEqual(@"C:\dir1\file.txt", file.PathDisplay);
+        file.PathFormat.ShouldBe(PathFormat.Windows);
+        file.PathDisplay.ShouldBe(@"C:\dir1\file.txt");
     }
 
     [TestMethod]
@@ -78,15 +75,15 @@ public class AbsoluteDirectoryCombineTests
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
         var combined = dir.CombineDirectory("..", PathFormat.Universal, PathOptions.None);
-        Assert.AreEqual(PathFormat.Windows, combined.PathFormat);
-        Assert.AreEqual(@"C:\dir1", combined.PathDisplay);
+        combined.PathFormat.ShouldBe(PathFormat.Windows);
+        combined.PathDisplay.ShouldBe(@"C:\dir1");
 
         dir = DirectoryPath.ParseAbsolute("/dir1/dir2", PathFormat.Unix, PathOptions.None);
         combined = dir.CombineDirectory(".", PathFormat.Universal, PathOptions.None);
-        Assert.AreEqual(PathFormat.Unix, combined.PathFormat);
-        Assert.AreEqual("/dir1/dir2", combined.PathDisplay);
+        combined.PathFormat.ShouldBe(PathFormat.Unix);
+        combined.PathDisplay.ShouldBe("/dir1/dir2");
 
         combined = dir.CombineDirectory("newdir/newdir2", PathFormat.Unix, PathOptions.None);
-        Assert.AreEqual("/dir1/dir2/newdir/newdir2", combined.PathDisplay);
+        combined.PathDisplay.ShouldBe("/dir1/dir2/newdir/newdir2");
     }
 }

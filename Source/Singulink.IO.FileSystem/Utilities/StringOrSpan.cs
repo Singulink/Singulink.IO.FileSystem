@@ -1,8 +1,6 @@
-﻿using System;
-
 namespace Singulink.IO.Utilities;
 
-internal ref struct StringOrSpan
+internal ref struct StringOrSpan : ISpanFormattable
 {
     public static StringOrSpan Empty => new StringOrSpan(string.Empty);
 
@@ -44,4 +42,19 @@ internal ref struct StringOrSpan
     }
 
     public override string ToString() => String;
+
+    public string ToString(string? format, IFormatProvider? formatProvider) => String;
+
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+    {
+        if (destination.Length < Span.Length)
+        {
+            charsWritten = 0;
+            return false;
+        }
+
+        Span.CopyTo(destination);
+        charsWritten = Span.Length;
+        return true;
+    }
 }

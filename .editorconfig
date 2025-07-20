@@ -1,27 +1,86 @@
-# Remove the line below if you want to inherit .editorconfig settings from higher directories
+# Root editor config for all projects in the repo
 root = true
 
-
-########### All files ###########
+########### Common File Settings ###########
 [*]
 
 #### Guidelines ####
-
 guidelines = 160
 
-########### C# files ###########
+#### Core EditorConfig Options ####
+charset = utf-8
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+########### XML File Settings ###########
+
+[*.{csproj,props,targets,proj,projitems,shproj}]
+end_of_line = crlf
+indent_size = 2
+
+[*.xml]
+end_of_line = lf
+indent_size = 2
+
+[*.xaml]
+charset = utf-8-bom
+end_of_line = crlf
+indent_size = 2
+
+[web.config]
+end_of_line = lf
+indent_size = 2
+
+[*.plist]
+end_of_line = lf
+indent_size = 2
+indent_style = tab
+
+########### YML File Settings ###########
+
+[*.{yml,yaml}]
+end_of_line = lf
+indent_size = 2
+
+########### JSON File Settings ###########
+
+[*.{json,slnf}]
+end_of_line = lf
+indent_size = 2
+
+[.vsconfig]
+end_of_line = lf
+indent_size = 2
+
+########### Web File Settings ###########
+
+[*.css]
+end_of_line = lf
+indent_size = 2
+
+[*.js]
+end_of_line = lf
+indent_size = 4
+
+[*.html]
+end_of_line = lf
+indent_size = 2
+
+########### Markdown File Settings ###########
+
+[*.md]
+end_of_line = lf
+indent_size = 4
+
+########### C# File Settings ###########
 [*.cs]
 
 #### Core EditorConfig Options ####
 
-# Indentation and spacing
 indent_size = 4
-indent_style = space
-tab_width = 4
-
-# New line preferences
 end_of_line = crlf
-insert_final_newline = false
+trim_trailing_whitespace = false
 
 #### .NET Coding Conventions ####
 
@@ -71,10 +130,13 @@ dotnet_code_quality_unused_parameters = all:suggestion
 
 #### C# Coding Conventions ####
 
+# Namespace preferences
+csharp_style_namespace_declarations = file_scoped:warning
+
 # var preferences
 csharp_style_var_elsewhere = false:silent
-csharp_style_var_for_built_in_types = false:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = true:warning
 
 # Expression-bodied members
 csharp_style_expression_bodied_accessors = true:suggestion
@@ -124,7 +186,7 @@ csharp_new_line_before_else = true
 csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_before_members_in_object_initializers = true
-csharp_new_line_before_open_brace = methods,types
+csharp_new_line_before_open_brace = methods,types,control_blocks,events,indexers,local_functions,properties
 csharp_new_line_between_query_expression_clauses = true
 
 # Indentation preferences
@@ -174,6 +236,14 @@ dotnet_naming_rule.types_should_be_pascalcase.severity = warning
 dotnet_naming_rule.types_should_be_pascalcase.symbols = types
 dotnet_naming_rule.types_should_be_pascalcase.style = pascalcase
 
+dotnet_naming_rule.private_static_field_should_be_s_prefixed_camelcase.severity = none
+dotnet_naming_rule.private_static_field_should_be_s_prefixed_camelcase.symbols = private_static_field
+dotnet_naming_rule.private_static_field_should_be_s_prefixed_camelcase.style = prefixed_camelcase
+
+dotnet_naming_rule.private_field_should_be_prefixed_camelcase.severity = warning
+dotnet_naming_rule.private_field_should_be_prefixed_camelcase.symbols = private_field
+dotnet_naming_rule.private_field_should_be_prefixed_camelcase.style = prefixed_camelcase
+
 dotnet_naming_rule.constant_field_should_be_pascalcase.severity = warning
 dotnet_naming_rule.constant_field_should_be_pascalcase.symbols = constant_field
 dotnet_naming_rule.constant_field_should_be_pascalcase.style = pascalcase
@@ -199,11 +269,24 @@ dotnet_naming_symbols.constant_field.applicable_kinds = field
 dotnet_naming_symbols.constant_field.applicable_accessibilities = public, internal, private, protected, protected_internal
 dotnet_naming_symbols.constant_field.required_modifiers = const
 
+dotnet_naming_symbols.private_static_field.applicable_kinds = field
+dotnet_naming_symbols.private_static_field.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_field.required_modifiers = static
+
+dotnet_naming_symbols.private_field.applicable_kinds = field
+dotnet_naming_symbols.private_field.applicable_accessibilities = private
+dotnet_naming_symbols.private_field.required_modifiers =
+
 # Naming styles
 dotnet_naming_style.pascalcase.required_prefix =
 dotnet_naming_style.pascalcase.required_suffix =
 dotnet_naming_style.pascalcase.word_separator =
 dotnet_naming_style.pascalcase.capitalization = pascal_case
+
+dotnet_naming_style.prefixed_camelcase.required_prefix = _
+dotnet_naming_style.prefixed_camelcase.required_suffix =
+dotnet_naming_style.prefixed_camelcase.word_separator =
+dotnet_naming_style.prefixed_camelcase.capitalization = camel_case
 
 dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.required_suffix =
@@ -212,6 +295,10 @@ dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
 
 #### Analyzer diagnostics ####
+
+stylecop.documentation.documentExposedElements = true
+stylecop.documentation.documentInternalElements = false
+stylecop.documentation.documentInterfaces = false
 
 # SA1503: Braces should not be omitted
 dotnet_diagnostic.SA1503.severity = none
@@ -232,7 +319,7 @@ dotnet_diagnostic.SA1128.severity = none
 dotnet_diagnostic.SA1200.severity = none
 
 # SA1618: Generic type parameters should be documented
-dotnet_diagnostic.SA1618.severity = suggestion
+dotnet_diagnostic.SA1618.severity = silent
 
 # CA1303: Do not pass literals as localized parameters
 dotnet_diagnostic.CA1303.severity = none
@@ -329,3 +416,36 @@ dotnet_diagnostic.CA1060.severity = none
 
 # SA1519: Braces should not be omitted from multi-line child statement
 dotnet_diagnostic.SA1519.severity = silent
+
+# SA1214: Readonly fields should appear before non-readonly fields
+dotnet_diagnostic.SA1214.severity = suggestion
+
+# SA1402: File may only contain a single type
+dotnet_diagnostic.SA1402.severity = none
+
+# IDE0028: Simplify collection initialization
+dotnet_diagnostic.IDE0028.severity = warning
+
+# IDE0057: Use range operator
+dotnet_diagnostic.IDE0057.severity = warning
+
+# IDE0059: Unnecessary assignment of a value
+dotnet_diagnostic.IDE0059.severity = warning
+
+# RS0030: Do not use banned APIs
+dotnet_diagnostic.RS0030.severity = error
+
+# SA1116: Split parameters should start on line after declaration
+dotnet_diagnostic.SA1116.severity = none
+
+# SA1117: Parameters should be on same line or separate lines
+dotnet_diagnostic.SA1117.severity = none
+
+# CS9113: Parameter is unread.
+dotnet_diagnostic.CS9113.severity = suggestion
+
+# SA1401: Fields should be private
+dotnet_diagnostic.SA1401.severity = suggestion
+
+# SA1122: Use string.Empty for empty strings
+dotnet_diagnostic.SA1122.severity = silent

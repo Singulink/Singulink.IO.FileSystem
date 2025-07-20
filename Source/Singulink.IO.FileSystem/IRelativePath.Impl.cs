@@ -1,14 +1,14 @@
-﻿namespace Singulink.IO;
+namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IRelativeEntryPath.
+/// Contains the implementation of IRelativePath.
 /// </content>
 public partial interface IRelativePath
 {
-    internal new abstract class Impl : IPath.Impl, IRelativePath
+    internal new abstract class Impl(string path, int rootLength, PathFormat pathFormat) : IPath.Impl(path, rootLength, pathFormat), IRelativePath
     {
-        protected Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
-        {
-        }
+        public override abstract IRelativeDirectoryPath? ParentDirectory { get; }
+
+        public abstract IRelativePath ToPathFormat(PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
     }
 }

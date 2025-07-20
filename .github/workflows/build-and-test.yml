@@ -18,18 +18,15 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+          9.0.x
     - name: Clean
       run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
-      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
-      working-directory: Source
     - name: Build
       run: dotnet build --configuration Debug --no-restore
-      working-directory: Source
     - name: Test
       run: dotnet test --configuration Debug --no-build --verbosity normal
-      working-directory: Source
 
   release-windows:
 
@@ -42,18 +39,15 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+          9.0.x
     - name: Clean
       run: dotnet clean --configuration Release && dotnet nuget locals all --clear
-      working-directory: Source
     - name: Install dependencies
       run: dotnet restore
-      working-directory: Source
     - name: Build
       run: dotnet build --configuration Release --no-restore
-      working-directory: Source
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
-      working-directory: Source
 
   debug-linux:
 
@@ -66,18 +60,15 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+          9.0.x
     - name: Clean
-      run: dotnet clean --configuration Debug && dotnet nuget locals all --clear
-      working-directory: Source
+      run: dotnet clean --configuration Debug /p:EnableWindowsTargeting=true && dotnet nuget locals all --clear
     - name: Install dependencies
-      run: dotnet restore
-      working-directory: Source
+      run: dotnet restore /p:EnableWindowsTargeting=true
     - name: Build
-      run: dotnet build --configuration Debug --no-restore
-      working-directory: Source
+      run: dotnet build --configuration Debug --no-restore /p:EnableWindowsTargeting=true
     - name: Test
       run: dotnet test --configuration Debug --no-build --verbosity normal
-      working-directory: Source
 
   release-linux:
 
@@ -90,15 +81,12 @@ jobs:
       with:
         dotnet-version: |
           8.0.x
+          9.0.x
     - name: Clean
-      run: dotnet clean --configuration Release && dotnet nuget locals all --clear
-      working-directory: Source
+      run: dotnet clean --configuration Release /p:EnableWindowsTargeting=true && dotnet nuget locals all --clear
     - name: Install dependencies
-      run: dotnet restore
-      working-directory: Source
+      run: dotnet restore /p:EnableWindowsTargeting=true
     - name: Build
-      run: dotnet build --configuration Release --no-restore
-      working-directory: Source
+      run: dotnet build --configuration Release --no-restore /p:EnableWindowsTargeting=true
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
-      working-directory: Source

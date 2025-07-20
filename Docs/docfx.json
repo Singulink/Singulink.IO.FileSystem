@@ -1,6 +1,9 @@
 {
   "metadata": [
     {
+      "properties": {
+        "TargetFramework": "net9.0"
+      },
       "src": [
         {
           "files": [
@@ -13,7 +16,8 @@
       "memberLayout": "separatePages",
       "includeExplicitInterfaceImplementations": true,
       "disableGitFeatures": true,
-      "disableDefaultFilter": false
+      "disableDefaultFilter": false,
+      "filter": "filterConfig.yml"
     }
   ],
   "build": {

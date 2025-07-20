@@ -1,19 +1,12 @@
-﻿using System;
-using System.IO;
-
 namespace Singulink.IO;
 
 /// <content>
-/// Contains an implementation of IAbsoluteEntryPath.
+/// Contains the implementation of IAbsolutePath.
 /// </content>
 public partial interface IAbsolutePath
 {
-    internal new abstract class Impl : IPath.Impl, IAbsolutePath
+    internal new abstract class Impl(string path, int rootLength, PathFormat pathFormat) : IPath.Impl(path, rootLength, pathFormat), IAbsolutePath
     {
-        protected Impl(string path, int rootLength, PathFormat pathFormat) : base(path, rootLength, pathFormat)
-        {
-        }
-
         public string PathExport => PathFormat.GetAbsolutePathExportString(PathDisplay);
 
         public bool IsUnc => PathFormat.IsUncPath(PathDisplay);
@@ -22,7 +15,8 @@ public partial interface IAbsolutePath
 
         public abstract FileAttributes Attributes { get; set; }
 
-        public IAbsoluteDirectoryPath RootDirectory {
+        public IAbsoluteDirectoryPath RootDirectory
+        {
             get {
                 if (PathDisplay.Length == RootLength && this is IAbsoluteDirectoryPath dir)
                     return dir;
@@ -31,9 +25,10 @@ public partial interface IAbsolutePath
             }
         }
 
-        public abstract IAbsoluteDirectoryPath? ParentDirectory { get; }
+        public override abstract IAbsoluteDirectoryPath? ParentDirectory { get; }
 
-        public DateTime CreationTime {
+        public DateTime CreationTime
+        {
             get {
                 EnsureExists();
                 return File.GetCreationTime(PathExport);
@@ -44,7 +39,8 @@ public partial interface IAbsolutePath
             }
         }
 
-        public DateTime LastAccessTime {
+        public DateTime LastAccessTime
+        {
             get {
                 EnsureExists();
                 return File.GetLastAccessTime(PathExport);
@@ -55,7 +51,8 @@ public partial interface IAbsolutePath
             }
         }
 
-        public DateTime LastWriteTime {
+        public DateTime LastWriteTime
+        {
             get {
                 EnsureExists();
                 return File.GetLastWriteTime(PathExport);
@@ -71,9 +68,6 @@ public partial interface IAbsolutePath
         /// <summary>
         /// This method is necessary before calling some operations because they work on both files and directories.
         /// </summary>
-        /// <remarks>
-        /// <para>Examples of problematic methods: File.GetLastWriteTime / Directory.GetLastWriteTime (plus all other timestamp methods).</para>
-        /// </remarks>
-        internal void EnsureExists() => _ = Attributes;
+        internal abstract void EnsureExists();
     }
 }

@@ -1,15 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Singulink.IO.FileSystem.Tests;
 
-[TestClass]
+[PrefixTestClass]
 public class AbsoluteFileParentTests
 {
     [TestMethod]
     public void IsImplemented()
     {
         var file = FilePath.ParseAbsolute(@"C:\test.asdf", PathFormat.Windows);
-        Assert.IsTrue(file.HasParentDirectory);
-        Assert.IsNotNull(file.ParentDirectory);
+        file.HasParentDirectory.ShouldBeTrue();
+        file.ParentDirectory.ShouldNotBeNull();
     }
 }
