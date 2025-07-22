@@ -46,6 +46,8 @@ public abstract class CachedEntryInfo
     /// <summary>
     /// Gets the file/directory's last write time in Coordinated Universal Time (UTC).
     /// </summary>
+    public DateTime LastWriteTimeUtc => EntryInfo.LastWriteTimeUtc;
+
     internal abstract FileSystemInfo EntryInfo { get; }
 
     /// <summary>
