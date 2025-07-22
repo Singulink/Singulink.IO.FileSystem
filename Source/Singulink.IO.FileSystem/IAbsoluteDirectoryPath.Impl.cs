@@ -474,10 +474,19 @@ public partial interface IAbsoluteDirectoryPath
         {
             foreach (var entryInfo in GetEntryInfos(searchPattern, options, getInfos))
             {
+                var relativePath = entryInfo.FullName.AsSpan()[PathExport.Length..];
+                string resultPath = $"{PathDisplay}{relativePath}";
+
                 if (entryInfo is DirectoryInfo dirInfo)
-                    yield return (TEntryInfo)(object)new CachedDirectoryInfo(dirInfo, null);
+                {
+                    var dir = new Impl(resultPath, RootLength, PathFormat);
+                    yield return (TEntryInfo)(object)new CachedDirectoryInfo(dirInfo, dir);
+                }
                 else if (entryInfo is FileInfo fileInfo)
-                    yield return (TEntryInfo)(object)new CachedFileInfo(fileInfo, null);
+                {
+                    var file = new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat);
+                    yield return (TEntryInfo)(object)new CachedFileInfo(fileInfo, file);
+                }
             }
         }
 
