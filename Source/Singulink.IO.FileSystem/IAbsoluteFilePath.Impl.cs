@@ -111,6 +111,12 @@ public partial interface IAbsoluteFilePath
 
         #region File System Operations
 
+        public override CachedFileInfo GetInfo()
+        {
+            PathFormat.EnsureCurrent();
+            return new CachedFileInfo(new FileInfo(PathExport), this);
+        }
+
         public FileStream OpenStream(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, int bufferSize = 4096, FileOptions options = FileOptions.None)
         {
             PathFormat.EnsureCurrent();

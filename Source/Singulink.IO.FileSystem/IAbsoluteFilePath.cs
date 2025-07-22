@@ -20,11 +20,13 @@ public partial interface IAbsoluteFilePath : IAbsolutePath, IFilePath
     /// </summary>
     long Length { get; }
 
-    /// <inheritdoc cref="IFilePath.WithExtension(string?, PathOptions)"/>
-    new IAbsoluteFilePath WithExtension(string? newExtension, PathOptions options = PathOptions.NoUnfriendlyNames);
+    /// <summary>
+    /// Gets information about this file.
+    /// </summary>
+    new CachedFileInfo GetInfo();
 
     /// <inheritdoc/>
-    IFilePath IFilePath.WithExtension(string? newExtension, PathOptions options) => WithExtension(newExtension, options);
+    CachedEntryInfo IAbsolutePath.GetInfo() => GetInfo();
 
     /// <summary>
     /// Opens a file stream to a new or existing file.
@@ -86,4 +88,10 @@ public partial interface IAbsoluteFilePath : IAbsolutePath, IFilePath
     /// <param name="ignoreNotFound"><see langword="true"/> to ignore file not found errors; otherwise, <see langword="false"/> to throw <see
     /// cref="FileNotFoundException"/> if the file was not found.</param>
     void Delete(bool ignoreNotFound = true);
+
+    /// <inheritdoc cref="IFilePath.WithExtension(string?, PathOptions)"/>
+    new IAbsoluteFilePath WithExtension(string? newExtension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.WithExtension(string? newExtension, PathOptions options) => WithExtension(newExtension, options);
 }

@@ -302,6 +302,125 @@ public partial interface IAbsoluteDirectoryPath
 
         #endregion
 
+        #region File System Operations
+
+        public override CachedDirectoryInfo GetInfo()
+        {
+            PathFormat.EnsureCurrent();
+            return new CachedDirectoryInfo(new DirectoryInfo(PathExport), this);
+        }
+
+        public void Create()
+        {
+            PathFormat.EnsureCurrent();
+
+            try
+            {
+                Directory.CreateDirectory(PathExport);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw Ex.Convert(ex);
+            }
+        }
+
+        public void Delete(bool recursive = false, bool ignoreNotFound = true)
+        {
+            PathFormat.EnsureCurrent();
+
+            try
+            {
+                // If path points to file then IOEx is thrown with nonsense message on Windows and DirNotFoundEx on Unix. Always throw IOEx.
+                Directory.Delete(PathExport, recursive);
+            }
+            catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException))
+            {
+                ThrowIfDirIsFile(this); // Get a better error message on windows if path points to a file
+                throw;
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // On Windows, this means the directory does not exist. On Unix, this means either the directory does not exist or the path points to a file, so
+                // we check if it is a file and throw IOex if we should.
+
+                if (PathFormat == PathFormat.Unix)
+                    ThrowIfDirIsFile(this);
+
+                if (!ignoreNotFound)
+                    throw;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw Ex.Convert(ex);
+            }
+        }
+
+        public override IAbsoluteDirectoryPath GetLastExistingDirectory()
+        {
+            // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.
+
+            IAbsoluteDirectoryPath lastExistingDir = null;
+
+            // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
+
+            foreach (var dir in GetPathsFromDirToRoot(this).Reverse())
+            {
+                if (!dir.Exists)
+                    break;
+
+                lastExistingDir = dir;
+            }
+
+            if (lastExistingDir is null)
+                throw Ex.NotFound(RootDirectory);
+
+            return lastExistingDir;
+
+            static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
+            {
+                while (true)
+                {
+                    yield return path;
+
+                    if (path.IsRoot)
+                        yield break;
+
+                    path = path.ParentDirectory!;
+                }
+            }
+        }
+
+        internal override void EnsureExists()
+        {
+            if (!Directory.Exists(PathExport))
+                throw Ex.NotFound(this);
+        }
+
+        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
+        {
+            if (IsKnownToBeFile(path))
+                throw Ex.DirIsFile(path);
+        }
+
+        private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath path)
+        {
+            if (IsKnownToBeFile(path))
+                throw Ex.NotFound(path);
+        }
+
+        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
+        {
+            try
+            {
+                return File.Exists(path.PathExport);
+            }
+            catch { }
+
+            return false;
+        }
+
+        #endregion
+
         #region Enumeration
 
         // NOTE: Enumeration methods will never throw UnauthorizedAccessException
@@ -313,6 +432,15 @@ public partial interface IAbsoluteDirectoryPath
         private static readonly GetSystemInfosFunc GetSystemFileInfos = (info, searchPattern, options) => info.EnumerateFiles(searchPattern, options);
 
         private static readonly GetSystemInfosFunc GetSystemEntryInfos = (info, searchPattern, options) => info.EnumerateFileSystemInfos(searchPattern, options);
+
+        public IEnumerable<CachedDirectoryInfo> GetChildDirectoriesInfo(string searchPattern, SearchOptions? options = null) =>
+            GetChildEntriesInfo<CachedDirectoryInfo>(searchPattern, options, GetSystemDirectoryInfos);
+
+        public IEnumerable<CachedFileInfo> GetChildFilesInfo(string searchPattern, SearchOptions? options = null) =>
+            GetChildEntriesInfo<CachedFileInfo>(searchPattern, options, GetSystemFileInfos);
+
+        public IEnumerable<CachedEntryInfo> GetChildEntriesInfo(string searchPattern, SearchOptions? options = null) =>
+            GetChildEntriesInfo<CachedEntryInfo>(searchPattern, options, GetSystemEntryInfos);
 
         public IEnumerable<IAbsoluteDirectoryPath> GetChildDirectories(string searchPattern, SearchOptions? options) =>
             GetChildEntries<IAbsoluteDirectoryPath>(searchPattern, options, GetSystemDirectoryInfos);
@@ -340,6 +468,18 @@ public partial interface IAbsoluteDirectoryPath
 
         public IEnumerable<IRelativePath> GetRelativeEntries(IRelativeDirectoryPath searchLocation, string searchPattern, SearchOptions? options) =>
             GetRelativeEntries<IRelativePath>(searchLocation, searchPattern, options, GetSystemEntryInfos);
+
+        private IEnumerable<TEntryInfo> GetChildEntriesInfo<TEntryInfo>(string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
+            where TEntryInfo : CachedEntryInfo
+        {
+            foreach (var entryInfo in GetEntryInfos(searchPattern, options, getInfos))
+            {
+                if (entryInfo is DirectoryInfo dirInfo)
+                    yield return (TEntryInfo)(object)new CachedDirectoryInfo(dirInfo, null);
+                else if (entryInfo is FileInfo fileInfo)
+                    yield return (TEntryInfo)(object)new CachedFileInfo(fileInfo, null);
+            }
+        }
 
         private IEnumerable<TEntry> GetChildEntries<TEntry>(string searchPattern, SearchOptions? options, GetSystemInfosFunc getInfos)
             where TEntry : IAbsolutePath
@@ -509,119 +649,6 @@ public partial interface IAbsoluteDirectoryPath
                     throw Ex.Convert(ex);
                 }
             }
-        }
-
-        #endregion
-
-        #region File System Operations
-
-        public void Create()
-        {
-            PathFormat.EnsureCurrent();
-
-            try
-            {
-                Directory.CreateDirectory(PathExport);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw Ex.Convert(ex);
-            }
-        }
-
-        public void Delete(bool recursive = false, bool ignoreNotFound = true)
-        {
-            PathFormat.EnsureCurrent();
-
-            try
-            {
-                // If path points to file then IOEx is thrown with nonsense message on Windows and DirNotFoundEx on Unix. Always throw IOEx.
-                Directory.Delete(PathExport, recursive);
-            }
-            catch (IOException ex) when (PathFormat == PathFormat.Windows && ex.GetType() == typeof(IOException))
-            {
-                ThrowIfDirIsFile(this); // Get a better error message on windows if path points to a file
-                throw;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // On Windows, this means the directory does not exist. On Unix, this means either the directory does not exist or the path points to a file, so
-                // we check if it is a file and throw IOex if we should.
-
-                if (PathFormat == PathFormat.Unix)
-                    ThrowIfDirIsFile(this);
-
-                if (!ignoreNotFound)
-                    throw;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw Ex.Convert(ex);
-            }
-        }
-
-        public override IAbsoluteDirectoryPath GetLastExistingDirectory()
-        {
-            // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.
-
-            IAbsoluteDirectoryPath lastExistingDir = null;
-
-            // Start at the root to prevent very slow repeat faulted network accesses starting from the last dir.
-
-            foreach (var dir in GetPathsFromDirToRoot(this).Reverse())
-            {
-                if (!dir.Exists)
-                    break;
-
-                lastExistingDir = dir;
-            }
-
-            if (lastExistingDir is null)
-                throw Ex.NotFound(RootDirectory);
-
-            return lastExistingDir;
-
-            static IEnumerable<IAbsoluteDirectoryPath> GetPathsFromDirToRoot(IAbsoluteDirectoryPath path)
-            {
-                while (true)
-                {
-                    yield return path;
-
-                    if (path.IsRoot)
-                        yield break;
-
-                    path = path.ParentDirectory!;
-                }
-            }
-        }
-
-        internal override void EnsureExists()
-        {
-            if (!Directory.Exists(PathExport))
-                throw Ex.NotFound(this);
-        }
-
-        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
-        {
-            if (IsKnownToBeFile(path))
-                throw Ex.DirIsFile(path);
-        }
-
-        private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath path)
-        {
-            if (IsKnownToBeFile(path))
-                throw Ex.NotFound(path);
-        }
-
-        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
-        {
-            try
-            {
-                return File.Exists(path.PathExport);
-            }
-            catch { }
-
-            return false;
         }
 
         #endregion

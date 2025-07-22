@@ -63,6 +63,8 @@ public partial interface IAbsolutePath
             }
         }
 
+        public abstract CachedEntryInfo GetInfo();
+
         public abstract IAbsoluteDirectoryPath GetLastExistingDirectory();
 
         /// <summary>

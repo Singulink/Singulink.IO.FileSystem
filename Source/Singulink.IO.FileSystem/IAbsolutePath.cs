@@ -59,6 +59,11 @@ public partial interface IAbsolutePath : IPath
     IDirectoryPath? IPath.ParentDirectory => ParentDirectory;
 
     /// <summary>
+    /// Gets information about this file/directory.
+    /// </summary>
+    CachedEntryInfo GetInfo();
+
+    /// <summary>
     /// Gets the last directory in the path that exists.
     /// </summary>
     IAbsoluteDirectoryPath GetLastExistingDirectory();

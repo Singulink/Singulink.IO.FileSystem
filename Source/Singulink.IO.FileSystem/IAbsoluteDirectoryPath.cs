@@ -58,6 +58,14 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     #region File System Operations
 
     /// <summary>
+    /// Gets information about this directory.
+    /// </summary>
+    new CachedDirectoryInfo GetInfo();
+
+    /// <inheritdoc/>
+    CachedEntryInfo IAbsolutePath.GetInfo() => GetInfo();
+
+    /// <summary>
     /// Creates all directories and subdirectories in the specified path unless they already exist.
     /// </summary>
     void Create();
@@ -129,6 +137,46 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
 
     /// <inheritdoc/>
     IPath IDirectoryPath.Combine(IRelativePath path) => Combine(path);
+
+    #endregion
+
+    #region Info Enumeration
+
+    // Directories
+
+    /// <summary>
+    /// Gets info for the child directories that reside in this directory and match the specified search options.
+    /// </summary>
+    sealed IEnumerable<CachedDirectoryInfo> GetChildDirectoriesInfo(SearchOptions? options = null) => GetChildDirectoriesInfo("*", options);
+
+    /// <summary>
+    /// Gets info for the child directories that reside in this directory and match the specified search pattern and search options.
+    /// </summary>
+    IEnumerable<CachedDirectoryInfo> GetChildDirectoriesInfo(string searchPattern, SearchOptions? options = null);
+
+    // Files
+
+    /// <summary>
+    /// Gets info for the child files that reside in this directory and match the specified search options.
+    /// </summary>
+    sealed IEnumerable<CachedFileInfo> GetChildFilesInfo(SearchOptions? options = null) => GetChildFilesInfo("*", options);
+
+    /// <summary>
+    /// Gets info for the child files that reside in this directory and match the specified search pattern and search options.
+    /// </summary>
+    IEnumerable<CachedFileInfo> GetChildFilesInfo(string searchPattern, SearchOptions? options = null);
+
+    // Entries
+
+    /// <summary>
+    /// Gets info for the child files/directories that reside in this directory and match the specified search options.
+    /// </summary>
+    sealed IEnumerable<CachedEntryInfo> GetChildEntriesInfo(SearchOptions? options = null) => GetChildFilesInfo("*", options);
+
+    /// <summary>
+    /// Gets info for the child files/directories that reside in this directory and match the specified search pattern and search options.
+    /// </summary>
+    IEnumerable<CachedEntryInfo> GetChildEntriesInfo(string searchPattern, SearchOptions? options = null);
 
     #endregion
 
