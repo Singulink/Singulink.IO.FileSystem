@@ -39,6 +39,18 @@ public partial interface IAbsolutePath
             }
         }
 
+        public DateTime CreationTimeUtc
+        {
+            get {
+                EnsureExists();
+                return File.GetCreationTimeUtc(PathExport);
+            }
+            set {
+                EnsureExists();
+                File.SetCreationTimeUtc(PathExport, value);
+            }
+        }
+
         public DateTime LastAccessTime
         {
             get {
@@ -51,6 +63,18 @@ public partial interface IAbsolutePath
             }
         }
 
+        public DateTime LastAccessTimeUtc
+        {
+            get {
+                EnsureExists();
+                return File.GetLastAccessTimeUtc(PathExport);
+            }
+            set {
+                EnsureExists();
+                File.SetLastAccessTimeUtc(PathExport, value);
+            }
+        }
+
         public DateTime LastWriteTime
         {
             get {
@@ -60,6 +84,18 @@ public partial interface IAbsolutePath
             set {
                 EnsureExists();
                 File.SetLastWriteTime(PathExport, value);
+            }
+        }
+
+        public DateTime LastWriteTimeUtc
+        {
+            get {
+                EnsureExists();
+                return File.GetLastWriteTimeUtc(PathExport);
+            }
+            set {
+                EnsureExists();
+                File.SetLastWriteTimeUtc(PathExport, value);
             }
         }
 

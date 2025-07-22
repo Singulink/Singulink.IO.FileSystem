@@ -38,14 +38,29 @@ public partial interface IAbsolutePath : IPath
     DateTime CreationTime { get; set; }
 
     /// <summary>
+    /// Gets or sets the file/directory's creation time in Coordinated Universal Time (UTC).
+    /// </summary>
+    DateTime CreationTimeUtc { get; set; }
+
+    /// <summary>
     /// Gets or sets the file/directory's last access time as a local time.
     /// </summary>
     DateTime LastAccessTime { get; set; }
 
     /// <summary>
+    /// Gets or sets the file/directory's last access time in Coordinated Universal Time (UTC).
+    /// </summary>
+    DateTime LastAccessTimeUtc { get; set; }
+
+    /// <summary>
     /// Gets or sets the file/directory's last write time as a local time.
     /// </summary>
     DateTime LastWriteTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the file/directory's last write time in Coordinated Universal Time (UTC).
+    /// </summary>
+    DateTime LastWriteTimeUtc { get; set; }
 
     /// <summary>
     /// Gets the root directory of this file/directory.
