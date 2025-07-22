@@ -62,6 +62,10 @@ filePath.OpenStream();
 
 The only way to obtain available/used space information in `System.IO` is via `DriveInfo`. This limits you to only getting information for root directories in Windows and it does not work with UNC paths. The concept of "drives" is not cross-platform applicable and thus is not present in this library. Instead, the functionality of `DriveInfo` is now present in a much more versatile and reliable manner on all `IAbsoluteDirectoryPath` instances.
 
+#### FileInfo/DirectoryInfo
+
+See the [Cached Entry Info](../guides/cached-entry-info.md) article for more details on the problems with `FileInfo` and `DirectoryInfo` and how `Singulink.IO.FileSystem` solves them.
+
 #### Cross-Platform Concerns
 
 Searching for files/directories with a wildcard pattern using `System.IO` has different case-sensitivity settings by default on Unix and Windows. `Singulink.IO.FileSystem` does case-insensitive searches by default so you get consistent behavior across your app platforms unless you opt into platform-specific behavior.

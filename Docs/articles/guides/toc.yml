@@ -1,2 +1,5 @@
 - name: Getting Started
   href: getting-started.md
+
+- name: Cached Entry Info
+  href: cached-entry-info.md
