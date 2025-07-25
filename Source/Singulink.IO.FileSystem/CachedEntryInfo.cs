@@ -1,10 +1,7 @@
-using Singulink.Enums;
-using Singulink.IO.Utilities;
-
 namespace Singulink.IO;
 
 /// <summary>
-/// Represents cached information about a file system entry.
+/// Represents cached information about a file or directory.
 /// </summary>
 public abstract class CachedEntryInfo
 {
