@@ -20,6 +20,30 @@ public partial interface IAbsoluteDirectoryPath
             }
         }
 
+        public override EntryState State
+        {
+            get {
+                PathFormat.EnsureCurrent();
+
+                try
+                {
+                    return File.GetAttributes(PathExport).HasAllFlags(FileAttributes.Directory) ? EntryState.Exists : EntryState.WrongType;
+                }
+                catch (FileNotFoundException)
+                {
+                    return EntryState.ParentExists;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    return EntryState.ParentDoesNotExist;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    throw Ex.Convert(ex);
+                }
+            }
+        }
+
         public bool IsEmpty
         {
             get {
@@ -33,6 +57,10 @@ public partial interface IAbsoluteDirectoryPath
                 {
                     ThrowNotFoundIfDirIsFile(this);
                     throw;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    throw Ex.Convert(ex);
                 }
             }
         }
@@ -259,12 +287,12 @@ public partial interface IAbsoluteDirectoryPath
         private IAbsolutePath Combine(IRelativePath path, string? formatParamName)
         {
             if (PathFormat.GetMutualFormat(PathFormat, path.PathFormat) != PathFormat)
-                throw new ArgumentException($"The provided path's format is not universal and does not match the {PathFormat} base path format.", formatParamName);
+                throw new ArgumentException($"The provided dir's format is not universal and does not match the {PathFormat} base dir format.", formatParamName);
 
             var appendPath = path.PathFormat.SplitRelativeNavigation(path.PathDisplay, out int parentDirs);
             appendPath = PathFormat.ConvertRelativePathToMutualFormat(appendPath, path.PathFormat, PathFormat);
 
-            string basePath = GetBasePathForAppending(parentDirs) ?? throw new ArgumentException("Invalid path combination: Attempt to navigate past root directory.", nameof(path));
+            string basePath = GetBasePathForAppending(parentDirs) ?? throw new ArgumentException("Invalid dir combination: Attempt to navigate past root directory.", nameof(path));
             string newPath;
 
             if (appendPath.Length is 0)
@@ -340,14 +368,20 @@ public partial interface IAbsoluteDirectoryPath
             }
             catch (DirectoryNotFoundException)
             {
-                // On Windows, this means the directory does not exist. On Unix, this means either the directory does not exist or the path points to a file, so
-                // we check if it is a file and throw IOex if we should.
+                // On Unix, this means either the directory does not exist or the path points to a file, so we check if it is a file and throw IOex if we
+                // should.
 
                 if (PathFormat == PathFormat.Unix)
                     ThrowIfDirIsFile(this);
 
-                if (!ignoreNotFound)
-                    throw;
+                // Dir wasn't a file, so it means the directory does not exist.
+                // If ignoreNotFound is false or the parent directory does not exist, rethrow the exception.
+                // TODO: avoid the extra call if/when this available: https://github.com/dotnet/runtime/issues/117853
+
+                if (ignoreNotFound && State == EntryState.ParentExists)
+                    return;
+
+                throw;
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -396,27 +430,28 @@ public partial interface IAbsoluteDirectoryPath
                 throw Ex.NotFound(this);
         }
 
-        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath path)
+        private static void ThrowIfDirIsFile(IAbsoluteDirectoryPath dir)
         {
-            if (IsKnownToBeFile(path))
-                throw Ex.DirIsFile(path);
+            if (IsKnownToBeFile(dir))
+                throw Ex.DirIsFile(dir);
         }
 
-        private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath path)
+        private static void ThrowNotFoundIfDirIsFile(IAbsoluteDirectoryPath dir)
         {
-            if (IsKnownToBeFile(path))
-                throw Ex.NotFound(path);
+            if (IsKnownToBeFile(dir))
+                throw Ex.NotFound(dir);
         }
 
-        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath path)
+        private static bool IsKnownToBeFile(IAbsoluteDirectoryPath dir)
         {
             try
             {
-                return File.Exists(path.PathExport);
+                return dir.State is EntryState.WrongType;
             }
-            catch { }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         #endregion

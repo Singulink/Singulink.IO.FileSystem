@@ -25,7 +25,16 @@ public partial interface IAbsolutePath : IPath
     /// <summary>
     /// Gets a value indicating whether the file/directory exists.
     /// </summary>
+    /// <remarks>
+    /// Usage of the <see cref="State"/> property is recommended instead of this property in most cases, as it provides more detailed information about the
+    /// entry state, allowing better handling of the various scenarios that can cause a file not to exist.
+    /// </remarks>
     bool Exists { get; }
+
+    /// <summary>
+    /// Gets the state of the file/directory entry, which indicates if the entry or its parent directory exists.
+    /// </summary>
+    EntryState State { get; }
 
     /// <summary>
     /// Gets or sets the file/directory attributes.

@@ -62,6 +62,30 @@ public partial interface IAbsoluteFilePath
             }
         }
 
+        public override EntryState State
+        {
+            get {
+                PathFormat.EnsureCurrent();
+
+                try
+                {
+                    return File.GetAttributes(PathExport).HasAllFlags(FileAttributes.Directory) ? EntryState.WrongType : EntryState.Exists;
+                }
+                catch (FileNotFoundException)
+                {
+                    return EntryState.ParentExists;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    return EntryState.ParentDoesNotExist;
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    throw Ex.Convert(ex);
+                }
+            }
+        }
+
         public override FileAttributes Attributes
         {
             get {
@@ -252,12 +276,12 @@ public partial interface IAbsoluteFilePath
         {
             try
             {
-                if (Directory.Exists(file.PathExport))
-                    return true;
+                return file.State == EntryState.WrongType;
             }
-            catch { }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         #endregion

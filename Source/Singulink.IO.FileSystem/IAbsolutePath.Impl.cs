@@ -13,6 +13,8 @@ public partial interface IAbsolutePath
 
         public abstract bool Exists { get; }
 
+        public abstract EntryState State { get; }
+
         public abstract FileAttributes Attributes { get; set; }
 
         public IAbsoluteDirectoryPath RootDirectory
