@@ -236,14 +236,14 @@ public partial interface IAbsoluteFilePath
 
             if (!ignoreNotFound)
             {
-                try
-                {
-                    _ = File.GetAttributes(PathExport); // Works for both files and dirs
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    throw Ex.Convert(ex);
-                }
+                var state = State;
+
+                if (state is EntryState.WrongType)
+                    throw Ex.FileIsDir(this);
+                else if (state is EntryState.ParentExists)
+                    throw Ex.NotFound(this);
+                else if (state is EntryState.ParentDoesNotExist)
+                    throw Ex.NotFound(ParentDirectory);
             }
 
             try
