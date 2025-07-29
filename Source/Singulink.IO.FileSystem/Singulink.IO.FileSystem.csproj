@@ -4,7 +4,7 @@
     <RootNamespace>Singulink.IO</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <Version>2.3.3</Version>
+    <Version>2.3.4</Version>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
     <PackageTags>File, Directory, Path, Folder, FileSystem</PackageTags>
   </PropertyGroup>
