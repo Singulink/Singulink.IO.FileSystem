@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Singulink.IO;
@@ -6,7 +5,6 @@ namespace Singulink.IO;
 /// <summary>
 /// Represents an absolute or relative path to a file or directory.
 /// </summary>
-[SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Properties need to be overridden by implementing types")]
 public partial interface IPath : IEquatable<IPath?>
 {
 #pragma warning disable IDE1006 // Naming Styles
@@ -33,9 +31,9 @@ public partial interface IPath : IEquatable<IPath?>
     [SpecialName]
     public static bool op_Inequality(IPath? left, IPath? right) => !Equals(left, right);
 
+#pragma warning restore CA1707
 #pragma warning restore SA1300
 #pragma warning restore IDE1006
-#pragma warning restore CA1707
 
     /// <summary>
     /// Gets the name of the file or directory that this path refers to.
@@ -43,7 +41,7 @@ public partial interface IPath : IEquatable<IPath?>
     string Name { get; }
 
     /// <summary>
-    /// Gets a path string suitable for user friendly display or serialization. Do not use this value to access the file system.
+    /// Gets a path string suitable for user-friendly display or serialization. Do not use this value to access the file system.
     /// </summary>
     /// <remarks>
     /// <para>The value returned by this property is ideal for display to the user. Parsing this value with the appropriate parse method that matches the
@@ -94,5 +92,9 @@ public partial interface IPath : IEquatable<IPath?>
     /// <summary>
     /// Returns a string containing the path format, entry type and the path. Not usable for file system operations.
     /// </summary>
+    /// <remarks>
+    /// To obtain a path suitable for user-friendly display or serialization, use the <see cref="PathDisplay"/> property. To obtain a path suitable for
+    /// file system operations, use the <see cref="IAbsolutePath.PathExport"/> property on an absolute path.
+    /// </remarks>
     string ToString();
 }

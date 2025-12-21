@@ -1,8 +1,3 @@
-#if NET9_0_OR_GREATER
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-#endif
-
 namespace Singulink.IO;
 
 /// <content>
@@ -18,7 +13,7 @@ public partial interface IPath
 
         public PathFormat PathFormat { get; } = pathFormat;
 
-        public string Name => PathFormat.GetEntryName(PathDisplay, RootLength);
+        public string Name => field ??= PathFormat.GetEntryName(PathDisplay, RootLength);
 
         public bool IsRooted => PathFormat.GetPathKind(PathDisplay) is not PathKind.Relative;
 
@@ -28,8 +23,11 @@ public partial interface IPath
 
         public bool Equals(IPath? other)
         {
-            if (other == null)
+            if (other is null)
                 return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
 
             return GetType() == other.GetType() &&
                 PathFormat == other.PathFormat &&

@@ -131,7 +131,7 @@ public class EnumeratingDirectoryTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(".")]
     [DataRow("../_test")]
     public void GetRelativeEntriesFromCurrent(string currentDirPath)

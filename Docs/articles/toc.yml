@@ -3,6 +3,3 @@
 
 - name: System.IO
   href: system.io/toc.yml
-
-- name: Advanced
-  href: advanced/toc.yml

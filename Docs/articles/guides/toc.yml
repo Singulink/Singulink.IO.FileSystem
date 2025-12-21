@@ -1,5 +1,11 @@
 - name: Getting Started
   href: getting-started.md
 
+- name: PathOptions Handling
+  href: pathoptions-handling.md
+
+- name: Exception Handling
+  href: exception-handling.md
+
 - name: Cached Entry Info
   href: cached-entry-info.md

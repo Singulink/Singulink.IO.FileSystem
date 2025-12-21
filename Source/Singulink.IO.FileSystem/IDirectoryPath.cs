@@ -27,7 +27,7 @@ public interface IDirectoryPath : IPath
     /// <summary>
     /// Combines this directory with a relative directory.
     /// </summary>
-    /// <param name="path">The relative directory to apprend to this directory.</param>
+    /// <param name="path">The relative directory to append to this directory.</param>
     IDirectoryPath Combine(IRelativeDirectoryPath path);
 
     /// <summary>
@@ -53,7 +53,7 @@ public interface IDirectoryPath : IPath
     /// <summary>
     /// Combines this directory with a relative file.
     /// </summary>
-    /// <param name="path">The relative file to apprend to this directory.</param>
+    /// <param name="path">The relative file to append to this directory.</param>
     IFilePath Combine(IRelativeFilePath path);
 
     /// <summary>
@@ -76,7 +76,7 @@ public interface IDirectoryPath : IPath
     /// <summary>
     /// Combines this directory with a relative entry.
     /// </summary>
-    /// <param name="path">The relative entry to apprend to this directory.</param>
+    /// <param name="path">The relative entry to append to this directory.</param>
     IPath Combine(IRelativePath path);
 
     #endregion

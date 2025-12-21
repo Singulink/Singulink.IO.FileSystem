@@ -16,10 +16,16 @@ public partial interface IRelativeFilePath : IRelativePath, IFilePath
     #region Path Manipulation
 
     /// <inheritdoc cref="IFilePath.WithExtension(string?, PathOptions)"/>
-    new IRelativeFilePath WithExtension(string? newExtension, PathOptions options = PathOptions.NoUnfriendlyNames);
+    new IRelativeFilePath WithExtension(string? extension, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     /// <inheritdoc/>
-    IFilePath IFilePath.WithExtension(string? newExtension, PathOptions options) => WithExtension(newExtension, options);
+    IFilePath IFilePath.WithExtension(string? extension, PathOptions options) => WithExtension(extension, options);
+
+    /// <inheritdoc cref="IFilePath.AddExtension(string?, PathOptions)"/>
+    new IRelativeFilePath AddExtension(string? extension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.AddExtension(string? extension, PathOptions options) => AddExtension(extension, options);
 
     #endregion
 

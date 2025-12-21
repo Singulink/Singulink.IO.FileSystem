@@ -2,16 +2,16 @@ namespace Singulink.IO.Utilities;
 
 internal ref struct StringOrSpan : ISpanFormattable
 {
-    public static StringOrSpan Empty => new StringOrSpan(string.Empty);
+    public static StringOrSpan Empty => new(string.Empty);
 
     private readonly ReadOnlySpan<char> _span;
     private string? _string;
 
-    public ReadOnlySpan<char> Span => _span;
+    public readonly ReadOnlySpan<char> Span => _span;
 
     public string String => _string ??= _span.ToString();
 
-    public int Length => Span.Length;
+    public readonly int Length => Span.Length;
 
     public StringOrSpan(string value)
     {

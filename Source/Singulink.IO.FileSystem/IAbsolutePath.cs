@@ -1,11 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Singulink.IO;
 
 /// <summary>
 /// Represents an absolute path to a file or directory.
 /// </summary>
-[SuppressMessage("Design", "CA1065:Do not raise exceptions in unexpected locations", Justification = "Properties need to be overriden by implementing types")]
 public partial interface IAbsolutePath : IPath
 {
     /// <summary>

@@ -51,4 +51,13 @@ public abstract class CachedEntryInfo
     /// Refreshes the cached information about the file/directory.
     /// </summary>
     public abstract void Refresh();
+
+    /// <summary>
+    /// Returns a string containing the path format, entry type and the path. Not usable for file system operations.
+    /// </summary>
+    /// <remarks>
+    /// This method returns the same value as <see cref="IPath.ToString"/> method on the <see cref="Path"/> property. See that method's documentation for more
+    /// details on obtaining paths suitable for display or file system operations.
+    /// </remarks>
+    public override string ToString() => Path.ToString();
 }

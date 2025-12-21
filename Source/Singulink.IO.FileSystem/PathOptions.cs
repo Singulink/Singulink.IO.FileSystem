@@ -70,8 +70,9 @@ public enum PathOptions
     NoControlCharacters = 1 << 13,
 
     /// <summary>
-    /// A combination of the <see cref="NoReservedDeviceNames"/>, <see cref="NoLeadingSpaces"/>, <see cref="NoTrailingSpaces"/>, <see
-    /// cref="NoTrailingDots"/> and <see cref="NoControlCharacters"/> flags. This is the default value used for all parsing operations if no value is specified.
+    /// A combination of the <see cref="NoReservedDeviceNames"/>, <see cref="NoLeadingSpaces"/>, <see cref="NoTrailingSpaces"/>, <see cref="NoTrailingDots"/>
+    /// and <see cref="NoControlCharacters"/> flags. This is the default parameter value set for all parsing operations if the parameter is not explicitly
+    /// provided.
     /// </summary>
     NoUnfriendlyNames = NoReservedDeviceNames | NoLeadingSpaces | NoTrailingSpaces | NoTrailingDots | NoControlCharacters,
 

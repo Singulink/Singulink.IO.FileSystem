@@ -17,9 +17,23 @@ public partial interface IRelativeFilePath
             }
         }
 
-        public IRelativeFilePath WithExtension(string? newExtension, PathOptions options)
+        public IRelativeFilePath WithExtension(string? extension, PathOptions options)
         {
-            string newPath = PathFormat.ChangeFileNameExtension(PathDisplay, newExtension, RootLength, options);
+            string newPath = PathFormat.ChangeFileNameExtension(PathDisplay, extension, RootLength, options);
+
+            if (newPath is null)
+                return this;
+
+            return new Impl(newPath, RootLength, PathFormat);
+        }
+
+        public IRelativeFilePath AddExtension(string? extension, PathOptions options)
+        {
+            string newPath = PathFormat.AddFileNameExtension(PathDisplay, extension, RootLength, options);
+
+            if (newPath is null)
+                return this;
+
             return new Impl(newPath, RootLength, PathFormat);
         }
 

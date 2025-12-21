@@ -65,7 +65,7 @@ public abstract partial class PathFormat
                 {
                     if (InvalidNameCharsWithoutWildcards.Contains(c))
                     {
-                        error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | / \\";
+                        error = $"Invalid character '{c}' in entry name '{name}'. Invalid characters include: < > : \" | / \\";
                         return false;
                     }
                 }
@@ -76,7 +76,7 @@ public abstract partial class PathFormat
                 {
                     if (InvalidNameChars.Contains(c))
                     {
-                        error = $"Invalid character '{c}' in entry name '{name.ToString()}'. Invalid characters include: < > : \" | ? * / \\";
+                        error = $"Invalid character '{c}' in entry name '{name}'. Invalid characters include: < > : \" | ? * / \\";
                         return false;
                     }
                 }
@@ -97,7 +97,7 @@ public abstract partial class PathFormat
                 if ((name.Length == 3 && (name.Equals("CON", comp) || name.Equals("PRN", comp) || name.Equals("AUX", comp) || name.Equals("NUL", comp))) ||
                     (name.Length == 4 && char.IsDigit(name[3]) && (name.StartsWith("COM", comp) || name.StartsWith("LPT", comp))))
                 {
-                    error = $"Invalid reserved device name in entry name '{name.ToString()}'.";
+                    error = $"Invalid reserved device name in entry name '{name}'.";
                     return false;
                 }
             }

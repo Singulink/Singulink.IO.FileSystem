@@ -90,8 +90,14 @@ public partial interface IAbsoluteFilePath : IAbsolutePath, IFilePath
     void Delete(bool ignoreNotFound = true);
 
     /// <inheritdoc cref="IFilePath.WithExtension(string?, PathOptions)"/>
-    new IAbsoluteFilePath WithExtension(string? newExtension, PathOptions options = PathOptions.NoUnfriendlyNames);
+    new IAbsoluteFilePath WithExtension(string? extension, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     /// <inheritdoc/>
-    IFilePath IFilePath.WithExtension(string? newExtension, PathOptions options) => WithExtension(newExtension, options);
+    IFilePath IFilePath.WithExtension(string? extension, PathOptions options) => WithExtension(extension, options);
+
+    /// <inheritdoc cref="IFilePath.AddExtension(string?, PathOptions)"/>
+    new IAbsoluteFilePath AddExtension(string? extension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.AddExtension(string? extension, PathOptions options) => AddExtension(extension, options);
 }

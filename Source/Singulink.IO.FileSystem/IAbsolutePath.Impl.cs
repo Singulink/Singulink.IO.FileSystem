@@ -7,7 +7,7 @@ public partial interface IAbsolutePath
 {
     internal new abstract class Impl(string path, int rootLength, PathFormat pathFormat) : IPath.Impl(path, rootLength, pathFormat), IAbsolutePath
     {
-        public string PathExport => PathFormat.GetAbsolutePathExportString(PathDisplay);
+        public string PathExport => field ??= PathFormat.GetAbsolutePathExportString(PathDisplay);
 
         public bool IsUnc => PathFormat.IsUncPath(PathDisplay);
 

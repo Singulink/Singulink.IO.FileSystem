@@ -3,7 +3,7 @@ namespace Singulink.IO.FileSystem.Tests;
 [PrefixTestClass]
 public class AbsoluteDirectoryParseTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("c:/test")]
     [DataRow("c:")]
     [DataRow(@"c:\test")]
@@ -18,7 +18,7 @@ public class AbsoluteDirectoryParseTests
         (dir is IAbsoluteDirectoryPath).ShouldBeTrue();
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("/")]
     [DataRow("/test")]
     public void ParseToCorrectUnixType(string path)
@@ -69,7 +69,7 @@ public class AbsoluteDirectoryParseTests
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseAbsolute("\\Server", PathFormat.Windows, PathOptions.None));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("test")]
     [DataRow("")]
     [DataRow("xy:/ ")]
@@ -80,7 +80,7 @@ public class AbsoluteDirectoryParseTests
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Windows, PathOptions.None));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("test")]
     [DataRow("")]
     [DataRow(" /")]
@@ -118,7 +118,7 @@ public class AbsoluteDirectoryParseTests
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("/test")]
     [DataRow("/")]
     public void NoUniversal(string path)

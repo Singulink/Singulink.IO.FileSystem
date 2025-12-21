@@ -106,14 +106,14 @@ public abstract partial class PathFormat
         }
 
         if (name.IndexOfAny(Separator, (char)0) is int i and >= 0) {
-            error = $"Invalid character '{name[i]}' in entry name '{name.ToString()}'.";
+            error = $"Invalid character '{name[i]}' in entry name '{name}'.";
             return false;
         }
 
         if (options.HasAllFlags(PathOptions.NoControlCharacters)) {
             foreach (char c in name) {
                 if (c < 32) {
-                    error = $"Invalid control character '{c}' in entry name '{name.ToString()}'.";
+                    error = $"Invalid control character '{c}' in entry name '{name}'.";
                     return false;
                 }
             }
@@ -273,20 +273,43 @@ public abstract partial class PathFormat
         return path;
     }
 
-    internal string ChangeFileNameExtension(string path, string? newExtension, int rootLength, PathOptions options)
+    internal string? ChangeFileNameExtension(string path, string? extension, int rootLength, PathOptions options)
     {
-        if (newExtension is null)
-            newExtension = string.Empty;
-        else if (newExtension.Length > 0 && newExtension.LastIndexOf('.') is not 0)
-            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(newExtension));
+        if (extension?.Length > 0 && extension.LastIndexOf('.') is not 0)
+            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(extension));
 
-        var parentDir = GetParentDirectoryPath(path, rootLength);
-        var fileNameWithoutExtension = GetFileNameWithoutExtension(path);
-
-        string newFileName = $"{fileNameWithoutExtension.Span}{newExtension}";
+        string newFileName = $"{GetFileNameWithoutExtension(path).Span}{extension}";
 
         if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
-            throw new ArgumentException($"Invalid new file name: {error}", nameof(newExtension));
+            throw new ArgumentException($"Invalid new file name: {error}", nameof(extension));
+
+        if (GetEntryName(path, rootLength).Span.SequenceEqual(newFileName))
+            return null;
+
+        var parentDir = GetParentDirectoryPath(path, rootLength);
+
+        if (parentDir.Length == rootLength)
+            return $"{parentDir}{newFileName}";
+
+        return $"{parentDir}{Separator}{newFileName}";
+    }
+
+    internal string? AddFileNameExtension(string path, string? extension, int rootLength, PathOptions options)
+    {
+        if (extension?.Length > 0 && extension.LastIndexOf('.') is not 0)
+            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(extension));
+
+        StringOrSpan fileName = GetEntryName(path, rootLength);
+
+        string newFileName = $"{fileName.Span}{extension}";
+
+        if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
+            throw new ArgumentException($"Invalid new file name: {error}", nameof(extension));
+
+        if (fileName.Span.SequenceEqual(newFileName))
+            return null;
+
+        var parentDir = GetParentDirectoryPath(path, rootLength);
 
         if (parentDir.Length == rootLength)
             return $"{parentDir}{newFileName}";
@@ -306,7 +329,7 @@ public abstract partial class PathFormat
             return path;
 
         if (path.Length is 1)
-            return GetPathKind(path) == PathKind.RelativeRooted ? StringOrSpan.Empty : path;
+            return GetPathKind(path) is PathKind.RelativeRooted ? StringOrSpan.Empty : path;
 
         if (path.Span[^1] == Separator)
             path = path.Span[..^1];

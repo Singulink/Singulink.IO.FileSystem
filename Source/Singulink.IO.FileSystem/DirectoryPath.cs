@@ -92,7 +92,7 @@ public static class DirectoryPath
     #region Special Directories
 
     /// <summary>
-    /// Gets the base directory of the application that the assembly resolver users to probe for assemblies, which is typically the directory where the
+    /// Gets the base directory of the application that the assembly resolver uses to probe for assemblies, which is typically the directory where the
     /// application's executable resides.
     /// </summary>
     public static IAbsoluteDirectoryPath GetAppBase()

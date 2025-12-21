@@ -4,7 +4,7 @@
     <RootNamespace>Singulink.IO</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-    <Version>2.3.4</Version>
+    <Version>2.4.0</Version>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
     <PackageTags>File, Directory, Path, Folder, FileSystem</PackageTags>
   </PropertyGroup>
@@ -17,6 +17,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Singulink.Enums" Version="2.3.0" />
+    <PackageReference Include="Singulink.Enums" Version="2.3.1" />
   </ItemGroup>
 </Project>

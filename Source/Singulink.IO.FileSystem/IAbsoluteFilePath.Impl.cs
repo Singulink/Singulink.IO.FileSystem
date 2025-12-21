@@ -125,9 +125,23 @@ public partial interface IAbsoluteFilePath
 
         #region Path Manipulation
 
-        public IAbsoluteFilePath WithExtension(string? newExtension, PathOptions options)
+        public IAbsoluteFilePath WithExtension(string? extension, PathOptions options)
         {
-            string newPath = PathFormat.ChangeFileNameExtension(PathDisplay, newExtension, RootLength, options);
+            string newPath = PathFormat.ChangeFileNameExtension(PathDisplay, extension, RootLength, options);
+
+            if (newPath is null)
+                return this;
+
+            return new Impl(newPath, RootLength, PathFormat);
+        }
+
+        public IAbsoluteFilePath AddExtension(string? extension, PathOptions options)
+        {
+            string newPath = PathFormat.AddFileNameExtension(PathDisplay, extension, RootLength, options);
+
+            if (newPath is null)
+                return this;
+
             return new Impl(newPath, RootLength, PathFormat);
         }
 
