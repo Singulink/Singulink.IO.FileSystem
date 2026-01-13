@@ -15,12 +15,12 @@ public abstract partial class PathFormat
 
         internal override PathKind GetPathKind(ReadOnlySpan<char> path) => PathKind.Relative;
 
-        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
+        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
         {
-            if (!Unix.ValidateEntryName(name, options, allowWildcards, out error))
+            if (!Unix.ValidateEntryName(name, options, allowWildcards, out error, wantsError))
                 return false;
 
-            if (!Windows.ValidateEntryName(name, options, allowWildcards, out error))
+            if (!Windows.ValidateEntryName(name, options, allowWildcards, out error, wantsError))
                 return false;
 
             error = null;

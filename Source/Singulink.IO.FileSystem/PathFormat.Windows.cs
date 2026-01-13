@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using Singulink.Enums;
@@ -11,8 +12,8 @@ public abstract partial class PathFormat
 {
     private sealed class WindowsPathFormat : PathFormat
     {
-        private static readonly FrozenSet<char> InvalidNameChars = GetInvalidNameChars(true);
-        private static readonly FrozenSet<char> InvalidNameCharsWithoutWildcards = GetInvalidNameChars(false);
+        private static readonly SearchValues<char> InvalidNameChars = GetInvalidNameChars(true);
+        private static readonly SearchValues<char> InvalidNameCharsWithoutWildcards = GetInvalidNameChars(false);
 
         internal WindowsPathFormat() : base('\\') { }
 
@@ -49,7 +50,7 @@ public abstract partial class PathFormat
             return path.Length > 0 && path[0] == Separator ? PathKind.RelativeRooted : PathKind.Relative;
         }
 
-        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
+        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
         {
             options = options.SetFlags(PathOptions.NoControlCharacters);
 
@@ -61,24 +62,20 @@ public abstract partial class PathFormat
 
             if (allowWildcards)
             {
-                foreach (char c in name)
+                int idx = name.IndexOfAny(InvalidNameCharsWithoutWildcards);
+                if (idx >= 0)
                 {
-                    if (InvalidNameCharsWithoutWildcards.Contains(c))
-                    {
-                        error = $"Invalid character '{c}' in entry name '{name}'. Invalid characters include: < > : \" | / \\";
-                        return false;
-                    }
+                    error = wantsError ? $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | / \\" : "invalid";
+                    return false;
                 }
             }
             else
             {
-                foreach (char c in name)
+                int idx = name.IndexOfAny(InvalidNameChars);
+                if (idx >= 0)
                 {
-                    if (InvalidNameChars.Contains(c))
-                    {
-                        error = $"Invalid character '{c}' in entry name '{name}'. Invalid characters include: < > : \" | ? * / \\";
-                        return false;
-                    }
+                    error = wantsError ? $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | ? * / \\" : "invalid";
+                    return false;
                 }
             }
 
@@ -95,9 +92,9 @@ public abstract partial class PathFormat
                 // CON, PRN, AUX, NUL, COM1 to COM9, LPT1 to LPT9
 
                 if ((name.Length == 3 && (name.Equals("CON", comp) || name.Equals("PRN", comp) || name.Equals("AUX", comp) || name.Equals("NUL", comp))) ||
-                    (name.Length == 4 && char.IsDigit(name[3]) && (name.StartsWith("COM", comp) || name.StartsWith("LPT", comp))))
+                    (name.Length == 4 && (name[3] is >= '1' and <= '9') && (name.StartsWith("COM", comp) || name.StartsWith("LPT", comp))))
                 {
-                    error = $"Invalid reserved device name in entry name '{name}'.";
+                    error = wantsError ? $"Invalid reserved device name in entry name '{name}'." : "Invalid.";
                     return false;
                 }
             }
@@ -200,7 +197,7 @@ public abstract partial class PathFormat
         internal override string GetAbsolutePathExportString(string pathDisplay) =>
             pathDisplay[1] == ':' ? @"\\?\" + pathDisplay : $@"\\?\UNC\{pathDisplay.AsSpan()[2..]}";
 
-        private static FrozenSet<char> GetInvalidNameChars(bool includeWildcardChars)
+        private static SearchValues<char> GetInvalidNameChars(bool includeWildcardChars)
         {
             var invalidChars = new List<char>() { '<', '>', ':', '"', '|', '/', '\\' };
 
@@ -210,7 +207,7 @@ public abstract partial class PathFormat
                 invalidChars.Add('*');
             }
 
-            return invalidChars.ToFrozenSet();
+            return SearchValues.Create([.. invalidChars]);
         }
 
         public override string ToString() => "Windows";
