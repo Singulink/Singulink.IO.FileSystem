@@ -160,5 +160,8 @@ public class RelativeDirectoryParseTests
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/test/NUL", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("PRN/test", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/test/LPT5/test2", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+
+        Should.NotThrow(() => DirectoryPath.ParseRelative("/COM0/", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
+        Should.NotThrow(() => DirectoryPath.ParseRelative("/LPT0/", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
     }
 }

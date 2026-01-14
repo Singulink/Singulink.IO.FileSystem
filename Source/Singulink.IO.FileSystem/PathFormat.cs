@@ -69,6 +69,26 @@ public abstract partial class PathFormat
     /// </summary>
     public abstract override string ToString();
 
+    /// <summary>
+    /// Determines whether the given file extension is valid for this path format.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The empty extension is valid for all path formats.</para>
+    /// <para>
+    /// If non-empty, the extension should begin with a <c>.</c> character, and not have any <c>.</c> characters after the first one.</para>
+    /// </remarks>
+    public virtual bool IsValidExtension(ReadOnlySpan<char> extension, PathOptions options = PathOptions.NoUnfriendlyNames)
+    {
+        if (extension is [])
+            return true;
+
+        if (extension is not ['.', .. var rest] || rest.Contains('.'))
+            return false;
+
+        return ValidateEntryName(extension, options & ~PathOptions.NoLeadingSpaces, allowWildcards: false, out _, wantsError: false);
+    }
+
     internal string ParentDirectoryWithSeparator { get; }
 
     internal PathFormat(char separator)
@@ -98,7 +118,8 @@ public abstract partial class PathFormat
 
     internal virtual ReadOnlySpan<char> NormalizeSeparators(ReadOnlySpan<char> path) => path;
 
-    internal virtual bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error)
+    // 'wantsError' indicates whether we should potentially allocate a useful error message or just return a possibly generic one or none.
+    internal virtual bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
     {
         if (name.IsEmpty) {
             error = "Empty entry name.";
@@ -106,16 +127,15 @@ public abstract partial class PathFormat
         }
 
         if (name.IndexOfAny(Separator, (char)0) is int i and >= 0) {
-            error = $"Invalid character '{name[i]}' in entry name '{name}'.";
+            error = wantsError ? $"Invalid character '{name[i]}' in entry name '{name}'." : "Invalid.";
             return false;
         }
 
         if (options.HasAllFlags(PathOptions.NoControlCharacters)) {
-            foreach (char c in name) {
-                if (c < 32) {
-                    error = $"Invalid control character '{c}' in entry name '{name}'.";
-                    return false;
-                }
+            int idx = name.IndexOfAnyInRange((char)0, (char)31);
+            if (idx >= 0) {
+                error = wantsError ? $"Invalid control character '{name[idx]}' in entry name '{name}'." : "Invalid.";
+                return false;
             }
         }
 
