@@ -64,10 +64,17 @@ public abstract partial class PathFormat
     /// </summary>
     public IRelativeDirectoryPath RelativeParentDirectory { get; }
 
-    /// <summary>
-    /// Gets the name of the path format.
-    /// </summary>
-    public abstract override string ToString();
+    internal string ParentDirectoryWithSeparator { get; }
+
+    internal PathFormat(char separator)
+    {
+        Separator = separator;
+        SeparatorString = separator.ToString();
+        ParentDirectoryWithSeparator = $"..{separator}";
+
+        RelativeCurrentDirectory = DirectoryPath.ParseRelative(".", this, PathOptions.None);
+        RelativeParentDirectory = DirectoryPath.ParseRelative("..", this, PathOptions.None);
+    }
 
     /// <summary>
     /// Determines whether the given file extension is valid for this path format.
@@ -80,26 +87,20 @@ public abstract partial class PathFormat
     /// </remarks>
     public virtual bool IsValidExtension(ReadOnlySpan<char> extension, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        if (extension is [])
+        if (extension.Length is 0)
             return true;
 
         if (extension is not ['.', .. var rest] || rest.Contains('.'))
             return false;
 
-        return ValidateEntryName(extension, options & ~PathOptions.NoLeadingSpaces, allowWildcards: false, out _, wantsError: false);
+        options = options.ClearFlags(PathOptions.NoReservedDeviceNames | PathOptions.NoLeadingSpaces | PathOptions.NoTrailingDots);
+        return ValidateEntryName(extension, options, allowWildcards: false, out _, wantsError: false);
     }
 
-    internal string ParentDirectoryWithSeparator { get; }
-
-    internal PathFormat(char separator)
-    {
-        Separator = separator;
-        SeparatorString = separator.ToString();
-        ParentDirectoryWithSeparator = $"..{separator}";
-
-        RelativeCurrentDirectory = DirectoryPath.ParseRelative(".", this, PathOptions.None);
-        RelativeParentDirectory = DirectoryPath.ParseRelative("..", this, PathOptions.None);
-    }
+    /// <summary>
+    /// Gets the name of the path format.
+    /// </summary>
+    public abstract override string ToString();
 
     /// <summary>
     /// Gets the kind of path that the given path will be interpreted as.
@@ -132,7 +133,7 @@ public abstract partial class PathFormat
         }
 
         if (options.HasAllFlags(PathOptions.NoControlCharacters)) {
-            int idx = name.IndexOfAnyInRange((char)0, (char)31);
+            int idx = name.IndexOfAnyInRange((char)1, (char)31);
             if (idx >= 0) {
                 error = wantsError ? $"Invalid control character '{name[idx]}' in entry name '{name}'." : "Invalid.";
                 return false;
