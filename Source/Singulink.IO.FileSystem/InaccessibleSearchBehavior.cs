@@ -6,9 +6,9 @@ namespace Singulink.IO;
 public enum InaccessibleSearchBehavior
 {
     /// <summary>
-    /// Indicates that an <see cref="UnauthorizedIOAccessException"/> should be thrown if the directory being searched is inaccessible but inaccessible child
-    /// directories are ignored. This is the default behavior as it has the least surprising behavior, but it requires an extra file system call for recursive
-    /// searches where no matches are returned to check if the search root is accessible.
+    /// Indicates that an <see cref="UnauthorizedIOAccessException"/> should be thrown if the directory being searched is inaccessible, but inaccessible child
+    /// directories should be ignored. This is the default behavior as it has the least surprising behavior, but it incurs an extra file system call when the
+    /// search yields no matches.
     /// </summary>
     ThrowForSearchDir,
 

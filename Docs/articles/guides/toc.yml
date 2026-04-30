@@ -1,11 +1,44 @@
 - name: Getting Started
   href: getting-started.md
 
-- name: PathOptions Handling
-  href: pathoptions-handling.md
+- name: Path Types
+  href: path-types.md
+
+- name: Parsing Paths
+  href: parsing-paths.md
+
+- name: PathOptions
+  href: path-options.md
+
+- name: Path Formats
+  href: path-formats.md
+
+- name: Combining and Navigating Paths
+  href: combining-and-navigating.md
+
+- name: File Names and Extensions
+  href: file-names-and-extensions.md
+
+- name: Special Locations
+  href: special-locations.md
+
+- name: Working with Files
+  href: file-operations.md
+
+- name: Working with Directories
+  href: directory-operations.md
+
+- name: Searching and Enumeration
+  href: searching-and-enumeration.md
+
+- name: Drive and Disk Information
+  href: drive-and-disk-info.md
+
+- name: Cached Entry Info
+  href: cached-entry-info.md
 
 - name: Exception Handling
   href: exception-handling.md
 
-- name: Cached Entry Info
-  href: cached-entry-info.md
+- name: Interop and Migration
+  href: interop-and-migration.md
