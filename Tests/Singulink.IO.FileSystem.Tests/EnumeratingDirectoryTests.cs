@@ -216,6 +216,10 @@ public class EnumeratingDirectoryTests
     [TestMethod]
     public void GetRelativeEntriesFromRootedSearchLocation_AncestorOfThis()
     {
+        // Rooted-relative paths are only supported on Windows.
+        if (!PathFormat.Current.SupportsRelativeRootedPaths)
+            return;
+
         var testDir = SetupTestDirectory();
         var dir = testDir.CombineDirectory("0_dir").CombineDirectory("0_0_subdir"); // `this` is 2 levels below testDir
         var recursive = new SearchOptions { Recursive = true };
@@ -247,6 +251,10 @@ public class EnumeratingDirectoryTests
     [TestMethod]
     public void GetRelativeEntriesFromRootedSearchLocation_SiblingBranch()
     {
+        // Rooted-relative paths are only supported on Windows.
+        if (!PathFormat.Current.SupportsRelativeRootedPaths)
+            return;
+
         var testDir = SetupTestDirectory();
         var dir = testDir.CombineDirectory("0_dir").CombineDirectory("0_0_subdir"); // `this` lives under 0_dir
         var recursive = new SearchOptions { Recursive = true };
