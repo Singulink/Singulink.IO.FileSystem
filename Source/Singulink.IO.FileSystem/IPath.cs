@@ -48,6 +48,9 @@ public partial interface IPath : IEquatable<IPath?>
     /// actual type of this path will recreate an identical path object. If you need a string path parameter in order to perform IO operations (e.g.
     /// opening a file stream) you should obtain an absolute path and use the <see cref="IAbsolutePath.PathExport"/> property value instead as it is
     /// specifically formatted to ensure the path is correctly parsed by the underlying file system.</para>
+    /// <para>Non-empty directory paths always end with the path separator (e.g. <c>"C:\Foo\"</c>, <c>"/foo/"</c>, <c>"../"</c>) while file paths
+    /// never do. The only directory path whose display value does not end with a separator is the empty relative path (<c>""</c>) which represents the
+    /// current directory.</para>
     /// </remarks>
     string PathDisplay { get; }
 

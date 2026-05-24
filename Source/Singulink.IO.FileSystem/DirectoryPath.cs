@@ -56,7 +56,7 @@ public static class DirectoryPath
     public static IAbsoluteDirectoryPath ParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
         path = format.NormalizeSeparators(path);
-        string finalPath = format.NormalizeAbsolutePath(path, options, false, out int rootLength);
+        string finalPath = format.NormalizeAbsolutePath(path, options, asDirectory: true, out int rootLength);
         return new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format);
     }
 
@@ -83,7 +83,7 @@ public static class DirectoryPath
     public static IRelativeDirectoryPath ParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
         path = format.NormalizeSeparators(path);
-        string finalPath = format.NormalizeRelativePath(path, options, false, out int rootLength);
+        string finalPath = format.NormalizeRelativePath(path, options, appendSeparator: true, out int rootLength);
         return new IRelativeDirectoryPath.Impl(finalPath, rootLength, format);
     }
 

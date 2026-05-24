@@ -56,9 +56,13 @@ public static class FilePath
     public static IAbsoluteFilePath ParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
         path = format.NormalizeSeparators(path);
-        string finalPath = format.NormalizeAbsolutePath(path, options, true, out int rootLength);
 
-        if (path.EndsWith(format.SeparatorString, StringComparison.Ordinal) || rootLength == finalPath.Length)
+        if (format.IsDirectoryShaped(path))
+            throw new ArgumentException("No file name in path.", nameof(path));
+
+        string finalPath = format.NormalizeAbsolutePath(path, options, asDirectory: false, out int rootLength);
+
+        if (rootLength == finalPath.Length)
             throw new ArgumentException("No file name in path.", nameof(path));
 
         return new IAbsoluteFilePath.Impl(finalPath, rootLength, format);
@@ -88,10 +92,10 @@ public static class FilePath
     {
         path = format.NormalizeSeparators(path);
 
-        if (path.Length == 0 || path.EndsWith(format.SeparatorString, StringComparison.Ordinal))
+        if (format.IsDirectoryShaped(path))
             throw new ArgumentException("No file name in path.", nameof(path));
 
-        string finalPath = format.NormalizeRelativePath(path, options, true, out int rootLength);
+        string finalPath = format.NormalizeRelativePath(path, options, appendSeparator: false, out int rootLength);
         return new IRelativeFilePath.Impl(finalPath, rootLength, format);
     }
 

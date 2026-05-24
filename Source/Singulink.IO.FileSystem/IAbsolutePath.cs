@@ -10,6 +10,7 @@ public partial interface IAbsolutePath : IPath
     /// </summary>
     /// <remarks>
     /// <para>This is the value that should always be used when a path string is needed for passing into file system calls (e.g. opening file streams).</para>
+    /// <para>Directory paths always end with the path separator and file paths never do.</para>
     /// </remarks>
     string PathExport { get; }
 

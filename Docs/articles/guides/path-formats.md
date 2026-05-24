@@ -102,7 +102,11 @@ Every path has three string representations. Use the right one for the job.
 
 ```csharp
 file.PathDisplay;   // "C:\Apps\MyApp\config.json"
+dir.PathDisplay;    // "C:\Apps\MyApp\"   (note the trailing separator)
 ```
+
+> [!NOTE]
+> Non-empty directory paths always end with the format's separator in both <xref:Singulink.IO.IPath.PathDisplay> and <xref:Singulink.IO.IAbsolutePath.PathExport>; file paths never do. Empty relative directory paths (`PathDisplay == ""`) are the one exception: there is no segment to suffix. This invariant serves two purposes. First, it makes a path's textual form unambiguously declare whether it points to a file or a directory, so directory and file strings remain distinguishable when they cross out of the type system (logs, config, databases, etc.). Second, it makes raw string concatenation safe: an absolute directory's string can be concatenated with any number of relative directory strings and an optional trailing file name string to produce a valid path, with no need to insert or de-duplicate separators between segments.
 
 #### PathExport (absolute paths only)
 
@@ -119,10 +123,10 @@ using var stream = new FileStream(file.PathExport, FileMode.Open);
 
 #### ToString()
 
-<xref:Singulink.IO.IPath.ToString*> returns a deliberately unusable diagnostic string of the form `[Format] File: <pathDisplay>` or `[Format] Directory: <pathDisplay>`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
+<xref:Singulink.IO.IPath.ToString*> returns a deliberately unusable diagnostic string of the form `[Format] "<pathDisplay>"` or `[Format] "<pathDisplay>"`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
 
 ```csharp
-file.ToString();   // "[Windows] File: C:\Apps\MyApp\config.json"
+file.ToString();   // [File] "C:\Apps\MyApp\config.json"
 ```
 
 ## Format-Aware Members

@@ -21,7 +21,10 @@ public class PlatformConsistencyTests
     [TestMethod]
     public void FileIsDirectory()
     {
-        var file = FilePath.ParseAbsolute(SetupTestDirectory().PathExport);
+        // The directory's PathExport ends with a trailing separator under the directory-path invariant, but FilePath.ParseAbsolute rejects trailing
+        // separators because they indicate a directory. Trim it so we can construct a file path that points to an actual directory.
+        string dirExport = SetupTestDirectory().PathExport;
+        var file = FilePath.ParseAbsolute(dirExport.AsSpan().TrimEnd(['\\', '/']));
 
         file.Exists.ShouldBeFalse();
 

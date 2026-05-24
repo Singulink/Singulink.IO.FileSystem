@@ -69,7 +69,7 @@ Tune behavior with <xref:Singulink.IO.SearchOptions>. All properties are optiona
 | <xref:Singulink.IO.SearchOptions.InaccessibleSearchBehavior> | <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> | How to handle inaccessible directories; see below. |
 
 > [!TIP]
-> The <xref:Singulink.IO.SearchOptions.MatchCasing> default is **case-insensitive**: the same on Windows and Unix. `System.IO`'s default differs by platform, which leads to platform-specific bugs that this library deliberately avoids.
+> The <xref:Singulink.IO.SearchOptions.MatchCasing> default is **case-insensitive**: the same on Windows and Unix. `System.IO`'s default differs by platform, which can lead to platform-specific bugs that this library deliberately avoids. You can opt into platform-specific behavior by setting `MatchCasing` to <xref:System.IO.MatchCasing.PlatformDefault>.
 
 ```csharp
 var opts = new SearchOptions
@@ -104,7 +104,7 @@ long total = profile.GetChildFiles("*", resilient).Sum(f => f.Length);
 ```
 
 > [!NOTE]
-> <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> is the friendliest default: you reliably get notified if the path you handed in is unreadable, but missing permissions deep in the tree don't blow up an otherwise-valid search. While this is the least surprising behavior, it does incur an extra file system call for searches that yield no matches. This should not be an issue for the vast majority of applications, but is worth noting.
+> <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> is the friendliest least-surprising default: you reliably get notified if the path you handed in is unreadable, but missing permissions deep in the tree don't blow up an otherwise-valid search. This behavior differs from `System.IO`, which only supports the other two options and the default depends on which API you call.
 
 When a search throws because of inaccessibility, the exception is <xref:Singulink.IO.UnauthorizedIOAccessException>. See [Exception Handling](exception-handling.md).
 

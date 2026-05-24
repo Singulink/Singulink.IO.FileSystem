@@ -4,19 +4,19 @@ namespace Singulink.IO.FileSystem.Tests;
 public class AbsoluteDirectoryParentTests
 {
     [TestMethod]
-    public void Windows()
+    public void ParentDirectory_WindowsDriveTree_WalksUpToRoot()
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\test\test2\test3", PathFormat.Windows);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe(@"C:\test\test2\test3");
+        dir.PathDisplay.ShouldBe(@"C:\test\test2\test3\");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe(@"C:\test\test2");
+        dir.PathDisplay.ShouldBe(@"C:\test\test2\");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe(@"C:\test");
+        dir.PathDisplay.ShouldBe(@"C:\test\");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeFalse();
@@ -25,19 +25,19 @@ public class AbsoluteDirectoryParentTests
     }
 
     [TestMethod]
-    public void Unix()
+    public void ParentDirectory_UnixTree_WalksUpToRoot()
     {
         var dir = DirectoryPath.ParseAbsolute("/test/test2/test3", PathFormat.Unix);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe("/test/test2/test3");
+        dir.PathDisplay.ShouldBe("/test/test2/test3/");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe("/test/test2");
+        dir.PathDisplay.ShouldBe("/test/test2/");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.PathDisplay.ShouldBe("/test");
+        dir.PathDisplay.ShouldBe("/test/");
 
         dir = dir.ParentDirectory!;
         dir.HasParentDirectory.ShouldBeFalse();

@@ -43,6 +43,6 @@ public partial interface IPath
             string.GetHashCode(PathDisplay.AsSpan(0, RootLength), StringComparison.OrdinalIgnoreCase),
             string.GetHashCode(PathDisplay.AsSpan(RootLength)));
 
-        public override string ToString() => $"[{PathFormat}] {(this is IFilePath ? "File: " : "Directory: ")} {PathDisplay}";
+        public override string ToString() => @$"[{PathFormat}] ""{PathDisplay}""";
     }
 }

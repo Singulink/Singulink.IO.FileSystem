@@ -50,9 +50,11 @@ IAbsoluteDirectoryPath dataDir = baseDir.CombineDirectory("data");
 By default, the string is parsed using the parent's <xref:Singulink.IO.IPath.PathFormat> and <xref:Singulink.IO.PathOptions.NoUnfriendlyNames>. Override either:
 
 ```csharp
-IAbsoluteFilePath portable = baseDir.CombineFile("data/users.json", PathFormat.Universal);
+IAbsoluteFilePath portable = baseDir.CombineFile("data/users.json", RelativePathFormat.Universal);
 IAbsoluteDirectoryPath relaxed = baseDir.CombineDirectory(rawDir, PathOptions.None);
 ```
+
+The `format` argument on the combine overloads is a <xref:Singulink.IO.RelativePathFormat>, not a <xref:Singulink.IO.PathFormat>. A combined path is always relative, so the only two meaningful options are <xref:Singulink.IO.RelativePathFormat.MatchBase> (the default, parses the string in the base directory's format) and <xref:Singulink.IO.RelativePathFormat.Universal> (parses the string in <xref:Singulink.IO.PathFormat.Universal>, which combines cleanly with any base format). See [Path Formats](path-formats.md#combining-across-formats) for the cross-format combine rules.
 
 > [!TIP]
 > If you'll combine the same relative path more than once, parse it into an <xref:Singulink.IO.IRelativePath> once and reuse it. Combining a parsed relative path is cheaper and skips re-validation.

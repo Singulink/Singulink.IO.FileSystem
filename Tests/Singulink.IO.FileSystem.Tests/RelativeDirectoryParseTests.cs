@@ -47,12 +47,12 @@ public class RelativeDirectoryParseTests
     {
         var dir = DirectoryPath.ParseRelative("..", PathOptions.None);
         dir.Name.ShouldBe("");
-        dir.PathDisplay.ShouldBe("..");
+        dir.PathDisplay.ShouldBe(".." + Path.DirectorySeparatorChar);
         dir.IsRooted.ShouldBeFalse();
 
         dir = DirectoryPath.ParseRelative("../..", PathFormat.Unix, PathOptions.None);
         dir.Name.ShouldBe("");
-        dir.PathDisplay.ShouldBe("../..");
+        dir.PathDisplay.ShouldBe("../../");
         dir.IsRooted.ShouldBeFalse();
     }
 
@@ -66,7 +66,7 @@ public class RelativeDirectoryParseTests
 
         dir = DirectoryPath.ParseRelative("/test", PathFormat.Windows, PathOptions.None);
         dir.Name.ShouldBe("test");
-        dir.PathDisplay.ShouldBe(@"\test");
+        dir.PathDisplay.ShouldBe(@"\test\");
         dir.IsRooted.ShouldBeTrue();
     }
 
@@ -81,21 +81,21 @@ public class RelativeDirectoryParseTests
     public void EmptyDirectories()
     {
         var dir = DirectoryPath.ParseRelative("test////", PathFormat.Universal, PathOptions.AllowEmptyDirectories);
-        dir.PathDisplay.ShouldBe("test");
+        dir.PathDisplay.ShouldBe("test/");
 
         dir = DirectoryPath.ParseRelative(".///test////", PathFormat.Universal, PathOptions.AllowEmptyDirectories);
-        dir.PathDisplay.ShouldBe("test");
+        dir.PathDisplay.ShouldBe("test/");
     }
 
     [TestMethod]
     public void Navigation()
     {
         var dir = DirectoryPath.ParseRelative("..////../test//././", PathFormat.Universal, PathOptions.AllowEmptyDirectories);
-        dir.PathDisplay.ShouldBe("../../test");
+        dir.PathDisplay.ShouldBe("../../test/");
         dir.IsRooted.ShouldBeFalse();
 
         dir = DirectoryPath.ParseRelative("..////../test//.././", PathFormat.Universal, PathOptions.AllowEmptyDirectories);
-        dir.PathDisplay.ShouldBe("../..");
+        dir.PathDisplay.ShouldBe("../../");
         dir.IsRooted.ShouldBeFalse();
     }
 
@@ -103,7 +103,7 @@ public class RelativeDirectoryParseTests
     public void RootedNavigation()
     {
         var dir = DirectoryPath.ParseRelative("/test/../test2/../test3", PathFormat.Windows, PathOptions.None);
-        dir.PathDisplay.ShouldBe(@"\test3");
+        dir.PathDisplay.ShouldBe(@"\test3\");
         dir.IsRooted.ShouldBeTrue();
 
         dir = DirectoryPath.ParseRelative("/test/../test2/../test3/./..", PathFormat.Windows, PathOptions.None);
@@ -134,14 +134,14 @@ public class RelativeDirectoryParseTests
     public void PathFormatDependent()
     {
         var dir = DirectoryPath.ParseRelative("./ test.", PathFormat.Universal, PathOptions.None);
-        dir.PathDisplay.ShouldBe(" test.");
+        dir.PathDisplay.ShouldBe(" test./");
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Universal, PathOptions.PathFormatDependent));
 
         dir = DirectoryPath.ParseRelative("./ test.", PathFormat.Unix, PathOptions.PathFormatDependent);
-        dir.PathDisplay.ShouldBe(" test.");
+        dir.PathDisplay.ShouldBe(" test./");
 
         dir = DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.None);
-        dir.PathDisplay.ShouldBe(@"\ test.");
+        dir.PathDisplay.ShouldBe(@"\ test.\");
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
     }
 

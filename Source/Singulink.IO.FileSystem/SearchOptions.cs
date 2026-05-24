@@ -1,5 +1,3 @@
-using Singulink.Enums;
-
 namespace Singulink.IO;
 
 #pragma warning disable SA1513 // Closing brace should be followed by blank line
@@ -17,7 +15,7 @@ public class SearchOptions
     public FileAttributes AttributesToSkip {
         get;
         set {
-            value.ThrowIfFlagsAreNotDefined(nameof(value));
+            value.ThrowIfFlagsAreNotDefined();
             field = value;
         }
     }
@@ -33,7 +31,7 @@ public class SearchOptions
     public MatchCasing MatchCasing {
         get;
         set {
-            value.ThrowIfNotDefined(nameof(value));
+            value.ThrowIfNotDefined();
             field = value;
         }
     } = MatchCasing.CaseInsensitive;
@@ -61,7 +59,7 @@ public class SearchOptions
     public InaccessibleSearchBehavior InaccessibleSearchBehavior {
         get;
         set {
-            value.ThrowIfNotDefined(nameof(value));
+            value.ThrowIfNotDefined();
             field = value;
         }
     }
@@ -89,7 +87,8 @@ public class SearchOptions
 
             MaxRecursionDepth = searchOptions.MaxRecursionDepth,
 
-            // Can't be changed:
+            // Non-configurable:
+
             MatchType = MatchType.Simple,
             ReturnSpecialDirectories = false,
         };

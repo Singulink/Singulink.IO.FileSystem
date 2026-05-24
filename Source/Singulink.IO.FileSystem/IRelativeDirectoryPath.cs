@@ -30,11 +30,11 @@ public partial interface IRelativeDirectoryPath : IRelativePath, IDirectoryPath
     /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, PathOptions)"/>
     sealed new IRelativeDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        return CombineDirectory(path, PathFormat, options);
+        return CombineDirectory(path, RelativePathFormat.MatchBase, options);
     }
 
-    /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, PathFormat, PathOptions)"/>
-    new IRelativeDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, RelativePathFormat, PathOptions)"/>
+    new IRelativeDirectoryPath CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // File
 
@@ -44,11 +44,11 @@ public partial interface IRelativeDirectoryPath : IRelativePath, IDirectoryPath
     /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, PathOptions)"/>
     sealed new IRelativeFilePath CombineFile(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        return CombineFile(path, PathFormat, options);
+        return CombineFile(path, RelativePathFormat.MatchBase, options);
     }
 
-    /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, PathFormat, PathOptions)"/>
-    new IRelativeFilePath CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, RelativePathFormat, PathOptions)"/>
+    new IRelativeFilePath CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // Entry
 
@@ -61,13 +61,13 @@ public partial interface IRelativeDirectoryPath : IRelativePath, IDirectoryPath
     IDirectoryPath IDirectoryPath.Combine(IRelativeDirectoryPath path) => Combine(path);
 
     /// <inheritdoc/>
-    IDirectoryPath IDirectoryPath.CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options) => CombineDirectory(path, format, options);
+    IDirectoryPath IDirectoryPath.CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options) => CombineDirectory(path, format, options);
 
     /// <inheritdoc/>
     IFilePath IDirectoryPath.Combine(IRelativeFilePath path) => Combine(path);
 
     /// <inheritdoc/>
-    IFilePath IDirectoryPath.CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options) => CombineFile(path, format, options);
+    IFilePath IDirectoryPath.CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options) => CombineFile(path, format, options);
 
     /// <inheritdoc/>
     IPath IDirectoryPath.Combine(IRelativePath path) => Combine(path);

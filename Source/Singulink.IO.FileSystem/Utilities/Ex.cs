@@ -12,14 +12,14 @@ internal static class Ex
         return new FileNotFoundException($"Could not find file '{file.PathDisplay}'.", file.PathDisplay);
     }
 
-    public static IOException FileIsDir(IAbsoluteFilePath file)
+    public static IOException FileIsDir(IAbsolutePath file)
     {
-        return new IOException($"The dir '{file.PathDisplay}' points to a directory.");
+        return new IOException($"The path '{file.PathDisplay}' points to a directory, not a file.");
     }
 
-    public static IOException DirIsFile(IAbsoluteDirectoryPath dir)
+    public static IOException DirIsFile(IAbsolutePath dir)
     {
-        return new IOException($"The dir '{dir.PathDisplay}' points to a file.");
+        return new IOException($"The path '{dir.PathDisplay}' points to a file, not a directory.");
     }
 
     public static UnauthorizedIOAccessException Convert(UnauthorizedAccessException ex)

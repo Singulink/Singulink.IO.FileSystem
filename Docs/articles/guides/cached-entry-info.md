@@ -47,6 +47,54 @@ CachedDirectoryInfo dirInfo = absoluteDirectoryPath.GetInfo();
 
 <xref:Singulink.IO.IAbsolutePath.GetInfo*> throws if the entry doesn't exist or is the wrong type.
 
+#### From a Path String (Type Not Known)
+
+When you only have a string and don't statically know whether it refers to a file or a directory, use the <xref:Singulink.IO.CachedEntryInfo.Create*> factory:
+
+```csharp
+CachedEntryInfo info = CachedEntryInfo.Create(pathString);
+
+switch (info)
+{
+    case CachedFileInfo file:      /* handle file */      break;
+    case CachedDirectoryInfo dir:  /* handle directory */ break;
+}
+```
+
+The factory inspects the trailing segment of the string: a trailing separator, `.` or `..` makes it directory-shaped and the result is a <xref:Singulink.IO.CachedDirectoryInfo>; otherwise the path is probed and the correct concrete type is returned based on what actually exists on disk. If the entry is missing, <xref:System.IO.FileNotFoundException> (or <xref:System.IO.DirectoryNotFoundException> if its parent doesn't exist) is thrown. A directory-shaped path that resolves to a file is a hard error and throws <xref:System.IO.IOException>.
+
+When you know the expected kind, prefer the typed shadows <xref:Singulink.IO.CachedFileInfo.Create*> and <xref:Singulink.IO.CachedDirectoryInfo.Create*>. They have the same dispatch logic but throw <xref:System.IO.IOException> if the path resolves to the other kind:
+
+```csharp
+CachedFileInfo file = CachedFileInfo.Create(pathString);          // throws if path is a directory
+CachedDirectoryInfo dir = CachedDirectoryInfo.Create(pathString); // throws if path is a file
+```
+
+#### From a Relative Sub-Path
+
+<xref:Singulink.IO.IAbsoluteDirectoryPath.GetInfo*> on an <xref:Singulink.IO.IAbsoluteDirectoryPath> also accepts a relative path string. The overload combines the relative path with the directory and resolves the resulting entry in a single call, returning the correct concrete type:
+
+```csharp
+CachedEntryInfo info = appBase.GetInfo("config/users.json");
+
+// Trailing separator forces a directory:
+CachedDirectoryInfo logsDir = (CachedDirectoryInfo)appBase.GetInfo("logs/");
+```
+
+Like <xref:Singulink.IO.CachedEntryInfo.Create*>, this overload uses the trailing segment to disambiguate file vs directory shape. Pass a <xref:Singulink.IO.RelativePathFormat> to control how the relative segment is parsed (see [Combining and Navigating Paths](combining-and-navigating.md)).
+
+#### From a System.IO Info Object
+
+Use the <xref:Singulink.IO.SystemExtensions.ToCachedInfo*> extension methods to bridge from <xref:System.IO.FileInfo> / <xref:System.IO.DirectoryInfo> / <xref:System.IO.FileSystemInfo>:
+
+```csharp
+FileInfo fi = new(@"C:\some\file.txt");
+CachedFileInfo file = fi.ToCachedInfo();
+
+FileSystemInfo fsi = picker.SelectedItem;          // could be either
+CachedEntryInfo info = fsi.ToCachedInfo();         // returns the right concrete type
+```
+
 #### From Enumeration
 
 Use the `*Info` enumeration variants (see [Searching and Enumeration](searching-and-enumeration.md)) to get cached info objects directly without an extra stat per entry:

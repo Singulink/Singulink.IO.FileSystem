@@ -58,6 +58,32 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     #region File System Operations
 
     /// <summary>
+    /// Gets cached info for an existing file or directory located by combining this directory with the specified relative path parsed using the specified
+    /// options and this directory's path format. The returned instance is either a <see cref="CachedFileInfo"/> or <see cref="CachedDirectoryInfo"/>
+    /// depending on the entry's type.
+    /// </summary>
+    /// <param name="path">A relative path to an existing file or directory under (or navigated from) this directory.</param>
+    /// <param name="options">The options to use for parsing the appended relative path.</param>
+    /// <exception cref="FileNotFoundException">No file or directory exists at the combined path.</exception>
+    /// <exception cref="DirectoryNotFoundException">A parent directory in the combined path does not exist.</exception>
+    sealed CachedEntryInfo GetInfo(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
+    {
+        return GetInfo(path, RelativePathFormat.MatchBase, options);
+    }
+
+    /// <summary>
+    /// Gets cached info for an existing file or directory located by combining this directory with the specified relative path parsed using the specified
+    /// format and options. The returned instance is either a <see cref="CachedFileInfo"/> or <see cref="CachedDirectoryInfo"/> depending on the entry's
+    /// type.
+    /// </summary>
+    /// <param name="path">A relative path to an existing file or directory under (or navigated from) this directory.</param>
+    /// <param name="format">Specifies whether the appended relative path is in this directory's path format or the universal format.</param>
+    /// <param name="options">The options to use for parsing the appended relative path.</param>
+    /// <exception cref="FileNotFoundException">No file or directory exists at the combined path.</exception>
+    /// <exception cref="DirectoryNotFoundException">A parent directory in the combined path does not exist.</exception>
+    CachedEntryInfo GetInfo(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <summary>
     /// Gets information about this directory.
     /// </summary>
     new CachedDirectoryInfo GetInfo();
@@ -78,6 +104,11 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// cref="DirectoryNotFoundException"/> if the file was not found.</param>
     void Delete(bool recursive = false, bool ignoreNotFound = true);
 
+    /// <summary>
+    /// Moves the directory to a new location. Destination must be on the same volume and cannot be an existing directory.
+    /// </summary>
+    void MoveTo(IAbsoluteDirectoryPath destinationDir);
+
     #endregion
 
     #region Combining
@@ -90,11 +121,11 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, PathOptions)"/>
     sealed new IAbsoluteDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        return CombineDirectory(path, PathFormat, options);
+        return CombineDirectory(path, RelativePathFormat.MatchBase, options);
     }
 
-    /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, PathFormat, PathOptions)"/>
-    new IAbsoluteDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    /// <inheritdoc cref="IDirectoryPath.CombineDirectory(ReadOnlySpan{char}, RelativePathFormat, PathOptions)"/>
+    new IAbsoluteDirectoryPath CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // File
 
@@ -104,11 +135,11 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, PathOptions)"/>
     sealed new IAbsoluteFilePath CombineFile(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        return CombineFile(path, PathFormat, options);
+        return CombineFile(path, RelativePathFormat.MatchBase, options);
     }
 
-    /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, PathFormat, PathOptions)"/>
-    new IAbsoluteFilePath CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    /// <inheritdoc cref="IDirectoryPath.CombineFile(ReadOnlySpan{char}, RelativePathFormat, PathOptions)"/>
+    new IAbsoluteFilePath CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // Entry
 
@@ -121,7 +152,7 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     IDirectoryPath IDirectoryPath.Combine(IRelativeDirectoryPath path) => Combine(path);
 
     /// <inheritdoc/>
-    IDirectoryPath IDirectoryPath.CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
+    IDirectoryPath IDirectoryPath.CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
     {
         return CombineDirectory(path, format, options);
     }
@@ -130,7 +161,7 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     IFilePath IDirectoryPath.Combine(IRelativeFilePath path) => Combine(path);
 
     /// <inheritdoc/>
-    IFilePath IDirectoryPath.CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
+    IFilePath IDirectoryPath.CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
     {
         return CombineFile(path, format, options);
     }
@@ -171,7 +202,7 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <summary>
     /// Gets info for the child files/directories that reside in this directory and match the specified search options.
     /// </summary>
-    sealed IEnumerable<CachedEntryInfo> GetChildEntriesInfo(SearchOptions? options = null) => GetChildFilesInfo("*", options);
+    sealed IEnumerable<CachedEntryInfo> GetChildEntriesInfo(SearchOptions? options = null) => GetChildEntriesInfo("*", options);
 
     /// <summary>
     /// Gets info for the child files/directories that reside in this directory and match the specified search pattern and search options.

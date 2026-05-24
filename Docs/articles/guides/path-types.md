@@ -36,7 +36,7 @@ Every concrete path implements one of the four leaves and inherits members from 
 The common base of every path, <xref:Singulink.IO.IPath>. Members:
 
 - <xref:Singulink.IO.IPath.Name>: the final segment (file or directory name).
-- <xref:Singulink.IO.IPath.PathDisplay>: friendly string suitable for display, logs and round-trippable serialization.
+- <xref:Singulink.IO.IPath.PathDisplay>: friendly string suitable for display, logs and round-trippable serialization. Non-empty directory paths always end with the format's separator; file paths never do (see [Path Formats](path-formats.md#three-string-forms)).
 - <xref:Singulink.IO.IPath.PathFormat>: the <xref:Singulink.IO.PathFormat> of the path (Windows, Unix or Universal).
 - <xref:Singulink.IO.IPath.HasParentDirectory>, <xref:Singulink.IO.IPath.ParentDirectory>: walk upward.
 - <xref:Singulink.IO.IPath.IsRooted>: `true` for absolute paths and Windows rooted-relative paths (e.g. `\Some\Path`).
@@ -89,6 +89,7 @@ See [Combining and Navigating Paths](combining-and-navigating.md).
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.IsRoot>, <xref:Singulink.IO.IAbsoluteDirectoryPath.IsEmpty>.
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType>, <xref:Singulink.IO.IAbsoluteDirectoryPath.FileSystem>, <xref:Singulink.IO.IAbsoluteDirectoryPath.AvailableFreeSpace>, <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalFreeSpace>, <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalSize>: see [Drive and Disk Information](drive-and-disk-info.md).
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*>.
+- <xref:Singulink.IO.IAbsoluteDirectoryPath.MoveTo*>: move or rename the directory (same volume).
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.GetInfo*> returning <xref:Singulink.IO.CachedDirectoryInfo>.
 - A full set of enumeration methods: see [Searching and Enumeration](searching-and-enumeration.md).
 

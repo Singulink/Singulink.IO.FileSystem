@@ -37,16 +37,16 @@ public interface IDirectoryPath : IPath
     /// <param name="options">The options to use for parsing the appended relative directory path.</param>
     sealed IDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        return CombineDirectory(path, PathFormat, options);
+        return CombineDirectory(path, RelativePathFormat.MatchBase, options);
     }
 
     /// <summary>
     /// Combines this directory with a relative directory path parsed using the specified format and options.
     /// </summary>
     /// <param name="path">The relative directory path to append to this directory.</param>
-    /// <param name="format">The appended relative directory path's format.</param>
+    /// <param name="format">Specifies whether the appended relative directory path is in this directory's path format or the universal format.</param>
     /// <param name="options">The options to use for parsing the appended relative directory path.</param>
-    IDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    IDirectoryPath CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // File
 
@@ -61,15 +61,15 @@ public interface IDirectoryPath : IPath
     /// </summary>
     /// <param name="path">The relative file path to append to this directory.</param>
     /// <param name="options">The options to use for parsing the appended relative file path.</param>
-    sealed IFilePath CombineFile(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames) => CombineFile(path, PathFormat, options);
+    sealed IFilePath CombineFile(ReadOnlySpan<char> path, PathOptions options = PathOptions.NoUnfriendlyNames) => CombineFile(path, RelativePathFormat.MatchBase, options);
 
     /// <summary>
     /// Combines this directory with a relative file path parsed using the specified format and options.
     /// </summary>
     /// <param name="path">The relative file path to append to this directory.</param>
-    /// <param name="format">The appended relative file path's format.</param>
+    /// <param name="format">Specifies whether the appended relative file path is in this directory's path format or the universal format.</param>
     /// <param name="options">The options to use for parsing the appended relative file path.</param>
-    IFilePath CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
+    IFilePath CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames);
 
     // Entry
 

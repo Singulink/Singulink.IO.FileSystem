@@ -98,6 +98,9 @@ public class AbsoluteDirectoryParseTests
         var ex = Should.Throw<ArgumentException>(() => DirectoryPath.ParseAbsolute(@"\\Server\Share\test1\test2\..\..\..", PathFormat.Windows, PathOptions.None));
         ex.Message.ShouldBe("Attempt to navigate past root directory. (Parameter 'path')");
 
+        Should.Throw<ArgumentException>(() => DirectoryPath.ParseAbsolute("/test/../..", PathFormat.Unix, PathOptions.None))
+            .Message.ShouldBe("Attempt to navigate past root directory. (Parameter 'path')");
+
         dir = DirectoryPath.ParseAbsolute("c:/./test/.././", PathFormat.Windows, PathOptions.None);
         dir.PathDisplay.ShouldBe(@"c:\");
         dir.IsRoot.ShouldBeTrue();
@@ -111,10 +114,10 @@ public class AbsoluteDirectoryParseTests
     public void PathFormatDependent()
     {
         var dir = DirectoryPath.ParseAbsolute("/ test.", PathFormat.Unix, PathOptions.PathFormatDependent);
-        dir.PathDisplay.ShouldBe("/ test.");
+        dir.PathDisplay.ShouldBe("/ test./");
 
         dir = DirectoryPath.ParseAbsolute("c:/ test.", PathFormat.Windows, PathOptions.None);
-        dir.PathDisplay.ShouldBe(@"c:\ test.");
+        dir.PathDisplay.ShouldBe(@"c:\ test.\");
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseRelative("/ test.", PathFormat.Windows, PathOptions.PathFormatDependent));
     }
 

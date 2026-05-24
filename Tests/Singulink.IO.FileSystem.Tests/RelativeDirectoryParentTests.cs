@@ -8,11 +8,11 @@ public class RelativeDirectoryParentTests
     {
         var dir = DirectoryPath.ParseRelative("", PathOptions.None);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.ParentDirectory!.PathDisplay.ShouldBe("..");
+        dir.ParentDirectory!.PathDisplay.ShouldBe(".." + Path.DirectorySeparatorChar);
 
         dir = DirectoryPath.ParseRelative(".", PathOptions.None);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.ParentDirectory!.PathDisplay.ShouldBe("..");
+        dir.ParentDirectory!.PathDisplay.ShouldBe(".." + Path.DirectorySeparatorChar);
     }
 
     [TestMethod]
@@ -20,11 +20,11 @@ public class RelativeDirectoryParentTests
     {
         var dir = DirectoryPath.ParseRelative("..", PathFormat.Windows, PathOptions.None);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.ParentDirectory!.PathDisplay.ShouldBe(@"..\..");
+        dir.ParentDirectory!.PathDisplay.ShouldBe(@"..\..\");
 
         dir = DirectoryPath.ParseRelative("../..", PathFormat.Unix, PathOptions.None);
         dir.HasParentDirectory.ShouldBeTrue();
-        dir.ParentDirectory!.PathDisplay.ShouldBe("../../..");
+        dir.ParentDirectory!.PathDisplay.ShouldBe("../../../");
     }
 
     [TestMethod]
@@ -46,21 +46,21 @@ public class RelativeDirectoryParentTests
     public void NavigatingPastEmpty()
     {
         var dir = DirectoryPath.ParseRelative("dir1/dir2", PathFormat.Universal, PathOptions.None);
-        dir.PathDisplay.ShouldBe("dir1/dir2");
+        dir.PathDisplay.ShouldBe("dir1/dir2/");
 
         var parent = dir.ParentDirectory!;
-        parent.PathDisplay.ShouldBe("dir1");
+        parent.PathDisplay.ShouldBe("dir1/");
 
         parent = parent.ParentDirectory!;
         parent.PathDisplay.ShouldBe("");
 
         parent = parent.ParentDirectory!;
-        parent.PathDisplay.ShouldBe("..");
+        parent.PathDisplay.ShouldBe("../");
 
         parent = parent.ParentDirectory!;
-        parent.PathDisplay.ShouldBe("../..");
+        parent.PathDisplay.ShouldBe("../../");
 
         parent = parent.ParentDirectory!;
-        parent.PathDisplay.ShouldBe("../../..");
+        parent.PathDisplay.ShouldBe("../../../");
     }
 }

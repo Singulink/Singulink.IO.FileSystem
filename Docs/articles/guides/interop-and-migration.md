@@ -15,7 +15,7 @@ The two key bridges are:
 
 Use them at the boundaries of your code where it interacts with non-library APIs. Inside your own code, work with path objects.
 
-## Strings ? Paths
+## Strings → Paths
 
 To turn a <xref:System.String> you got from somewhere else into a path, parse it with the parser that matches what you know about the input:
 
@@ -27,7 +27,7 @@ Use <xref:Singulink.IO.PathOptions.None> when the string came from the file syst
 
 See [Parsing Paths](parsing-paths.md) and [PathOptions](path-options.md).
 
-## Paths ? Strings
+## Paths → Strings
 
 When an external API takes a <xref:System.String> path, hand it <xref:Singulink.IO.IAbsolutePath.PathExport> (only available on absolute paths):
 
@@ -38,7 +38,7 @@ ThirdPartyApi.OpenFile(file.PathExport);
 > [!IMPORTANT]
 > Use <xref:Singulink.IO.IAbsolutePath.PathExport>, not <xref:Singulink.IO.IPath.PathDisplay> or <xref:System.Object.ToString*>, when calling APIs outside this library. <xref:Singulink.IO.IAbsolutePath.PathExport> is specially formatted (e.g. with `\\?\` on Windows) so the OS won't silently rewrite it.
 
-## FileInfo / DirectoryInfo ? Paths
+## FileInfo / DirectoryInfo → Paths
 
 Use the <xref:Singulink.IO.SystemExtensions> extension methods:
 
@@ -58,10 +58,30 @@ Both extensions parse <xref:System.IO.FileSystemInfo.FullName> with <xref:Singul
 IAbsoluteFilePath filePath = fi.ToPath(PathOptions.None);
 ```
 
+When you only have a <xref:System.IO.FileSystemInfo> reference (e.g. from a file-picker that surfaces either kind), call <xref:Singulink.IO.SystemExtensions.ToPath*> on the base type. The returned <xref:Singulink.IO.IAbsolutePath> has the runtime type that matches the underlying info object:
+
+```csharp
+FileSystemInfo fsi = picker.SelectedItem;
+IAbsolutePath path = fsi.ToPath();
+
+switch (path)
+{
+    case IAbsoluteFilePath file: /* ... */ break;
+    case IAbsoluteDirectoryPath dir: /* ... */ break;
+}
+```
+
+If you also need cached metadata for the entry, use <xref:Singulink.IO.SystemExtensions.ToCachedInfo*> instead of <xref:Singulink.IO.SystemExtensions.ToPath*>. It returns a <xref:Singulink.IO.CachedFileInfo> / <xref:Singulink.IO.CachedDirectoryInfo> for a <xref:System.IO.FileInfo> / <xref:System.IO.DirectoryInfo>, or the matching concrete type when called on a <xref:System.IO.FileSystemInfo>:
+
+```csharp
+CachedFileInfo cached = fi.ToCachedInfo();
+CachedEntryInfo info = fsi.ToCachedInfo();
+```
+
 > [!CAUTION]
 > <xref:System.IO.FileSystemInfo.FullName> may have already been rewritten by `System.IO` (trimming trailing spaces and dots) before <xref:Singulink.IO.SystemExtensions.ToPath*> sees it. If preserving the exact original characters matters, parse the original string directly with <xref:Singulink.IO.FilePath.ParseAbsolute*>.
 
-## Paths ? FileInfo / DirectoryInfo
+## Paths → FileInfo / DirectoryInfo
 
 When an external API takes a <xref:System.IO.FileInfo> or <xref:System.IO.DirectoryInfo>, construct one from <xref:Singulink.IO.IAbsolutePath.PathExport>:
 
@@ -72,7 +92,7 @@ DirectoryInfo di = new(absoluteDirectoryPath.PathExport);
 ThirdPartyApi.Process(fi);
 ```
 
-## System.IO ? Library Mapping
+## System.IO → Library Mapping
 
 A reference of common `System.IO` operations and their library equivalents:
 

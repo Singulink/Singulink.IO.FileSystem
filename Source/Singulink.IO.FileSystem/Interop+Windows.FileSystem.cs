@@ -14,7 +14,7 @@ internal static partial class Interop
 
             using (MediaInsertionPromptGuard.Enter())
             {
-                if (!WindowsNative.GetVolumeInformation(rootDir.PathExportWithTrailingSeparator, null, 0, null, null, out int fileSystemFlags, fileSystemName, MAX_LENGTH))
+                if (!WindowsNative.GetVolumeInformation(rootDir.PathExport, null, 0, null, null, out int fileSystemFlags, fileSystemName, MAX_LENGTH))
                 {
                     throw GetLastWin32ErrorException(rootDir);
                 }

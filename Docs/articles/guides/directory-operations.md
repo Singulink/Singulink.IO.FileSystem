@@ -62,6 +62,16 @@ dir.Delete(recursive: true, ignoreNotFound: false);
 > [!CAUTION]
 > `recursive: true` is destructive: every file and subdirectory below the path is removed. Confirm the path is what you expect before calling it on user-influenced input.
 
+## Moving Directories
+
+Use <xref:Singulink.IO.IAbsoluteDirectoryPath.MoveTo*> to rename or relocate a directory:
+
+```csharp
+dir.MoveTo(targetDir);
+```
+
+The argument is the new path of the directory itself, not its parent. The destination must be on the same volume and must not already exist; otherwise <xref:System.IO.IOException> is thrown. To move across volumes, enumerate the contents and copy them instead (see the [Mirror a structure](#mirror-a-structure) pattern below).
+
 ## Useful Properties
 
 #### IsRoot
