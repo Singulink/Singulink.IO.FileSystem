@@ -83,9 +83,6 @@ public abstract class CachedEntryInfo
         if (path.State is EntryState.ParentDoesNotExist)
             throw new DirectoryNotFoundException($"A parent directory in the path '{path.PathDisplay}' does not exist.");
 
-        if (path is IAbsoluteDirectoryPath dirPath)
-            throw Ex.NotFound(dirPath);
-
         throw new FileNotFoundException($"No file or directory was found at path '{path.PathDisplay}'.", path.PathExport);
     }
 
