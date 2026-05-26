@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <!-- Fody -->
-    <PackageReference Include="RuntimeNullables.Fody" Version="2.0.0" PrivateAssets="all" />
+    <PackageReference Include="RuntimeNullables.Fody" Version="2.1.0" PrivateAssets="all" />
 
     <!-- Analyzers -->
     <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
