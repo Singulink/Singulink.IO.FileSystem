@@ -5,7 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>enable</ImplicitUsings>
 
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <Description>Reliable cross-platform strongly-typed file/directory path manipulation and file system access.</Description>
     <PackageTags>File, Directory, Path, Folder, FileSystem</PackageTags>
   </PropertyGroup>

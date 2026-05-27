@@ -253,27 +253,19 @@ public partial interface IAbsoluteDirectoryPath
 
         public IAbsoluteDirectoryPath Combine(IRelativeDirectoryPath path) => (IAbsoluteDirectoryPath)Combine(path, nameof(path));
 
-        public IAbsoluteDirectoryPath CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
+        public IAbsoluteDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
         {
-            var parseFormat = ResolveAppendFormat(format);
-            return (IAbsoluteDirectoryPath)Combine(DirectoryPath.ParseRelative(path, parseFormat, options), nameof(path));
+            return (IAbsoluteDirectoryPath)Combine(DirectoryPath.ParseRelative(path, format, options), nameof(path));
         }
 
         public IAbsoluteFilePath Combine(IRelativeFilePath path) => (IAbsoluteFilePath)Combine(path, nameof(path));
 
-        public IAbsoluteFilePath CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
+        public IAbsoluteFilePath CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
         {
-            var parseFormat = ResolveAppendFormat(format);
-            return (IAbsoluteFilePath)Combine(FilePath.ParseRelative(path, parseFormat, options), nameof(path));
+            return (IAbsoluteFilePath)Combine(FilePath.ParseRelative(path, format, options), nameof(path));
         }
 
         public IAbsolutePath Combine(IRelativePath path) => Combine(path, nameof(path));
-
-        private PathFormat ResolveAppendFormat(RelativePathFormat format) => format switch {
-            RelativePathFormat.MatchBase => PathFormat,
-            RelativePathFormat.Universal => PathFormat.Universal,
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown relative path format."),
-        };
 
         private IAbsolutePath Combine(IRelativePath path, string? formatSourceParamName)
         {
@@ -329,20 +321,19 @@ public partial interface IAbsoluteDirectoryPath
             return new CachedDirectoryInfo(new DirectoryInfo(PathExport), this);
         }
 
-        public CachedEntryInfo GetInfo(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
+        public CachedEntryInfo GetInfo(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
         {
             PathFormat.EnsureCurrent();
 
-            var parseFormat = ResolveAppendFormat(format);
-            var normalized = parseFormat.NormalizeSeparators(path);
+            var normalized = format.NormalizeSeparators(path);
 
-            if (parseFormat.IsDirectoryShaped(normalized))
+            if (format.IsDirectoryShaped(normalized))
             {
-                var relativeDir = DirectoryPath.ParseRelative(path, parseFormat, options);
+                var relativeDir = DirectoryPath.ParseRelative(path, format, options);
                 return CachedEntryInfo.CreateFromKnownDirectory(Combine(relativeDir));
             }
 
-            var relativeFile = FilePath.ParseRelative(path, parseFormat, options);
+            var relativeFile = FilePath.ParseRelative(path, format, options);
             return CachedEntryInfo.CreateFromAmbiguousFile(Combine(relativeFile));
         }
 

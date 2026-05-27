@@ -5,7 +5,7 @@
 [![Build and Test](https://github.com/Singulink/Singulink.IO.FileSystem/workflows/build%20and%20test/badge.svg)](https://github.com/Singulink/Singulink.IO.FileSystem/actions?query=workflow%3A%22build+and+test%22)
 
 > [!IMPORTANT]
-> **`Singulink.IO.FileSystem` v3 contains breaking changes.** The `Combine{Directory,File}` overloads now take a `RelativePathFormat` enum (`MatchBase` / `Universal`) instead of a `PathFormat`, and non-empty directory paths always normalize with a trailing separator character. See the [change log](CHANGELOG.md) for full details.
+> **`Singulink.IO.FileSystem` v3 contains breaking changes.** Non-empty directory paths always normalize with a trailing separator character. See the [change log](CHANGELOG.md) for full details.
 
 **Singulink.IO.FileSystem** is a reliable cross-platform library that provides strongly-typed file/directory path manipulation and file system access in .NET. It has been designed to encourage developers to code with explicit intent in such a way that their applications can work seamlessly and bug free across both Unix and Windows file systems under all conditions. `System.IO.*` has numerous pitfalls that make most file system code out in the wild fragile and problematic in edge cases. It also contains behavioral inconsistencies between Unix and Windows file systems that are abstracted and handled by this library so you don't have to worry about them.
 

@@ -81,7 +81,7 @@ CachedEntryInfo info = appBase.GetInfo("config/users.json");
 CachedDirectoryInfo logsDir = (CachedDirectoryInfo)appBase.GetInfo("logs/");
 ```
 
-Like <xref:Singulink.IO.CachedEntryInfo.Create*>, this overload uses the trailing segment to disambiguate file vs directory shape. Pass a <xref:Singulink.IO.RelativePathFormat> to control how the relative segment is parsed (see [Combining and Navigating Paths](combining-and-navigating.md)).
+Like <xref:Singulink.IO.CachedEntryInfo.Create*>, this overload uses the trailing segment to disambiguate file vs directory shape. Pass a <xref:Singulink.IO.PathFormat> to control how the relative segment is parsed (see [Combining and Navigating Paths](combining-and-navigating.md)).
 
 #### From a System.IO Info Object
 

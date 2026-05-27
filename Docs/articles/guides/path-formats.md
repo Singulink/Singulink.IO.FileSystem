@@ -123,10 +123,10 @@ using var stream = new FileStream(file.PathExport, FileMode.Open);
 
 #### ToString()
 
-<xref:Singulink.IO.IPath.ToString*> returns a deliberately unusable diagnostic string of the form `[Format] "<pathDisplay>"` or `[Format] "<pathDisplay>"`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
+<xref:Singulink.IO.IPath.ToString*> returns a deliberately unusable diagnostic string of the form `[Format] "<pathDisplay>"`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
 
 ```csharp
-file.ToString();   // [File] "C:\Apps\MyApp\config.json"
+file.ToString();   // [Windows] "C:\Apps\MyApp\config.json"
 ```
 
 ## Format-Aware Members

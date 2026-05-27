@@ -65,7 +65,7 @@ public class AbsoluteDirectoryCombineTests
     public void CombineUniversalFile()
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
-        var file = dir.CombineFile("../file.txt", RelativePathFormat.Universal, PathOptions.None);
+        var file = dir.CombineFile("../file.txt", PathFormat.Universal, PathOptions.None);
         file.PathFormat.ShouldBe(PathFormat.Windows);
         file.PathDisplay.ShouldBe(@"C:\dir1\file.txt");
     }
@@ -74,16 +74,16 @@ public class AbsoluteDirectoryCombineTests
     public void CombineDirectory()
     {
         var dir = DirectoryPath.ParseAbsolute(@"C:\dir1\dir2", PathFormat.Windows, PathOptions.None);
-        var combined = dir.CombineDirectory("..", RelativePathFormat.Universal, PathOptions.None);
+        var combined = dir.CombineDirectory("..", PathFormat.Universal, PathOptions.None);
         combined.PathFormat.ShouldBe(PathFormat.Windows);
         combined.PathDisplay.ShouldBe(@"C:\dir1\");
 
         dir = DirectoryPath.ParseAbsolute("/dir1/dir2", PathFormat.Unix, PathOptions.None);
-        combined = dir.CombineDirectory(".", RelativePathFormat.Universal, PathOptions.None);
+        combined = dir.CombineDirectory(".", PathFormat.Universal, PathOptions.None);
         combined.PathFormat.ShouldBe(PathFormat.Unix);
         combined.PathDisplay.ShouldBe("/dir1/dir2/");
 
-        combined = dir.CombineDirectory("newdir/newdir2", RelativePathFormat.MatchBase, PathOptions.None);
+        combined = dir.CombineDirectory("newdir/newdir2", PathFormat.Unix, PathOptions.None);
         combined.PathDisplay.ShouldBe("/dir1/dir2/newdir/newdir2/");
     }
 

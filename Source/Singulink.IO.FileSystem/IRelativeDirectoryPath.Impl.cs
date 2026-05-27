@@ -36,27 +36,19 @@ public partial interface IRelativeDirectoryPath
 
         public IRelativeDirectoryPath Combine(IRelativeDirectoryPath path) => (IRelativeDirectoryPath)Combine(path, nameof(path));
 
-        public IRelativeDirectoryPath CombineDirectory(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
+        public IRelativeDirectoryPath CombineDirectory(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
         {
-            var parseFormat = ResolveAppendFormat(format);
-            return (IRelativeDirectoryPath)Combine(DirectoryPath.ParseRelative(path, parseFormat, options), nameof(path));
+            return (IRelativeDirectoryPath)Combine(DirectoryPath.ParseRelative(path, format, options), nameof(path));
         }
 
         public IRelativeFilePath Combine(IRelativeFilePath file) => (IRelativeFilePath)Combine((IRelativePath)file);
 
-        public IRelativeFilePath CombineFile(ReadOnlySpan<char> path, RelativePathFormat format, PathOptions options)
+        public IRelativeFilePath CombineFile(ReadOnlySpan<char> path, PathFormat format, PathOptions options)
         {
-            var parseFormat = ResolveAppendFormat(format);
-            return (IRelativeFilePath)Combine(FilePath.ParseRelative(path, parseFormat, options), nameof(path));
+            return (IRelativeFilePath)Combine(FilePath.ParseRelative(path, format, options), nameof(path));
         }
 
         public IRelativePath Combine(IRelativePath path) => Combine(path, nameof(path));
-
-        private PathFormat ResolveAppendFormat(RelativePathFormat format) => format switch {
-            RelativePathFormat.MatchBase => PathFormat,
-            RelativePathFormat.Universal => PathFormat.Universal,
-            _ => throw new ArgumentOutOfRangeException(nameof(format), format, "Unknown relative path format."),
-        };
 
         private IRelativePath Combine(IRelativePath path, string? formatSourceParamName)
         {
@@ -82,16 +74,16 @@ public partial interface IRelativeDirectoryPath
             string newPath;
 
             if (parentDirNavCount == -1)
-                newPath = $"{PathFormat.SeparatorAsString}{appendPath.Span}";
+                newPath = $"{mutualFormat.SeparatorAsString}{appendPath.Span}";
             else if (appendPath.Length is 0)
                 newPath = basePath.ToString();
             else
                 newPath = $"{basePath.Span}{appendPath.Span}";
 
             if (path is IDirectoryPath)
-                return new Impl(newPath, RootLength, PathFormat);
+                return new Impl(newPath, RootLength, mutualFormat);
             else
-                return new IRelativeFilePath.Impl(newPath, RootLength, PathFormat);
+                return new IRelativeFilePath.Impl(newPath, RootLength, mutualFormat);
         }
 
         private string? GetBasePathForAppending(int parentDirNavCount)

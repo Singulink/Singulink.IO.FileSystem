@@ -104,7 +104,7 @@ public class CachedInfoTests
         var testDir = SetupTestDirectory();
 
         // Always-forward-slash universal path is accepted regardless of platform.
-        var info = testDir.GetInfo("sub", RelativePathFormat.Universal);
+        var info = testDir.GetInfo("sub", PathFormat.Universal);
 
         info.ShouldBeOfType<CachedDirectoryInfo>();
     }

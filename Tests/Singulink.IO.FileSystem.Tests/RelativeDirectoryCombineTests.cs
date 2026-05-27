@@ -30,7 +30,7 @@ public class RelativeDirectoryCombineTests
         combined = dir.CombineDirectory("/", PathOptions.None);
         combined.PathDisplay.ShouldBe(@"\");
 
-        var combinedFile = dir.CombineFile("/dir/file.txt", RelativePathFormat.MatchBase, PathOptions.None);
+        var combinedFile = dir.CombineFile("/dir/file.txt", PathFormat.Windows, PathOptions.None);
         combinedFile.PathDisplay.ShouldBe(@"\dir\file.txt");
     }
 
@@ -38,7 +38,7 @@ public class RelativeDirectoryCombineTests
     public void CombineUniversalFile()
     {
         var dir = DirectoryPath.ParseRelative(@"dir1\dir2", PathFormat.Windows, PathOptions.None);
-        var file = dir.CombineFile("../file.txt", RelativePathFormat.Universal, PathOptions.None);
+        var file = dir.CombineFile("../file.txt", PathFormat.Universal, PathOptions.None);
         file.PathFormat.ShouldBe(PathFormat.Windows);
         file.PathDisplay.ShouldBe(@"dir1\file.txt");
     }
@@ -47,16 +47,16 @@ public class RelativeDirectoryCombineTests
     public void CombineDirectory()
     {
         var dir = DirectoryPath.ParseRelative("dir1/dir2", PathFormat.Unix, PathOptions.None);
-        var combined = dir.CombineDirectory("..", RelativePathFormat.Universal, PathOptions.None);
+        var combined = dir.CombineDirectory("..", PathFormat.Universal, PathOptions.None);
         combined.PathFormat.ShouldBe(PathFormat.Unix);
         combined.PathDisplay.ShouldBe("dir1/");
 
         dir = DirectoryPath.ParseRelative("dir1/dir2", PathFormat.Unix, PathOptions.None);
-        combined = dir.CombineDirectory(".", RelativePathFormat.Universal, PathOptions.None);
+        combined = dir.CombineDirectory(".", PathFormat.Universal, PathOptions.None);
         combined.PathFormat.ShouldBe(PathFormat.Unix);
         combined.PathDisplay.ShouldBe("dir1/dir2/");
 
-        combined = dir.CombineDirectory("newdir/newdir2", RelativePathFormat.MatchBase, PathOptions.None);
+        combined = dir.CombineDirectory("newdir/newdir2", PathFormat.Unix, PathOptions.None);
         combined.PathDisplay.ShouldBe("dir1/dir2/newdir/newdir2/");
     }
 
