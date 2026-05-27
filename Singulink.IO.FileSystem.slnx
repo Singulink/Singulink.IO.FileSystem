@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Source/">
+    <Project Path="Source/Singulink.IO.FileSystem/Singulink.IO.FileSystem.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Singulink.IO.FileSystem.Tests/Singulink.IO.FileSystem.Tests.csproj" />
+  </Folder>
+</Solution>
