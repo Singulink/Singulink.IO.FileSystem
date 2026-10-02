@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Singulink.IO;
 
 /// <content>
@@ -18,11 +20,12 @@ public abstract partial class PathFormat
 
         internal override bool IsUncPath(string path) => false;
 
-        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
+        private protected override bool TrySplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, [NotNullWhen(false)] out string? error)
         {
-            var root = path[0..1];
+            root = path[0..1];
             rest = path[1..];
-            return root;
+            error = null;
+            return true;
         }
 
         internal override string GetAbsolutePathExportString(string pathDisplay) => pathDisplay;

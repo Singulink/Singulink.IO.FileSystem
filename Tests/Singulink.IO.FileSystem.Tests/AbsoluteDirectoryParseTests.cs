@@ -129,4 +129,23 @@ public class AbsoluteDirectoryParseTests
         Should.Throw<ArgumentException>(() => DirectoryPath.Parse(path, PathFormat.Universal));
         Should.Throw<ArgumentException>(() => DirectoryPath.ParseAbsolute(path, PathFormat.Universal));
     }
+
+    [TestMethod]
+    public void TryParse()
+    {
+        DirectoryPath.TryParseAbsolute(@"\\Server\Share\test1\test2\..", PathFormat.Windows, PathOptions.None, out var dir).ShouldBeTrue();
+        dir.ShouldBe(DirectoryPath.ParseAbsolute(@"\\Server\Share\test1\test2\..", PathFormat.Windows, PathOptions.None));
+
+        DirectoryPath.TryParse("/test", PathFormat.Unix, PathOptions.None, out var anyDir).ShouldBeTrue();
+        (anyDir is IAbsoluteDirectoryPath).ShouldBeTrue();
+
+        DirectoryPath.TryParseAbsolute("1:/", PathFormat.Windows, PathOptions.None, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+
+        DirectoryPath.TryParseAbsolute("/test/../..", PathFormat.Unix, PathOptions.None, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+
+        DirectoryPath.TryParseAbsolute("/test", PathFormat.Universal, PathOptions.None, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+    }
 }
