@@ -164,4 +164,23 @@ public class RelativeDirectoryParseTests
         Should.NotThrow(() => DirectoryPath.ParseRelative("/COM0/", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
         Should.NotThrow(() => DirectoryPath.ParseRelative("/LPT0/", PathFormat.Windows, PathOptions.NoReservedDeviceNames));
     }
+
+    [TestMethod]
+    public void TryParse()
+    {
+        DirectoryPath.TryParseRelative("/test/../test2/../test3", PathFormat.Windows, PathOptions.None, out var dir).ShouldBeTrue();
+        dir.ShouldBe(DirectoryPath.ParseRelative("/test/../test2/../test3", PathFormat.Windows, PathOptions.None));
+
+        DirectoryPath.TryParse("../test", PathFormat.Universal, PathOptions.None, out var anyDir).ShouldBeTrue();
+        (anyDir is IRelativeDirectoryPath).ShouldBeTrue();
+
+        DirectoryPath.TryParseRelative("..", PathOptions.NoNavigation, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+
+        DirectoryPath.TryParseRelative("/test", PathFormat.Unix, PathOptions.None, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+
+        DirectoryPath.TryParseRelative("AUX", PathFormat.Windows, PathOptions.NoReservedDeviceNames, out dir).ShouldBeFalse();
+        dir.ShouldBeNull();
+    }
 }

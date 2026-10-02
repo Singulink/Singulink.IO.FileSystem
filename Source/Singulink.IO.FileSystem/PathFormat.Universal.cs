@@ -32,7 +32,7 @@ public abstract partial class PathFormat
         internal override bool IsUncPath(string path) =>
             throw new NotSupportedException("Operation not supported in universal path format.");
 
-        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest) =>
+        private protected override bool TrySplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, [NotNullWhen(false)] out string? error) =>
             throw new NotSupportedException("Operation not supported in universal path format.");
 
         internal override string GetAbsolutePathExportString(string pathDisplay) =>
