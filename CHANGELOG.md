@@ -1,5 +1,9 @@
 # Singulink.IO.FileSystem Version History
 
+## Version 3.1
+
+- New `TryParse`, `TryParseAbsolute` and `TryParseRelative` methods on `FilePath` and `DirectoryPath` that return `false` instead of throwing when the path is invalid, with the same format / options overloads as the `Parse` methods (options default to `PathOptions.NoUnfriendlyNames` when omitted) - thanks to [@volkmnv](https://github.com/volkmnv) for the contribution ([#6](https://github.com/Singulink/Singulink.IO.FileSystem/pull/6))
+
 ## Version 3.0
 
 The breaking changes in this release should have zero to minimal impact for the vast majority of expected usage patterns. Code that relies on the strongly-typed path API and uses separator-aware helpers (such as `Path.Combine`) when it does drop down to strings needs no changes. Consumers that were directly manipulating string paths obtained from `PathDisplay` / `PathExport` should audit those sites to ensure the new trailing separator on directory paths doesn't break anything downstream.
