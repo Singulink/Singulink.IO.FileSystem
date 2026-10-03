@@ -35,6 +35,29 @@ public static class FilePath
     }
 
     /// <summary>
+    /// Attempts to parse an absolute or relative file path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">A file path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, [NotNullWhen(true)] out IFilePath? result)
+    {
+        return TryParse(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute or relative file path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">A file path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IFilePath? result)
+    {
+        return TryParse(path, format, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
     /// Attempts to parse an absolute or relative file path using the specified options and the current platform's format.
     /// </summary>
     /// <param name="path">A file path.</param>
@@ -92,6 +115,29 @@ public static class FilePath
             throw new ArgumentException(error, nameof(path));
 
         return result;
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute file path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">An absolute file path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, [NotNullWhen(true)] out IAbsoluteFilePath? result)
+    {
+        return TryParseAbsolute(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute file path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">An absolute file path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IAbsoluteFilePath? result)
+    {
+        return TryParseAbsolute(path, format, PathOptions.NoUnfriendlyNames, out result);
     }
 
     /// <summary>
@@ -169,6 +215,29 @@ public static class FilePath
             throw new ArgumentException(error, nameof(path));
 
         return result;
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative file path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">A relative file path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, [NotNullWhen(true)] out IRelativeFilePath? result)
+    {
+        return TryParseRelative(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative file path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">A relative file path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IRelativeFilePath? result)
+    {
+        return TryParseRelative(path, format, PathOptions.NoUnfriendlyNames, out result);
     }
 
     /// <summary>
