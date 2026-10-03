@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Singulink.IO;
@@ -33,6 +34,61 @@ public static class DirectoryPath
         return ParseRelative(path, format, options);
     }
 
+    /// <summary>
+    /// Attempts to parse an absolute or relative directory path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">A directory path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, [NotNullWhen(true)] out IDirectoryPath? result)
+    {
+        return TryParse(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute or relative directory path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">A directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IDirectoryPath? result)
+    {
+        return TryParse(path, format, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute or relative directory path using the specified options and the current platform's format.
+    /// </summary>
+    /// <param name="path">A directory path.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, PathOptions options, [NotNullWhen(true)] out IDirectoryPath? result)
+    {
+        return TryParse(path, PathFormat.Current, options, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute or relative directory path using the specified format and options.
+    /// </summary>
+    /// <param name="path">A directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParse(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IDirectoryPath? result)
+    {
+        if (format.GetPathKind(path) == PathKind.Absolute)
+        {
+            result = TryParseAbsolute(path, format, options, out var absolutePath) ? absolutePath : null;
+            return result is not null;
+        }
+
+        result = TryParseRelative(path, format, options, out var relativePath) ? relativePath : null;
+        return result is not null;
+    }
+
     #endregion
 
     #region Absolute Directory Parsing
@@ -55,9 +111,70 @@ public static class DirectoryPath
     /// <param name="options">Specifies the path parsing options.</param>
     public static IAbsoluteDirectoryPath ParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
+        if (!TryParseAbsolute(path, format, options, out var result, out string? error))
+            throw new ArgumentException(error, nameof(path));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute directory path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">An absolute directory path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result)
+    {
+        return TryParseAbsolute(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute directory path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">An absolute directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result)
+    {
+        return TryParseAbsolute(path, format, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute directory path using the specified options and the current platform's format.
+    /// </summary>
+    /// <param name="path">An absolute directory path.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, PathOptions options, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result)
+    {
+        return TryParseAbsolute(path, PathFormat.Current, options, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse an absolute directory path using the specified format and options.
+    /// </summary>
+    /// <param name="path">An absolute directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result)
+    {
+        return TryParseAbsolute(path, format, options, out result, out _);
+    }
+
+    private static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result, [NotNullWhen(false)] out string? error)
+    {
+        result = null;
         path = format.NormalizeSeparators(path);
-        string finalPath = format.NormalizeAbsolutePath(path, options, asDirectory: true, out int rootLength);
-        return new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format);
+
+        if (!format.TryNormalizeAbsolutePath(path, options, asDirectory: true, out string? finalPath, out int rootLength, out error))
+            return false;
+
+        result = new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format);
+        return true;
     }
 
     #endregion
@@ -82,9 +199,70 @@ public static class DirectoryPath
     /// <param name="options">Specifies the path parsing options.</param>
     public static IRelativeDirectoryPath ParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
+        if (!TryParseRelative(path, format, options, out var result, out string? error))
+            throw new ArgumentException(error, nameof(path));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative directory path using the <see cref="PathOptions.NoUnfriendlyNames"/> option and the current platform's format.
+    /// </summary>
+    /// <param name="path">A relative directory path.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, [NotNullWhen(true)] out IRelativeDirectoryPath? result)
+    {
+        return TryParseRelative(path, PathFormat.Current, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative directory path using the specified format and the <see cref="PathOptions.NoUnfriendlyNames"/> option.
+    /// </summary>
+    /// <param name="path">A relative directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, [NotNullWhen(true)] out IRelativeDirectoryPath? result)
+    {
+        return TryParseRelative(path, format, PathOptions.NoUnfriendlyNames, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative directory path using the specified options and the current platform's format.
+    /// </summary>
+    /// <param name="path">A relative directory path.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? result)
+    {
+        return TryParseRelative(path, PathFormat.Current, options, out result);
+    }
+
+    /// <summary>
+    /// Attempts to parse a relative directory path using the specified format and options.
+    /// </summary>
+    /// <param name="path">A relative directory path.</param>
+    /// <param name="format">The path's format.</param>
+    /// <param name="options">Specifies the path parsing options.</param>
+    /// <param name="result">When this method returns, contains the parsed path if parsing succeeded, otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the path was parsed successfully, otherwise <see langword="false"/>.</returns>
+    public static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? result)
+    {
+        return TryParseRelative(path, format, options, out result, out _);
+    }
+
+    private static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? result, [NotNullWhen(false)] out string? error)
+    {
+        result = null;
         path = format.NormalizeSeparators(path);
-        string finalPath = format.NormalizeRelativePath(path, options, appendSeparator: true, out int rootLength);
-        return new IRelativeDirectoryPath.Impl(finalPath, rootLength, format);
+
+        if (!format.TryNormalizeRelativePath(path, options, appendSeparator: true, out string? finalPath, out int rootLength, out error))
+            return false;
+
+        result = new IRelativeDirectoryPath.Impl(finalPath, rootLength, format);
+        return true;
     }
 
     #endregion

@@ -211,42 +211,59 @@ public abstract partial class PathFormat
         return true;
     }
 
-    internal string NormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, bool appendSeparator, out int rootLength)
+    internal bool TryNormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, bool appendSeparator, [NotNullWhen(true)] out string? finalPath, out int rootLength, [NotNullWhen(false)] out string? error)
     {
+        finalPath = null;
+        rootLength = 0;
+        error = null;
+
         var pathKind = GetPathKind(path);
 
-        if (pathKind is PathKind.Absolute)
-            throw new ArgumentException("Path is not a relative path.", nameof(path));
+        if (pathKind is PathKind.Absolute) {
+            error = "Path is not a relative path.";
+            return false;
+        }
 
         if (pathKind is PathKind.RelativeRooted) {
-            if (options.HasAllFlags(PathOptions.NoNavigation))
-                throw new ArgumentException("Rooted relative paths are not allowed for this path.");
+            if (options.HasAllFlags(PathOptions.NoNavigation)) {
+                error = "Rooted relative paths are not allowed for this path.";
+                return false;
+            }
 
             if (path.Length == 1) {
                 rootLength = 1;
-                return SeparatorAsString;
+                finalPath = SeparatorAsString;
+                return true;
             }
 
             path = path[1..];
         }
         else if (path.Length is 0 || path.SequenceEqual(".")) {
-            if (path.Length is 1 && options.HasAllFlags(PathOptions.NoNavigation))
-                throw new ArgumentException("Invalid navigational path segment.", nameof(path));
+            if (path.Length is 1 && options.HasAllFlags(PathOptions.NoNavigation)) {
+                error = "Invalid navigational path segment.";
+                return false;
+            }
 
             rootLength = 0;
-            return string.Empty;
+            finalPath = string.Empty;
+            return true;
         }
 
-        var segments = SplitNonRootedRelativePath(path, options);
+        if (!TrySplitNonRootedRelativePath(path, options, out var segments, out error))
+            return false;
 
         if (pathKind is PathKind.RelativeRooted) {
-            if (segments.Count > 0 && segments[0] is "..")
-                throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
+            if (segments.Count > 0 && segments[0] is "..") {
+                error = "Attempt to navigate past root directory.";
+                return false;
+            }
 
             rootLength = 1;
 
-            if (segments.Count is 0)
-                return SeparatorAsString;
+            if (segments.Count is 0) {
+                finalPath = SeparatorAsString;
+                return true;
+            }
 
             segments.Insert(0, string.Empty);
         }
@@ -258,32 +275,43 @@ public abstract partial class PathFormat
         if (appendSeparator && segments is not [.., ""])
             segments.Add(string.Empty);
 
-        return string.Join(SeparatorAsString, segments);
+        finalPath = string.Join(SeparatorAsString, segments);
+        return true;
     }
 
-    internal string NormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, bool asDirectory, out int rootLength)
+    internal bool TryNormalizeAbsolutePath(ReadOnlySpan<char> path, PathOptions options, bool asDirectory, [NotNullWhen(true)] out string? finalPath, out int rootLength, [NotNullWhen(false)] out string? error)
     {
+        finalPath = null;
+        rootLength = 0;
+
         var pathKind = GetPathKind(path);
 
-        if (pathKind is not PathKind.Absolute)
-            throw new ArgumentException("Path is not an absolute path.", nameof(path));
+        if (pathKind is not PathKind.Absolute) {
+            error = "Path is not an absolute path.";
+            return false;
+        }
 
-        var root = SplitAbsoluteRoot(path, out var rest);
-        var segments = SplitNonRootedRelativePath(rest, options);
+        if (!TrySplitAbsoluteRoot(path, out var root, out var rest, out error) || !TrySplitNonRootedRelativePath(rest, options, out var segments, out error))
+            return false;
 
-        if (segments.Count > 0 && segments[0] is "..")
-            throw new ArgumentException("Attempt to navigate past root directory.", nameof(path));
+        if (segments.Count > 0 && segments[0] is "..") {
+            error = "Attempt to navigate past root directory.";
+            return false;
+        }
 
         rootLength = root.Length;
 
-        if (segments.Count is 0)
-            return root.ToString();
+        if (segments.Count is 0) {
+            finalPath = root.ToString();
+            return true;
+        }
 
         if (asDirectory)
             segments.Add(string.Empty);
 
         string tail = string.Join(Separator, segments);
-        return $"{root}{tail}";
+        finalPath = $"{root}{tail}";
+        return true;
     }
 
     internal abstract string GetAbsolutePathExportString(string pathDisplay);
@@ -486,14 +514,14 @@ public abstract partial class PathFormat
     }
 
     /// <summary>
-    /// Returns the root of the absolute path and outputs the remaining non-rooted relative component of the path.
+    /// Outputs the root of the absolute path and the remaining non-rooted relative component of the path.
     /// </summary>
-    private protected abstract ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest);
+    private protected abstract bool TrySplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, [NotNullWhen(false)] out string? error);
 
     /// <summary>
     /// Splits a normalized non-rooted relative path into a list of parts.
     /// </summary>
-    private List<string> SplitNonRootedRelativePath(ReadOnlySpan<char> path, PathOptions options)
+    private bool TrySplitNonRootedRelativePath(ReadOnlySpan<char> path, PathOptions options, [NotNullWhen(true)] out List<string>? segments, [NotNullWhen(false)] out string? error)
     {
         // Add extra capacity for possible prepended+appended empty segments (to insert separators) in the methods that call this.
         int maxSegmentCount = 3;
@@ -503,7 +531,7 @@ public abstract partial class PathFormat
                 maxSegmentCount++;
         }
 
-        var segments = new List<string>(maxSegmentCount);
+        segments = new List<string>(maxSegmentCount);
 
         while (path.Length > 0) {
             int separatorIndex = path.IndexOf(Separator);
@@ -520,12 +548,16 @@ public abstract partial class PathFormat
             }
 
             if (segment.Length is 0) {
-                if (!options.HasAllFlags(PathOptions.AllowEmptyDirectories))
-                    throw new ArgumentException("Invalid empty directory in path.", nameof(path));
+                if (!options.HasAllFlags(PathOptions.AllowEmptyDirectories)) {
+                    error = "Invalid empty directory in path.";
+                    return false;
+                }
             }
             else if (segment is "." or "..") {
-                if (options.HasAllFlags(PathOptions.NoNavigation))
-                    throw new ArgumentException("Invalid navigational path segment.", nameof(path));
+                if (options.HasAllFlags(PathOptions.NoNavigation)) {
+                    error = "Invalid navigational path segment.";
+                    return false;
+                }
 
                 if (segment.Length is 2) {
                     if (segments.Count is 0 || segments[^1] is "..")
@@ -534,14 +566,15 @@ public abstract partial class PathFormat
                         segments.RemoveAt(segments.Count - 1);
                 }
             }
-            else if (!ValidateEntryName(segment, options, allowWildcards: false, out string error)) {
-                throw new ArgumentException(error, nameof(path));
+            else if (!ValidateEntryName(segment, options, allowWildcards: false, out error)) {
+                return false;
             }
             else {
                 segments.Add(segment.ToString());
             }
         }
 
-        return segments;
+        error = null;
+        return true;
     }
 }

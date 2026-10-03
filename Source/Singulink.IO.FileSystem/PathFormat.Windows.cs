@@ -105,7 +105,7 @@ public abstract partial class PathFormat
 
         internal override bool IsUncPath(string absoluteDisplayPath) => absoluteDisplayPath[1] != ':';
 
-        private protected override ReadOnlySpan<char> SplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> rest)
+        private protected override bool TrySplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, [NotNullWhen(false)] out string? error)
         {
             if (path.StartsWith(@"\\?\") || path.StartsWith(@"\\.\"))
             {
@@ -115,24 +115,23 @@ public abstract partial class PathFormat
                     path = $@"\\{path[4..]}";
             }
 
-            ReadOnlySpan<char> root;
             int firstIndex = path.IndexOf(Separator);
 
             if (firstIndex == 0)
             {
                 if (path.Length < 5 || path[1] != Separator)
-                    ThrowInvalidPathRoot();
+                    return Fail("Invalid absolute path root.", out root, out rest, out error);
 
                 int serverLength = path[2..].IndexOf(Separator);
                 int shareStart = 3 + serverLength;
 
                 if (serverLength <= 0 || path.Length <= shareStart)
-                    ThrowInvalidPathRoot();
+                    return Fail("Invalid absolute path root.", out root, out rest, out error);
 
                 var server = path.Slice(2, serverLength);
 
                 if (!IsValidServerName(server))
-                    throw new ArgumentException("Invalid UNC server name.", nameof(path));
+                    return Fail("Invalid UNC server name.", out root, out rest, out error);
 
                 int shareLength = path[shareStart..].IndexOf(Separator);
 
@@ -153,13 +152,13 @@ public abstract partial class PathFormat
 
                 // Share names can contain trailing dots but no leading or trailing spaces. Reserved device names do not apply to the share name.
 
-                if (!ValidateEntryName(share, PathOptions.NoLeadingSpaces | PathOptions.NoTrailingSpaces, false, out string error))
-                    throw new ArgumentException($"Invalid UNC share name: {error}");
+                if (!ValidateEntryName(share, PathOptions.NoLeadingSpaces | PathOptions.NoTrailingSpaces, false, out error))
+                    return Fail($"Invalid UNC share name: {error}", out root, out rest, out error);
             }
             else
             {
                 if (path.Length < 2 || (path.Length >= 3 && firstIndex is not 2) || (char.ToUpperInvariant(path[0]) is < 'A' or > 'Z') || path[1] is not ':')
-                    ThrowInvalidPathRoot();
+                    return Fail("Invalid absolute path root.", out root, out rest, out error);
 
                 if (path.Length is 2)
                 {
@@ -173,7 +172,8 @@ public abstract partial class PathFormat
                 }
             }
 
-            return root;
+            error = null;
+            return true;
 
             static bool IsValidServerName(ReadOnlySpan<char> server)
             {
@@ -191,7 +191,12 @@ public abstract partial class PathFormat
                 return true;
             }
 
-            static void ThrowInvalidPathRoot() => throw new ArgumentException("Invalid absolute path root.", nameof(path));
+            static bool Fail(string message, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, out string error)
+            {
+                root = rest = default;
+                error = message;
+                return false;
+            }
         }
 
         internal override string GetAbsolutePathExportString(string pathDisplay) =>

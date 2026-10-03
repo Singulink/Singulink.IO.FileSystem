@@ -50,4 +50,23 @@ public class RelativeFileParseTests
         Should.Throw<ArgumentException>(() => FilePath.ParseRelative("test.txt/.", PathFormat.Universal));
         Should.Throw<ArgumentException>(() => FilePath.ParseRelative("test/test.txt/..", PathFormat.Universal));
     }
+
+    [TestMethod]
+    public void TryParse()
+    {
+        FilePath.TryParseRelative(@"..\test.sdf", PathFormat.Windows, PathOptions.NoUnfriendlyNames, out var file).ShouldBeTrue();
+        file.ShouldBe(FilePath.ParseRelative(@"..\test.sdf", PathFormat.Windows));
+
+        FilePath.TryParseRelative("test.sdf", PathOptions.NoUnfriendlyNames, out file).ShouldBeTrue();
+        file.ShouldBe(FilePath.ParseRelative("test.sdf"));
+
+        FilePath.TryParse("./test.sdf", PathFormat.Unix, PathOptions.NoUnfriendlyNames, out var anyFile).ShouldBeTrue();
+        (anyFile is IRelativeFilePath).ShouldBeTrue();
+
+        FilePath.TryParseRelative("test/", PathFormat.Universal, PathOptions.NoUnfriendlyNames, out file).ShouldBeFalse();
+        file.ShouldBeNull();
+
+        FilePath.TryParseRelative("test/test.txt/..", PathFormat.Unix, PathOptions.NoUnfriendlyNames, out file).ShouldBeFalse();
+        file.ShouldBeNull();
+    }
 }
