@@ -2,11 +2,7 @@
 
 # PathOptions
 
-### Overview
-
-<xref:Singulink.IO.PathOptions> is a `[Flags]` enum that controls how strictly path strings are validated during parsing. Every parse method, every `Combine*` overload that takes a string, and every extension-related method accepts a <xref:Singulink.IO.PathOptions> parameter that defaults to <xref:Singulink.IO.PathOptions.NoUnfriendlyNames>.
-
-The default exists to protect you from path strings that are technically valid in some file systems but reliably cause trouble in real-world code. Loosen it only when you have a clear reason.
+<xref:Singulink.IO.PathOptions> is a flags enum that controls how strictly path strings are validated during parsing. Every parse method, every <xref:Singulink.IO.IDirectoryPath.CombineDirectory*?displayProperty=nameWithType> / <xref:Singulink.IO.IDirectoryPath.CombineFile*?displayProperty=nameWithType> overload that takes a string, and every extension-related method accepts a <xref:Singulink.IO.PathOptions> value and uses <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> when none is given. That default exists to protect you from path strings that are technically valid in some file systems but reliably cause trouble in real-world code, so loosen it only when you have a clear reason.
 
 ## Default: NoUnfriendlyNames
 
@@ -18,12 +14,12 @@ The default exists to protect you from path strings that are technically valid i
 - <xref:Singulink.IO.PathOptions.NoTrailingDots>
 - <xref:Singulink.IO.PathOptions.NoControlCharacters>
 
-Any of those patterns will cause parsing to throw <xref:System.ArgumentException> with a precise message about why the path was rejected.
+Any of those patterns will cause parsing to throw <xref:System.ArgumentException> with a precise message about why the path was rejected (the `Try` parse methods return `false` instead).
 
 ```csharp
-FilePath.ParseAbsolute(@"C:\data\report .pdf");   // throws: trailing space in "report "
+FilePath.ParseAbsolute(@"C:\data \report.pdf");   // throws: entry name "data " ends with a space
 FilePath.ParseAbsolute(@"C:\nul");                // throws: reserved device name
-FilePath.ParseAbsolute(@"C:\data\file.");         // throws: trailing dot
+FilePath.ParseAbsolute(@"C:\data\file.");         // throws: entry name ends with a dot
 ```
 
 > [!TIP]
@@ -33,7 +29,7 @@ FilePath.ParseAbsolute(@"C:\data\file.");         // throws: trailing dot
 
 #### None
 
-<xref:Singulink.IO.PathOptions.None> allows every path that is technically valid for the given format. Use this when you must work with whatever the file system contains, for example, paths returned by an OS file picker or paths read directly from an existing file system.
+<xref:Singulink.IO.PathOptions.None?displayProperty=nameWithType> allows every path that is technically valid for the given format. Use this when you must work with whatever the file system contains, for example, paths returned by an OS file picker or paths read directly from an existing file system.
 
 ```csharp
 string filePathString = openFileDialog.FileName;
@@ -49,17 +45,19 @@ file.OpenStream();
 By default, `a//b` (two consecutive separators producing an empty segment) is rejected because it is almost always a bug, for example a missing variable expansion. Set <xref:Singulink.IO.PathOptions.AllowEmptyDirectories> to silently collapse the empty segment instead:
 
 ```csharp
-DirectoryPath.ParseRelative("path/to//some/dir");                              // throws
-DirectoryPath.ParseRelative("path/to//some/dir", PathOptions.AllowEmptyDirectories); // "path/to/some/dir"
+DirectoryPath.ParseRelative("path/to//some/dir");                                    // throws
+DirectoryPath.ParseRelative("path/to//some/dir", PathOptions.AllowEmptyDirectories); // "path/to/some/dir/"
 ```
 
 #### NoReservedDeviceNames
 
-<xref:Singulink.IO.PathOptions.NoReservedDeviceNames> rejects entry names that match Windows reserved device names: `CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`. Has no effect when parsing <xref:Singulink.IO.PathFormat.Unix>.
+<xref:Singulink.IO.PathOptions.NoReservedDeviceNames> rejects entry names that match Windows reserved device names: `CON`, `PRN`, `AUX`, `NUL`, `COM1`-`COM9`, `LPT1`-`LPT9`. Has no effect when parsing with <xref:Singulink.IO.PathFormat.Unix?displayProperty=nameWithType>.
 
 #### NoLeadingSpaces / NoTrailingSpaces
 
 <xref:Singulink.IO.PathOptions.NoLeadingSpaces> and <xref:Singulink.IO.PathOptions.NoTrailingSpaces> reject entry names with a leading or trailing space. These names break Windows File Explorer, are difficult to handle in UI/serialization, and are a frequent source of silent failures in `System.IO`.
+
+Only the very start and end of each entry name are checked. A space before the extension, as in `report .pdf`, is neither leading nor trailing and is accepted.
 
 #### NoTrailingDots
 
@@ -79,26 +77,29 @@ var safe = FilePath.ParseRelative(userInput, PathOptions.NoUnfriendlyNames | Pat
 
 #### NoControlCharacters
 
-<xref:Singulink.IO.PathOptions.NoControlCharacters> rejects characters with ASCII codes 1-31 in entry names. Has no effect on <xref:Singulink.IO.PathFormat.Windows> (where these are always disallowed).
+<xref:Singulink.IO.PathOptions.NoControlCharacters> rejects characters with ASCII codes 1-31 in entry names. Has no effect on <xref:Singulink.IO.PathFormat.Windows?displayProperty=nameWithType> (where these are always disallowed).
 
 #### PathFormatDependent
 
-<xref:Singulink.IO.PathOptions.PathFormatDependent> is a modifier flag. When set, <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> rules get appended when the path's format is <xref:Singulink.IO.PathFormat.Windows> or <xref:Singulink.IO.PathFormat.Universal>. Use this when you want your code to be friendly to Unix's more permissive file system without losing protection on Windows or in stored cross-platform data.
+<xref:Singulink.IO.PathOptions.PathFormatDependent> is a modifier flag. When set, the <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> rules get appended when the path's format is <xref:Singulink.IO.PathFormat.Windows?displayProperty=nameWithType> or <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType>, and are left out for <xref:Singulink.IO.PathFormat.Unix?displayProperty=nameWithType>. Use this when you want your code to be friendly to Unix's more permissive file system without losing protection on Windows or in stored cross-platform data.
 
 ```csharp
 // Strict on Windows / Universal, lenient on Unix:
-var opts = PathOptions.NoUnfriendlyNames | PathOptions.PathFormatDependent;
+var opts = PathOptions.PathFormatDependent;
 ```
+
+> [!NOTE]
+> Use the flag on its own (or with flags other than the unfriendly-name ones) to get this behavior. Combining it with <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> makes parsing strict on every format, because those rules are then requested explicitly.
 
 ## Choosing the Right Options
 
 | Scenario | Recommended options |
 |----------|---------------------|
-| App-defined path or user-typed input you'll store | <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> (default) |
-| Path returned from an OS file picker that you'll open and discard | <xref:Singulink.IO.PathOptions.None> |
-| Path read from a file system enumeration | <xref:Singulink.IO.PathOptions.None> |
-| Untrusted user input that must stay inside a known directory | <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> + <xref:Singulink.IO.PathOptions.NoNavigation> |
-| Cross-platform data that should be strict on Windows but accept everything Unix accepts | <xref:Singulink.IO.PathOptions.PathFormatDependent> |
+| App-defined path or user-typed input you'll store | <xref:Singulink.IO.PathOptions.NoUnfriendlyNames?displayProperty=nameWithType> (default) |
+| Path returned from an OS file picker that you'll open and discard | <xref:Singulink.IO.PathOptions.None?displayProperty=nameWithType> |
+| Path read from a file system enumeration | <xref:Singulink.IO.PathOptions.None?displayProperty=nameWithType> |
+| Untrusted user input that must stay inside a known directory | <xref:Singulink.IO.PathOptions.NoUnfriendlyNames?displayProperty=nameWithType> + <xref:Singulink.IO.PathOptions.NoNavigation?displayProperty=nameWithType> |
+| Cross-platform data that should be strict on Windows but accept everything Unix accepts | <xref:Singulink.IO.PathOptions.PathFormatDependent?displayProperty=nameWithType> |
 
 ## Storage and Round-Tripping
 
@@ -110,15 +111,17 @@ var path = FilePath.ParseAbsolute(input, PathOptions.None);
 File.WriteAllText("path.txt", path.PathDisplay);
 
 // At load time (must use the same options):
-var path = FilePath.ParseAbsolute(File.ReadAllText("path.txt"), PathOptions.None);
+var loaded = FilePath.ParseAbsolute(File.ReadAllText("path.txt"), PathOptions.None);
 ```
 
 > [!WARNING]
-> If your storage layer trims whitespace (a database column with `TRIM`, an INI parser, etc.), do not use <xref:Singulink.IO.PathOptions.None>; the round-tripped string won't match the original path on the file system. Either constrain inputs to <xref:Singulink.IO.PathOptions.NoUnfriendlyNames> or guarantee verbatim storage.
+> If your storage layer trims whitespace (a database column with `TRIM`, an INI parser, etc.), do not use <xref:Singulink.IO.PathOptions.None?displayProperty=nameWithType>; the round-tripped string won't match the original path on the file system. Either constrain inputs to <xref:Singulink.IO.PathOptions.NoUnfriendlyNames?displayProperty=nameWithType> or guarantee verbatim storage.
 
 ## Next Steps
 
+Continue with these related guides:
+
 - [Parsing Paths](parsing-paths.md): where <xref:Singulink.IO.PathOptions> is applied.
-- [Path Formats](path-formats.md): formats interact with options (e.g. <xref:Singulink.IO.PathOptions.PathFormatDependent>).
+- [Path Formats](path-formats.md): formats interact with options (e.g. <xref:Singulink.IO.PathOptions.PathFormatDependent?displayProperty=nameWithType>).
 
 </div>

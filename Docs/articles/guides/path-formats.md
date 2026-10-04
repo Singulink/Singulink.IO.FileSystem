@@ -2,40 +2,36 @@
 
 # Path Formats
 
-### Overview
-
-Every path carries a <xref:Singulink.IO.PathFormat> describing the rules it follows: separator character, what counts as a valid entry name, whether absolute or rooted-relative paths are allowed, and so on. The library exposes three format singletons plus <xref:Singulink.IO.PathFormat.Current>.
-
-Choosing the right format up front lets you parse paths from any platform, store paths in a portable way, and convert between formats explicitly.
+Every path carries a <xref:Singulink.IO.PathFormat> describing the rules it follows: separator character, what counts as a valid entry name, whether absolute or rooted-relative paths are allowed, and so on. The library exposes three format singletons plus <xref:Singulink.IO.PathFormat.Current?displayProperty=nameWithType>. Choosing the right format up front lets you parse paths from any platform, store paths in a portable way, and convert between formats explicitly.
 
 ## The Three Formats
 
 #### PathFormat.Windows
 
-<xref:Singulink.IO.PathFormat.Windows> provides native Windows path handling. Backslash separator (forward slashes are normalized to backslashes during parsing). Supports drive-letter roots (`C:\...`), UNC roots (`\\server\share\...`) and rooted-relative paths (`\Some\Path`).
+<xref:Singulink.IO.PathFormat.Windows?displayProperty=nameWithType> provides native Windows path handling. Backslash separator (forward slashes are normalized to backslashes during parsing). Supports drive-letter roots (`C:\...`), UNC roots (`\\server\share\...`) and rooted-relative paths (`\Some\Path`).
 
 #### PathFormat.Unix
 
-<xref:Singulink.IO.PathFormat.Unix> provides native Unix path handling. Forward-slash separator. Supports absolute paths (`/var/data`) and non-rooted relative paths (`some/path`). Rooted-relative paths are not supported; anything starting with `/` is absolute.
+<xref:Singulink.IO.PathFormat.Unix?displayProperty=nameWithType> provides native Unix path handling. Forward-slash separator. Supports absolute paths (`/var/data`) and non-rooted relative paths (`some/path`). Rooted-relative paths are not supported; anything starting with `/` is absolute.
 
 #### PathFormat.Universal
 
-<xref:Singulink.IO.PathFormat.Universal> is a cross-platform format that only allows constructs valid on **every** platform:
+<xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType> is a cross-platform format that only allows constructs valid on **every** platform:
 
 - Forward-slash separator only (backslashes are rejected, since they're valid filename characters on Unix).
 - **Only relative, non-rooted paths.** Absolute paths and rooted-relative paths are platform concepts and don't belong in the universal format.
 - Strict entry name validation that rejects anything Windows would object to.
 
 > [!TIP]
-> Use <xref:Singulink.IO.PathFormat.Universal> when storing relative paths in databases, configuration files or any data that may be read from another platform. The format guarantees the stored string will parse and behave identically everywhere.
+> Use <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType> when storing relative paths in databases, configuration files or any data that may be read from another platform. The format guarantees the stored string will parse and behave identically everywhere.
 
 #### PathFormat.Current
 
-<xref:Singulink.IO.PathFormat.Current> returns <xref:Singulink.IO.PathFormat.Windows> on Windows and <xref:Singulink.IO.PathFormat.Unix> on Unix-based platforms (Linux, macOS, etc.). This is the default for every parse method when no format is specified.
+<xref:Singulink.IO.PathFormat.Current?displayProperty=nameWithType> returns <xref:Singulink.IO.PathFormat.Windows?displayProperty=nameWithType> on Windows and <xref:Singulink.IO.PathFormat.Unix?displayProperty=nameWithType> on Unix-based platforms (Linux, macOS, etc.). This is the default for every parse method when no format is specified.
 
 ## Format Restrictions on I/O
 
-File system operations (such as <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*>, enumeration, etc.) only work on absolute paths whose <xref:Singulink.IO.IPath.PathFormat> matches <xref:Singulink.IO.PathFormat.Current>. Trying to perform I/O on a non-current path throws an <xref:System.InvalidOperationException> (or <xref:System.ArgumentException> when the path is a method argument).
+File system operations (such as <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*?displayProperty=nameWithType>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*?displayProperty=nameWithType>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*?displayProperty=nameWithType>, enumeration, etc.) only work on absolute paths whose <xref:Singulink.IO.IPath.PathFormat?displayProperty=nameWithType> matches <xref:Singulink.IO.PathFormat.Current?displayProperty=nameWithType>. Trying to perform I/O on a non-current path throws an <xref:System.InvalidOperationException> (or <xref:System.ArgumentException> when the path is a method argument).
 
 ```csharp
 var winPath = FilePath.ParseAbsolute(@"C:\data\file.txt", PathFormat.Windows);
@@ -47,7 +43,7 @@ winPath.OpenStream();   // works on Windows; throws on Unix
 
 ## Format Conversion
 
-Relative paths can be converted between formats with <xref:Singulink.IO.IRelativePath.ToPathFormat*>:
+Relative paths can be converted between formats with <xref:Singulink.IO.IRelativePath.ToPathFormat*?displayProperty=nameWithType>:
 
 ```csharp
 IRelativeFilePath universal = FilePath.ParseRelative("data/users.json", PathFormat.Universal);
@@ -59,7 +55,7 @@ Conversion may throw <xref:System.ArgumentException> if the path can't be repres
 
 ```csharp
 var unixPath = FilePath.ParseRelative("some/file?.txt", PathFormat.Unix, PathOptions.None);
-winPath.ToPathFormat(PathFormat.Windows);   // throws: '?' is not valid in Windows
+unixPath.ToPathFormat(PathFormat.Windows);   // throws: '?' is not valid in Windows
 ```
 
 > [!NOTE]
@@ -76,10 +72,12 @@ When combining a directory with a relative path, the formats are reconciled as f
 | Universal         | Universal         | Universal         |
 | Windows           | Universal         | Windows           |
 | Unix              | Universal         | Unix              |
+| Universal         | Windows           | Windows           |
+| Universal         | Unix              | Unix              |
 | Windows           | Unix              | **error**         |
 | Unix              | Windows           | **error**         |
 
-In short: matching formats win, <xref:Singulink.IO.PathFormat.Universal> yields to whichever specific format is on the other side, and mixing two specific formats is an error. This means a <xref:Singulink.IO.PathFormat.Universal> relative path is freely combinable with any platform-specific directory.
+In short: matching formats win, <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType> yields to whichever specific format is on the other side, and mixing two specific formats is an error. This means a <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType> relative path is freely combinable with any platform-specific directory.
 
 ```csharp
 IRelativeFilePath cfg = FilePath.ParseRelative("config/app.json", PathFormat.Universal);
@@ -93,7 +91,7 @@ Every path has three string representations. Use the right one for the job.
 
 #### PathDisplay
 
-<xref:Singulink.IO.IPath.PathDisplay> is friendly and human-readable. Suitable for:
+<xref:Singulink.IO.IPath.PathDisplay?displayProperty=nameWithType> is friendly and human-readable. Suitable for:
 
 - Display in UI, logs and error messages.
 - Storage and serialization that you'll re-parse with this library.
@@ -106,11 +104,11 @@ dir.PathDisplay;    // "C:\Apps\MyApp\"   (note the trailing separator)
 ```
 
 > [!NOTE]
-> Non-empty directory paths always end with the format's separator in both <xref:Singulink.IO.IPath.PathDisplay> and <xref:Singulink.IO.IAbsolutePath.PathExport>; file paths never do. Empty relative directory paths (`PathDisplay == ""`) are the one exception: there is no segment to suffix. This invariant serves two purposes. First, it makes a path's textual form unambiguously declare whether it points to a file or a directory, so directory and file strings remain distinguishable when they cross out of the type system (logs, config, databases, etc.). Second, it makes raw string concatenation safe: an absolute directory's string can be concatenated with any number of relative directory strings and an optional trailing file name string to produce a valid path, with no need to insert or de-duplicate separators between segments.
+> Non-empty directory paths always end with the format's separator in both <xref:Singulink.IO.IPath.PathDisplay?displayProperty=nameWithType> and <xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType>; file paths never do. Empty relative directory paths (`PathDisplay == ""`) are the one exception: there is no segment to suffix. This invariant serves two purposes. First, it makes a path's textual form unambiguously declare whether it points to a file or a directory, so directory and file strings remain distinguishable when they cross out of the type system (logs, config, databases, etc.). Second, it makes raw string concatenation safe: an absolute directory's string can be concatenated with any number of relative directory strings and an optional trailing file name string to produce a valid path, with no need to insert or de-duplicate separators between segments.
 
 #### PathExport (absolute paths only)
 
-<xref:Singulink.IO.IAbsolutePath.PathExport> is specially formatted for handing to non-library APIs. On Windows, this typically prefixes with the `\\?\` extended-path syntax so the file system never silently mutates the path (no whitespace trimming, no reserved-name remapping).
+<xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType> is specially formatted for handing to non-library APIs. On Windows, this typically prefixes with the `\\?\` extended-path syntax so the file system never silently mutates the path (no whitespace trimming, no reserved-name remapping).
 
 Use <xref:Singulink.IO.IAbsolutePath.PathExport> whenever you need a string for `System.IO`, native interop, or any third-party API that takes a path string:
 
@@ -119,11 +117,11 @@ using var stream = new FileStream(file.PathExport, FileMode.Open);
 ```
 
 > [!IMPORTANT]
-> Use <xref:Singulink.IO.IAbsolutePath.PathExport>, never <xref:Singulink.IO.IPath.PathDisplay>, when calling APIs outside this library. <xref:Singulink.IO.IPath.PathDisplay> looks normal but can be silently rewritten by lower-level path handling. <xref:Singulink.IO.IAbsolutePath.PathExport> cannot.
+> Use <xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType>, never <xref:Singulink.IO.IPath.PathDisplay?displayProperty=nameWithType>, when calling APIs outside this library. <xref:Singulink.IO.IPath.PathDisplay> looks normal but can be silently rewritten by lower-level path handling. <xref:Singulink.IO.IAbsolutePath.PathExport> cannot.
 
 #### ToString()
 
-<xref:Singulink.IO.IPath.ToString*> returns a deliberately unusable diagnostic string of the form `[Format] "<pathDisplay>"`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
+<xref:Singulink.IO.IPath.ToString*?displayProperty=nameWithType> returns a deliberately unusable diagnostic string of the form `[Format] "<pathDisplay>"`. Useful in debug output, exceptions and logs, but **never pass it to anything that expects a path**.
 
 ```csharp
 file.ToString();   // [Windows] "C:\Apps\MyApp\config.json"
@@ -146,8 +144,10 @@ PathFormat.Universal.IsValidExtension(".gz");        // true
 
 ## Next Steps
 
-- [PathOptions](path-options.md): interacts with <xref:Singulink.IO.PathFormat> (e.g. <xref:Singulink.IO.PathOptions.PathFormatDependent>).
+Formats come up again in these guides:
+
+- [PathOptions](path-options.md): interacts with <xref:Singulink.IO.PathFormat> (e.g. <xref:Singulink.IO.PathOptions.PathFormatDependent?displayProperty=nameWithType>).
 - [Combining and Navigating Paths](combining-and-navigating.md): cross-format combine rules in practice.
-- [Interop and Migration](interop-and-migration.md): when to use <xref:Singulink.IO.IAbsolutePath.PathExport>.
+- [Interop and Migration](interop-and-migration.md): when to use <xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType>.
 
 </div>

@@ -2,14 +2,12 @@
 
 # Exception Handling
 
-### Overview
+The library is designed to make exception handling boringly predictable: parsing throws <xref:System.ArgumentException>, file system operations throw <xref:System.IO.IOException>, and nothing else needs to be accounted for. That separation lets you write tidy `try`/`catch` blocks without resorting to `catch (Exception)` to corral the mix of unrelated exception types `System.IO` would otherwise throw.
 
-The library is designed to make exception handling boringly predictable:
+### The Two Exception Families
 
 - **Parsing throws <xref:System.ArgumentException>** (and subtypes). Every input-validation error during path construction comes from this family.
-- **I/O throws <xref:System.IO.IOException>** (and subtypes). Every error from a file system operation comes from this family: including permission errors, which are surfaced as <xref:Singulink.IO.UnauthorizedIOAccessException> (a subclass of <xref:System.IO.IOException>).
-
-That separation lets you write tidy `try`/`catch` blocks without resorting to `catch (Exception)` to corral the mix of unrelated exception types `System.IO` would otherwise throw.
+- **I/O throws <xref:System.IO.IOException>** (and subtypes). Every error from a file system operation comes from this family, including permission errors, which are surfaced as <xref:Singulink.IO.UnauthorizedIOAccessException> (a subclass of <xref:System.IO.IOException>).
 
 ## Parse-Time Errors
 
@@ -29,6 +27,21 @@ catch (ArgumentException ex)
 ```
 
 Exception messages are detailed enough to act on directly. They name the exact rule that failed (e.g. "Entry name ends with a dot.", "Attempt to navigate past root directory.").
+
+#### Parsing Without Exceptions
+
+When invalid input is a routine outcome and you don't need the reason, skip the exception entirely with the `Try` parse methods: <xref:Singulink.IO.FilePath.TryParse*?displayProperty=nameWithType>, <xref:Singulink.IO.FilePath.TryParseAbsolute*?displayProperty=nameWithType>, <xref:Singulink.IO.FilePath.TryParseRelative*?displayProperty=nameWithType> and their <xref:Singulink.IO.DirectoryPath> equivalents. They return `false` instead of throwing:
+
+```csharp
+if (!FilePath.TryParse(userInput, out IFilePath? file))
+{
+    log.Warn("Invalid path.");
+    return;
+}
+```
+
+> [!TIP]
+> The `Try` methods don't say why the input was rejected. If you want to show the user the specific rule that failed, parse with the throwing method and report the exception message as in the first example. See [Parsing Paths](parsing-paths.md#parsing-without-exceptions).
 
 ## I/O-Time Errors
 
@@ -77,7 +90,7 @@ catch (IOException)                    { /* something else went wrong */ }
 
 ## Cross-Platform Consistency
 
-`System.IO` throws different exception types on Windows and Unix for the same operation. For example, <xref:System.IO.File.Delete*> on a directory throws <xref:System.UnauthorizedAccessException> on Windows but <xref:System.IO.IOException> (or different) on Unix. This library normalizes those: the exception type for a given failure is the same across platforms.
+`System.IO` throws different exception types on Windows and Unix for the same operation. For example, <xref:System.IO.File.Delete*?displayProperty=nameWithType> on a directory throws <xref:System.UnauthorizedAccessException> on Windows but <xref:System.IO.IOException> on Unix. This library normalizes those: the exception type for a given failure is the same across platforms.
 
 > [!IMPORTANT]
 > If you're catching specific exception types in code that needs to behave the same on Windows and Unix, use this library's surface; `System.IO`'s exception types are not portable.
@@ -129,6 +142,9 @@ catch (IOException ex)                    { return Result.Error(ex.Message); }
 
 ## Next Steps
 
+The operations behind these exceptions are covered in:
+
+- [Parsing Paths](parsing-paths.md): the throwing and non-throwing parse methods.
 - [Searching and Enumeration](searching-and-enumeration.md): search-time error handling and <xref:Singulink.IO.InaccessibleSearchBehavior>.
 - [Working with Files](file-operations.md) and [Working with Directories](directory-operations.md): the operations covered by the I/O-side catches.
 

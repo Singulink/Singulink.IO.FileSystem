@@ -2,22 +2,20 @@
 
 # Drive and Disk Information
 
-### Overview
-
 The library does not have a "drive" concept. Drives are a Windows-centric idea, and they get the wrong answer in many real-world scenarios: UNC paths, Unix mount points, per-user quotas, drives mounted into a subdirectory. Disk-space and file-system metadata is exposed instead on every <xref:Singulink.IO.IAbsoluteDirectoryPath>, where it can answer the question for the actual location you care about.
 
 ## What's Available
 
-Every absolute directory path exposes:
+Every <xref:Singulink.IO.IAbsoluteDirectoryPath> exposes:
 
 | Member | Description |
 |--------|-------------|
 | <xref:Singulink.IO.IAbsoluteDirectoryPath.AvailableFreeSpace> | Bytes available to the current user, taking quotas into account. |
 | <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalFreeSpace> | Bytes free on the volume, ignoring per-user quotas. |
 | <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalSize> | Total volume size in bytes. |
-| <xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType> | <xref:System.IO.DriveType.Fixed>, <xref:System.IO.DriveType.Removable>, <xref:System.IO.DriveType.Network>, <xref:System.IO.DriveType.CDRom>, etc. |
+| <xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType> | One of the <xref:System.IO.DriveType> values: <xref:System.IO.DriveType.Fixed>, <xref:System.IO.DriveType.Removable>, <xref:System.IO.DriveType.Network>, <xref:System.IO.DriveType.CDRom>, etc. |
 | <xref:Singulink.IO.IAbsoluteDirectoryPath.FileSystem> | The file system name (e.g. `"NTFS"`, `"ext4"`). |
-| <xref:Singulink.IO.IAbsolutePath.IsUnc> | `true` if the path is a UNC path (Windows only). |
+| <xref:Singulink.IO.IAbsolutePath.IsUnc?displayProperty=nameWithType> | `true` if the path is a UNC path (Windows only). |
 
 ```csharp
 IAbsoluteDirectoryPath installDir = appBase.CombineDirectory("data");
@@ -45,11 +43,11 @@ if (checkAt.AvailableFreeSpace < requiredBytes)
 target.Create();
 ```
 
-<xref:Singulink.IO.IAbsolutePath.GetLastExistingDirectory*> walks up the path until it finds a directory that exists, which is always somewhere on the volume the new path would land on.
+<xref:Singulink.IO.IAbsolutePath.GetLastExistingDirectory*?displayProperty=nameWithType> walks up the path until it finds a directory that exists, which is always somewhere on the volume the new path would land on.
 
 ## Mounting Points
 
-<xref:Singulink.IO.DirectoryPath.GetMountingPoints*> returns the file system roots (drives on Windows, mount points on Unix):
+<xref:Singulink.IO.DirectoryPath.GetMountingPoints*?displayProperty=nameWithType> returns the file system roots (drives on Windows, mount points on Unix):
 
 ```csharp
 foreach (IAbsoluteDirectoryPath mount in DirectoryPath.GetMountingPoints())
@@ -63,7 +61,7 @@ foreach (IAbsoluteDirectoryPath mount in DirectoryPath.GetMountingPoints())
 }
 ```
 
-This is the cross-platform equivalent of <xref:System.IO.DriveInfo.GetDrives*>, except every entry is a fully usable <xref:Singulink.IO.IAbsoluteDirectoryPath>. You can immediately combine it with relative paths, enumerate it, query free space, and so on.
+This is the cross-platform equivalent of <xref:System.IO.DriveInfo.GetDrives*?displayProperty=nameWithType>, except every entry is a fully usable <xref:Singulink.IO.IAbsoluteDirectoryPath>. You can immediately combine it with relative paths, enumerate it, query free space, and so on.
 
 ## UNC Paths
 
@@ -80,7 +78,7 @@ share.IsUnc;                // true
 
 ## Drive Type and File System
 
-<xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType> and <xref:Singulink.IO.IAbsoluteDirectoryPath.FileSystem> are useful for selecting a behavior based on the underlying volume:
+<xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType?displayProperty=nameWithType> and <xref:Singulink.IO.IAbsoluteDirectoryPath.FileSystem?displayProperty=nameWithType> are useful for selecting a behavior based on the underlying volume:
 
 ```csharp
 if (target.DriveType is DriveType.Network)
@@ -94,7 +92,9 @@ if (target.FileSystem.Equals("FAT32", StringComparison.OrdinalIgnoreCase) && pay
 
 ## Next Steps
 
-- [Special Locations](special-locations.md): <xref:Singulink.IO.DirectoryPath.GetMountingPoints*> is one of several "where am I" helpers.
+These guides cover the locations you are likely to query:
+
+- [Special Locations](special-locations.md): <xref:Singulink.IO.DirectoryPath.GetMountingPoints*?displayProperty=nameWithType> is one of several "where am I" helpers.
 - [Working with Directories](directory-operations.md): once you've picked a location.
 
 </div>

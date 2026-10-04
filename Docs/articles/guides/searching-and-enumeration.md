@@ -2,9 +2,11 @@
 
 # Searching and Enumeration
 
-### Overview
+Every absolute directory exposes a complete set of twelve enumeration methods that differ in what they return and which kinds of entries they include. All of them return <xref:System.Collections.Generic.IEnumerable`1> and stream lazily; iteration touches the file system as you go.
 
-Every absolute directory exposes a complete set of enumeration methods (twelve in total) that fall into a clean grid:
+### The Method Grid
+
+The enumeration methods on <xref:Singulink.IO.IAbsoluteDirectoryPath> fall into a clean grid:
 
 | | Files | Directories | Entries (either) |
 |--|---|---|---|
@@ -13,19 +15,17 @@ Every absolute directory exposes a complete set of enumeration methods (twelve i
 | Relative to this directory | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeChildFiles*> | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeChildDirectories*> | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeChildEntries*> |
 | Relative to a sub-location | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeFiles*> | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeDirectories*> | <xref:Singulink.IO.IAbsoluteDirectoryPath.GetRelativeEntries*> |
 
-All return <xref:System.Collections.Generic.IEnumerable`1> and stream lazily; iteration touches the file system as you go.
-
 ## Picking the Right Method
 
 Decide along two axes:
 
 1. **What do you want back?**
    - Just paths: `Get*` returns <xref:Singulink.IO.IAbsolutePath> or <xref:Singulink.IO.IRelativePath> derivatives.
-   - Paths plus metadata in a single call: `Get*Info` returns <xref:Singulink.IO.CachedFileInfo> or <xref:Singulink.IO.CachedDirectoryInfo>.
+   - Paths plus metadata in a single call: `Get*Info` returns <xref:Singulink.IO.CachedFileInfo>, <xref:Singulink.IO.CachedDirectoryInfo> or <xref:Singulink.IO.CachedEntryInfo>.
 2. **What kind of entries?**
    - Files only / directories only / either: pick the matching variant.
 
-Use the `Info` variants when you'll read attributes, sizes or timestamps from each result; they save a stat per entry compared to calling <xref:Singulink.IO.IAbsolutePath.GetInfo*> afterwards.
+Use the `Info` variants when you'll read attributes, sizes or timestamps from each result; they save a stat per entry compared to calling <xref:Singulink.IO.IAbsolutePath.GetInfo*?displayProperty=nameWithType> afterwards.
 
 ```csharp
 // Just paths:
@@ -62,14 +62,14 @@ Tune behavior with <xref:Singulink.IO.SearchOptions>. All properties are optiona
 | Property | Default | Purpose |
 |----------|---------|---------|
 | <xref:Singulink.IO.SearchOptions.Recursive> | `false` | Descend into subdirectories. |
-| <xref:Singulink.IO.SearchOptions.MaxRecursionDepth> | <xref:System.Int32.MaxValue> | Cap recursion depth (only meaningful when <xref:Singulink.IO.SearchOptions.Recursive> is `true`). |
-| <xref:Singulink.IO.SearchOptions.MatchCasing> | <xref:System.IO.MatchCasing.CaseInsensitive> | Filename matching mode. |
-| <xref:Singulink.IO.SearchOptions.AttributesToSkip> | <xref:System.IO.FileAttributes.None> | Skip entries with any of the specified <xref:System.IO.FileAttributes>. |
+| <xref:Singulink.IO.SearchOptions.MaxRecursionDepth> | <xref:System.Int32.MaxValue?displayProperty=nameWithType> | Cap recursion depth (only meaningful when <xref:Singulink.IO.SearchOptions.Recursive> is `true`). |
+| <xref:Singulink.IO.SearchOptions.MatchCasing> | <xref:System.IO.MatchCasing.CaseInsensitive?displayProperty=nameWithType> | Filename matching mode. |
+| <xref:Singulink.IO.SearchOptions.AttributesToSkip> | <xref:System.IO.FileAttributes.None?displayProperty=nameWithType> | Skip entries with any of the specified <xref:System.IO.FileAttributes>. |
 | <xref:Singulink.IO.SearchOptions.BufferSize> | `0` (default) | Suggested OS buffer size. |
-| <xref:Singulink.IO.SearchOptions.InaccessibleSearchBehavior> | <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> | How to handle inaccessible directories; see below. |
+| <xref:Singulink.IO.SearchOptions.InaccessibleSearchBehavior> | <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir?displayProperty=nameWithType> | How to handle inaccessible directories; see below. |
 
 > [!TIP]
-> The <xref:Singulink.IO.SearchOptions.MatchCasing> default is **case-insensitive**: the same on Windows and Unix. `System.IO`'s default differs by platform, which can lead to platform-specific bugs that this library deliberately avoids. You can opt into platform-specific behavior by setting `MatchCasing` to <xref:System.IO.MatchCasing.PlatformDefault>.
+> The <xref:Singulink.IO.SearchOptions.MatchCasing?displayProperty=nameWithType> default is **case-insensitive** on both Windows and Unix. `System.IO`'s default differs by platform, which can lead to platform-specific bugs that this library deliberately avoids. You can opt into platform-specific behavior by setting it to <xref:System.IO.MatchCasing.PlatformDefault?displayProperty=nameWithType>.
 
 ```csharp
 var opts = new SearchOptions
@@ -104,7 +104,7 @@ long total = profile.GetChildFiles("*", resilient).Sum(f => f.Length);
 ```
 
 > [!NOTE]
-> <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> is the friendliest least-surprising default: you reliably get notified if the path you handed in is unreadable, but missing permissions deep in the tree don't blow up an otherwise-valid search. This behavior differs from `System.IO`, which only supports the other two options and the default depends on which API you call.
+> <xref:Singulink.IO.InaccessibleSearchBehavior.ThrowForSearchDir> is the friendliest, least surprising default: you reliably get notified if the path you handed in is unreadable, but missing permissions deep in the tree don't blow up an otherwise-valid search. This behavior differs from `System.IO`, which only supports the other two options and the default depends on which API you call.
 
 When a search throws because of inaccessibility, the exception is <xref:Singulink.IO.UnauthorizedIOAccessException>. See [Exception Handling](exception-handling.md).
 
@@ -142,7 +142,7 @@ foreach (IRelativeFilePath f in outerDir.GetRelativeFiles(sub, "*.json"))
 }
 ```
 
-##### Searching in a Parent Directory
+#### Searching in a Parent Directory
 
 `searchLocation` may also point upward via `..` segments. The search then runs *outside* of the outer directory, but results are still expressed relative to it. Because some matches may live inside the same subtree the outer directory is in, the library applies the following rule when constructing each returned path:
 
@@ -173,7 +173,7 @@ The same rule scales to deeper navigation (`../..`, `../../..`) and to a rooted 
 
 ## Lazy Iteration and Exceptions
 
-Enumeration is lazy. The file system call that produces the next batch of entries can throw at any iteration step, typically <xref:System.IO.IOException>, <xref:System.IO.DirectoryNotFoundException> or <xref:Singulink.IO.UnauthorizedIOAccessException>. Wrap the `foreach` (or materialization with <xref:System.Linq.Enumerable.ToList*>) in a `try`/`catch` if you need to handle errors:
+Enumeration is lazy. The file system call that produces the next batch of entries can throw at any iteration step, typically <xref:System.IO.IOException>, <xref:System.IO.DirectoryNotFoundException> or <xref:Singulink.IO.UnauthorizedIOAccessException>. Wrap the `foreach` (or materialization with <xref:System.Linq.Enumerable.ToList*?displayProperty=nameWithType>) in a `try`/`catch` if you need to handle errors:
 
 ```csharp
 try
@@ -188,6 +188,8 @@ catch (UnauthorizedIOAccessException ex)
 ```
 
 ## Next Steps
+
+Two guides pair closely with enumeration:
 
 - [Cached Entry Info](cached-entry-info.md): make the most of the `*Info` variants.
 - [Exception Handling](exception-handling.md): handle search-time errors cleanly.

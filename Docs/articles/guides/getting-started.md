@@ -2,11 +2,7 @@
 
 # Getting Started
 
-### Overview
-
-**Singulink.IO.FileSystem** provides strongly-typed file and directory paths together with reliable, cross-platform file system access for .NET. Compared to `System.IO`, it eliminates entire categories of bugs (silent path modification, file/directory confusion, inconsistent exceptions, cross-platform mismatches) by encoding intent in the type system and making parsing explicit and separate from I/O.
-
-This article walks you through installation, the core concepts and a small end-to-end example. From here you can branch off into the rest of the guides for in-depth coverage of any topic.
+**Singulink.IO.FileSystem** provides strongly-typed file and directory paths together with reliable, cross-platform file system access for .NET. Compared to `System.IO`, it eliminates entire categories of bugs (silent path modification, file/directory confusion, inconsistent exceptions, cross-platform mismatches) by encoding intent in the type system and making parsing explicit and separate from I/O. This article walks you through installation, the core concepts and a small end-to-end example.
 
 ### Installation
 
@@ -51,7 +47,13 @@ using Singulink.IO;
 
 IAbsoluteFilePath configFile = FilePath.ParseAbsolute(@"C:\Apps\MyApp\config.json");
 IRelativeFilePath relativeLog = FilePath.ParseRelative("logs/today.log");
+
+// Non-throwing variant for input that may not be a valid path:
+if (!FilePath.TryParseAbsolute(userInput, out IAbsoluteFilePath? userFile))
+    Console.WriteLine("That is not a valid absolute file path.");
 ```
+
+The `Parse` methods throw <xref:System.ArgumentException> when the input is invalid, while the `TryParse` methods return `false` instead. See [Parsing Paths](parsing-paths.md) for the full set.
 
 #### Combine Paths
 
@@ -111,13 +113,13 @@ Console.WriteLine($"Wrote results to: {resultFile.PathDisplay}");
 ```
 
 > [!TIP]
-> Use <xref:Singulink.IO.IPath.PathDisplay> for messages, logs and serialization. Use <xref:Singulink.IO.IAbsolutePath.PathExport> only when you need a string for an external API. Never use <xref:System.Object.ToString*> for I/O; its output is intentionally not a usable path. See [Path Formats](path-formats.md) for the full story.
+> Use <xref:Singulink.IO.IPath.PathDisplay?displayProperty=nameWithType> for messages, logs and serialization. Use <xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType> only when you need a string for an external API. Never use <xref:Singulink.IO.IPath.ToString*?displayProperty=nameWithType> for I/O; its output is intentionally not a usable path. See [Path Formats](path-formats.md#three-string-forms) for the full story.
 
 ## Next Steps
 
 Each subsequent guide takes one slice of the library and covers it in depth:
 
-- [Path Types](path-types.md): the seven path interfaces and what each one offers.
+- [Path Types](path-types.md): the path interfaces and what each one offers.
 - [Parsing Paths](parsing-paths.md): how to turn strings into paths reliably.
 - [PathOptions](path-options.md): controlling what counts as a valid path.
 - [Path Formats](path-formats.md): Windows, Unix and the cross-platform Universal format.

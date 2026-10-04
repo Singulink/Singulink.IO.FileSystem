@@ -2,14 +2,14 @@
 
 # Cached Entry Info
 
-### Overview
+<xref:Singulink.IO.CachedEntryInfo> is the library's replacement for <xref:System.IO.FileInfo> and <xref:System.IO.DirectoryInfo>. It captures a consistent snapshot of an entry's metadata in a single file system call, and its design fixes a handful of long-standing pitfalls in the `System.IO` equivalents.
 
-<xref:Singulink.IO.CachedEntryInfo> is the library's replacement for <xref:System.IO.FileInfo> and <xref:System.IO.DirectoryInfo>. It captures a consistent snapshot of an entry's metadata in a single file system call. Two concrete types exist:
+### Concrete Types
+
+Two concrete types derive from <xref:Singulink.IO.CachedEntryInfo>:
 
 - <xref:Singulink.IO.CachedFileInfo>: adds <xref:Singulink.IO.CachedFileInfo.Length> and <xref:Singulink.IO.CachedFileInfo.IsReadOnly>.
-- <xref:Singulink.IO.CachedDirectoryInfo>: narrows <xref:Singulink.IO.CachedEntryInfo.Path> to <xref:Singulink.IO.IAbsoluteDirectoryPath>.
-
-The design fixes a handful of long-standing pitfalls in the `System.IO` equivalents.
+- <xref:Singulink.IO.CachedDirectoryInfo>: narrows <xref:Singulink.IO.CachedEntryInfo.Path?displayProperty=nameWithType> to <xref:Singulink.IO.IAbsoluteDirectoryPath>.
 
 ## What's Different
 
@@ -19,7 +19,7 @@ You cannot obtain a <xref:Singulink.IO.CachedEntryInfo> for a path that doesn't 
 
 #### Read-Only Properties
 
-All properties are read-only. To **change** a file's attributes or timestamps, go through the <xref:Singulink.IO.CachedEntryInfo.Path> property (which is a real path object) and then call <xref:Singulink.IO.CachedEntryInfo.Refresh*> to update the cached snapshot:
+All properties are read-only. To **change** a file's attributes or timestamps, go through the <xref:Singulink.IO.CachedEntryInfo.Path?displayProperty=nameWithType> property (which is a real path object) and then call <xref:Singulink.IO.CachedEntryInfo.Refresh*?displayProperty=nameWithType> to update the cached snapshot:
 
 ```csharp
 CachedFileInfo info = file.GetInfo();
@@ -32,13 +32,13 @@ info.Refresh();   // re-query the file system
 
 #### Type-Stable
 
-If something on disk changes the entry from a file into a directory (or vice versa), <xref:Singulink.IO.CachedEntryInfo.Refresh*> throws <xref:System.IO.IOException> rather than silently returning misleading data.
+If something on disk changes the entry from a file into a directory (or vice versa), <xref:Singulink.IO.CachedEntryInfo.Refresh*?displayProperty=nameWithType> throws <xref:System.IO.IOException> rather than silently returning misleading data.
 
 ## Obtaining a CachedEntryInfo
 
 #### From a Path
 
-Call <xref:Singulink.IO.IAbsolutePath.GetInfo*> on any <xref:Singulink.IO.IAbsolutePath>. The static return type matches the path:
+Call <xref:Singulink.IO.IAbsolutePath.GetInfo*?displayProperty=nameWithType> on any <xref:Singulink.IO.IAbsolutePath>. The static return type matches the path:
 
 ```csharp
 CachedFileInfo fileInfo = absoluteFilePath.GetInfo();
@@ -49,7 +49,7 @@ CachedDirectoryInfo dirInfo = absoluteDirectoryPath.GetInfo();
 
 #### From a Path String (Type Not Known)
 
-When you only have a string and don't statically know whether it refers to a file or a directory, use the <xref:Singulink.IO.CachedEntryInfo.Create*> factory:
+When you only have a string and don't statically know whether it refers to a file or a directory, use the <xref:Singulink.IO.CachedEntryInfo.Create*?displayProperty=nameWithType> factory:
 
 ```csharp
 CachedEntryInfo info = CachedEntryInfo.Create(pathString);
@@ -63,7 +63,7 @@ switch (info)
 
 The factory inspects the trailing segment of the string: a trailing separator, `.` or `..` makes it directory-shaped and the result is a <xref:Singulink.IO.CachedDirectoryInfo>; otherwise the path is probed and the correct concrete type is returned based on what actually exists on disk. If the entry is missing, <xref:System.IO.FileNotFoundException> (or <xref:System.IO.DirectoryNotFoundException> if its parent doesn't exist) is thrown. A directory-shaped path that resolves to a file is a hard error and throws <xref:System.IO.IOException>.
 
-When you know the expected kind, prefer the typed shadows <xref:Singulink.IO.CachedFileInfo.Create*> and <xref:Singulink.IO.CachedDirectoryInfo.Create*>. They have the same dispatch logic but throw <xref:System.IO.IOException> if the path resolves to the other kind:
+When you know the expected kind, prefer the typed shadows <xref:Singulink.IO.CachedFileInfo.Create*?displayProperty=nameWithType> and <xref:Singulink.IO.CachedDirectoryInfo.Create*?displayProperty=nameWithType>. They have the same dispatch logic but throw <xref:System.IO.IOException> if the path resolves to the other kind:
 
 ```csharp
 CachedFileInfo file = CachedFileInfo.Create(pathString);          // throws if path is a directory
@@ -72,7 +72,7 @@ CachedDirectoryInfo dir = CachedDirectoryInfo.Create(pathString); // throws if p
 
 #### From a Relative Sub-Path
 
-<xref:Singulink.IO.IAbsoluteDirectoryPath.GetInfo*> on an <xref:Singulink.IO.IAbsoluteDirectoryPath> also accepts a relative path string. The overload combines the relative path with the directory and resolves the resulting entry in a single call, returning the correct concrete type:
+<xref:Singulink.IO.IAbsoluteDirectoryPath.GetInfo*?displayProperty=nameWithType> also accepts a relative path string. The overload combines the relative path with the directory and resolves the resulting entry in a single call, returning the correct concrete type:
 
 ```csharp
 CachedEntryInfo info = appBase.GetInfo("config/users.json");
@@ -81,11 +81,11 @@ CachedEntryInfo info = appBase.GetInfo("config/users.json");
 CachedDirectoryInfo logsDir = (CachedDirectoryInfo)appBase.GetInfo("logs/");
 ```
 
-Like <xref:Singulink.IO.CachedEntryInfo.Create*>, this overload uses the trailing segment to disambiguate file vs directory shape. Pass a <xref:Singulink.IO.PathFormat> to control how the relative segment is parsed (see [Combining and Navigating Paths](combining-and-navigating.md)).
+Like <xref:Singulink.IO.CachedEntryInfo.Create*?displayProperty=nameWithType>, this overload uses the trailing segment to disambiguate file vs directory shape. Pass a <xref:Singulink.IO.PathFormat> to control how the relative segment is parsed (see [Combining and Navigating Paths](combining-and-navigating.md)).
 
 #### From a System.IO Info Object
 
-Use the <xref:Singulink.IO.SystemExtensions.ToCachedInfo*> extension methods to bridge from <xref:System.IO.FileInfo> / <xref:System.IO.DirectoryInfo> / <xref:System.IO.FileSystemInfo>:
+Use the <xref:Singulink.IO.SystemExtensions.ToCachedInfo*?displayProperty=nameWithType> extension methods to bridge from <xref:System.IO.FileInfo> / <xref:System.IO.DirectoryInfo> / <xref:System.IO.FileSystemInfo>:
 
 ```csharp
 FileInfo fi = new(@"C:\some\file.txt");
@@ -124,7 +124,7 @@ foreach (CachedFileInfo info in dir.GetChildFilesInfo("*.log"))
 
 ## Refresh
 
-<xref:Singulink.IO.CachedEntryInfo.Refresh*> re-queries the file system and updates the cached values. Call it whenever you suspect the underlying entry may have changed:
+<xref:Singulink.IO.CachedEntryInfo.Refresh*?displayProperty=nameWithType> re-queries the file system and updates the cached values. Call it whenever you suspect the underlying entry may have changed:
 
 ```csharp
 info.Refresh();
@@ -160,6 +160,8 @@ if (file.LastWriteTimeUtc > cutoff) { /* ... */ }
 ```
 
 ## Next Steps
+
+Cached info shows up throughout these guides:
 
 - [Searching and Enumeration](searching-and-enumeration.md): the `*Info` variants are designed to pair with this article.
 - [Working with Files](file-operations.md) and [Working with Directories](directory-operations.md): the path-side counterparts.

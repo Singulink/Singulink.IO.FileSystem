@@ -2,8 +2,6 @@
 
 # Working with Files
 
-### Overview
-
 File operations live on <xref:Singulink.IO.IAbsoluteFilePath>. Relative file paths can describe a file but cannot perform I/O; combine them with an absolute directory first (see [Combining and Navigating Paths](combining-and-navigating.md)).
 
 Every method described here can throw <xref:System.IO.IOException> (or one of its subtypes: <xref:System.IO.FileNotFoundException>, <xref:System.IO.DirectoryNotFoundException>, <xref:Singulink.IO.UnauthorizedIOAccessException>, etc.). See [Exception Handling](exception-handling.md) for patterns.
@@ -12,7 +10,7 @@ Every method described here can throw <xref:System.IO.IOException> (or one of it
 
 #### Exists
 
-<xref:Singulink.IO.IAbsolutePath.Exists> gives a quick boolean:
+<xref:Singulink.IO.IAbsolutePath.Exists?displayProperty=nameWithType> gives a quick boolean:
 
 ```csharp
 if (file.Exists)
@@ -21,7 +19,7 @@ if (file.Exists)
 
 #### State
 
-For richer information, use <xref:Singulink.IO.IAbsolutePath.State>. It returns one of four <xref:Singulink.IO.EntryState> values:
+For richer information, use <xref:Singulink.IO.IAbsolutePath.State?displayProperty=nameWithType>. It returns one of four <xref:Singulink.IO.EntryState> values:
 
 | Value | Meaning |
 |-------|---------|
@@ -41,7 +39,7 @@ switch (file.State)
 ```
 
 > [!TIP]
-> Use <xref:Singulink.IO.IAbsolutePath.State> over <xref:Singulink.IO.IAbsolutePath.Exists> when your error handling needs to distinguish between "missing" and "wrong type". <xref:Singulink.IO.EntryState.WrongType> in particular catches a class of bugs that `System.IO`'s boolean checks silently obscure.
+> Use <xref:Singulink.IO.IAbsolutePath.State?displayProperty=nameWithType> over <xref:Singulink.IO.IAbsolutePath.Exists?displayProperty=nameWithType> when your error handling needs to distinguish between "missing" and "wrong type". <xref:Singulink.IO.EntryState.WrongType?displayProperty=nameWithType> in particular catches a class of bugs that `System.IO`'s boolean checks silently obscure.
 
 ## Opening Streams
 
@@ -79,7 +77,7 @@ For writes, choose the appropriate <xref:System.IO.FileMode>:
 
 #### OpenAsyncStream
 
-<xref:Singulink.IO.IAbsoluteFilePath.OpenAsyncStream*> has an identical signature to <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*> but always sets <xref:System.IO.FileOptions.Asynchronous>:
+<xref:Singulink.IO.IAbsoluteFilePath.OpenAsyncStream*> has an identical signature to <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*> but always sets <xref:System.IO.FileOptions.Asynchronous?displayProperty=nameWithType>:
 
 ```csharp
 using FileStream stream = file.OpenAsyncStream(FileMode.Create, FileAccess.Write);
@@ -87,7 +85,7 @@ await stream.WriteAsync(buffer);
 ```
 
 > [!NOTE]
-> The OS may not actually support asynchronous I/O for the underlying handle, in which case the runtime falls back to synchronous internally. The <xref:System.IO.FileOptions.Asynchronous> option only opts in to true async when the platform allows it.
+> The OS may not actually support asynchronous I/O for the underlying handle, in which case the runtime falls back to synchronous internally. The <xref:System.IO.FileOptions.Asynchronous?displayProperty=nameWithType> option only opts in to true async when the platform allows it.
 
 ## File Properties
 
@@ -141,7 +139,7 @@ file.MoveTo(destination, overwrite: true);
 ```
 
 > [!NOTE]
-> <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*> and <xref:Singulink.IO.IAbsoluteFilePath.CopyTo*> accept any <xref:Singulink.IO.IAbsoluteFilePath> as the destination, including across directories or drives. The destination's parent must already exist; call <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*> on <xref:Singulink.IO.IAbsoluteFilePath.ParentDirectory> first if needed.
+> <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*> and <xref:Singulink.IO.IAbsoluteFilePath.CopyTo*> accept any <xref:Singulink.IO.IAbsoluteFilePath> as the destination, including across directories or drives. The destination's parent must already exist; call <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*?displayProperty=nameWithType> on the destination's <xref:Singulink.IO.IAbsoluteFilePath.ParentDirectory?displayProperty=nameWithType> first if needed.
 
 #### Replace
 
@@ -159,7 +157,7 @@ newFile.Replace(originalFile, backupFile: backupPath, ignoreMetadataErrors: true
 Use <xref:Singulink.IO.IAbsoluteFilePath.Delete*>:
 
 ```csharp
-file.Delete();                   // ignores not-found by default
+file.Delete();                      // ignores not-found by default
 file.Delete(ignoreNotFound: false); // throws FileNotFoundException if absent
 ```
 
@@ -190,6 +188,8 @@ else
 If you want a single consistent view of a file's metadata (size, attributes, timestamps), call <xref:Singulink.IO.IAbsoluteFilePath.GetInfo*> to obtain a <xref:Singulink.IO.CachedFileInfo>. See [Cached Entry Info](cached-entry-info.md).
 
 ## Next Steps
+
+File work usually goes hand in hand with these topics:
 
 - [Working with Directories](directory-operations.md): many file workflows start by creating a directory.
 - [Searching and Enumeration](searching-and-enumeration.md): find the files you want to operate on.

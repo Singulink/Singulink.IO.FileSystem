@@ -2,15 +2,7 @@
 
 # Combining and Navigating Paths
 
-### Overview
-
-Paths are immutable. Every "modification" returns a new path object. The library offers three ways to build new paths from existing ones:
-
-- The `+` operator for concise combine expressions.
-- <xref:Singulink.IO.IDirectoryPath.Combine*>, <xref:Singulink.IO.IDirectoryPath.CombineDirectory*> and <xref:Singulink.IO.IDirectoryPath.CombineFile*> methods with explicit overloads for strings or pre-parsed paths.
-- Navigation members (<xref:Singulink.IO.IPath.ParentDirectory>, <xref:Singulink.IO.IAbsolutePath.RootDirectory>) for walking up.
-
-All combinations preserve type strength: combining an absolute directory with a relative file produces an absolute file, and so on.
+Paths are immutable, so every "modification" returns a new path object. New paths are built from existing ones with the `+` operator, the combine methods on <xref:Singulink.IO.IDirectoryPath> (<xref:Singulink.IO.IDirectoryPath.Combine*>, <xref:Singulink.IO.IDirectoryPath.CombineDirectory*> and <xref:Singulink.IO.IDirectoryPath.CombineFile*>) and navigation members such as <xref:Singulink.IO.IPath.ParentDirectory?displayProperty=nameWithType> and <xref:Singulink.IO.IAbsolutePath.RootDirectory?displayProperty=nameWithType>. All combinations preserve type strength: combining an absolute directory with a relative file produces an absolute file, and so on.
 
 ## The + Operator
 
@@ -30,7 +22,7 @@ Return types are inferred from the operands. Absolute + relative produces absolu
 
 ## Combine With a Pre-Parsed Path
 
-When you already have a relative path object, use <xref:Singulink.IO.IDirectoryPath.Combine*>:
+When you already have a relative path object, use <xref:Singulink.IO.IDirectoryPath.Combine*?displayProperty=nameWithType>:
 
 ```csharp
 IAbsoluteFilePath result = baseDir.Combine(logFile);
@@ -40,28 +32,44 @@ This is identical to the `+` operator, just spelled out.
 
 ## Combine With a String
 
-When the relative segment is a string (e.g. read from configuration), use <xref:Singulink.IO.IDirectoryPath.CombineDirectory*> or <xref:Singulink.IO.IDirectoryPath.CombineFile*>. These overloads parse the string in one step:
+When the relative segment is a string (e.g. read from configuration), use <xref:Singulink.IO.IDirectoryPath.CombineDirectory*?displayProperty=nameWithType> or <xref:Singulink.IO.IDirectoryPath.CombineFile*?displayProperty=nameWithType>. These overloads parse the string in one step:
 
 ```csharp
 IAbsoluteFilePath cfgFile = baseDir.CombineFile("config/app.json");
 IAbsoluteDirectoryPath dataDir = baseDir.CombineDirectory("data");
 ```
 
-By default, the string is parsed using the parent's <xref:Singulink.IO.IPath.PathFormat> and <xref:Singulink.IO.PathOptions.NoUnfriendlyNames>. Override either:
+By default, the string is parsed using the parent's <xref:Singulink.IO.IPath.PathFormat?displayProperty=nameWithType> and <xref:Singulink.IO.PathOptions.NoUnfriendlyNames?displayProperty=nameWithType>. Override either:
 
 ```csharp
 IAbsoluteFilePath portable = baseDir.CombineFile("data/users.json", PathFormat.Universal);
 IAbsoluteDirectoryPath relaxed = baseDir.CombineDirectory(rawDir, PathOptions.None);
 ```
 
-The `format` argument on the combine overloads is a <xref:Singulink.IO.PathFormat>. A combined path is always relative, so the only formats that combine cleanly with the base are <xref:Singulink.IO.PathFormat.Universal> (always works) or the base directory's own `PathFormat` (the default when the parameterless overload is used). Passing a different platform-specific format than the base throws unless the base itself is <xref:Singulink.IO.PathFormat.Universal>. See [Path Formats](path-formats.md#combining-across-formats) for the cross-format combine rules.
+The `format` argument on these overloads is the <xref:Singulink.IO.PathFormat> used to parse the string, which is always parsed as a relative path. The only formats that combine cleanly with the base are <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType> (always works) and the base directory's own <xref:Singulink.IO.IPath.PathFormat?displayProperty=nameWithType> (the default when no format is passed). Passing a different platform-specific format than the base throws unless the base itself is <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType>. See [Path Formats](path-formats.md#combining-across-formats) for the cross-format combine rules.
 
 > [!TIP]
 > If you'll combine the same relative path more than once, parse it into an <xref:Singulink.IO.IRelativePath> once and reuse it. Combining a parsed relative path is cheaper and skips re-validation.
 
+#### Combining Untrusted Strings
+
+The string overloads throw <xref:System.ArgumentException> when the string is not a valid relative path. When that is an expected outcome, parse the string first with <xref:Singulink.IO.FilePath.TryParseRelative*?displayProperty=nameWithType> or <xref:Singulink.IO.DirectoryPath.TryParseRelative*?displayProperty=nameWithType> and combine the result:
+
+```csharp
+var options = PathOptions.NoUnfriendlyNames | PathOptions.NoNavigation;
+
+if (FilePath.TryParseRelative(userInput, options, out IRelativeFilePath? relative))
+{
+    IAbsoluteFilePath target = baseDir + relative;
+    // ...
+}
+```
+
+<xref:Singulink.IO.PathOptions.NoNavigation?displayProperty=nameWithType> matters here. Without it, a relative path such as `../../x.txt` parses successfully, and combining it can still throw if its `..` segments walk past the root of the base directory.
+
 ## Generic Combine
 
-For code that works with arbitrary relative paths, <xref:Singulink.IO.IDirectoryPath.Combine*> accepting an <xref:Singulink.IO.IRelativePath> returns the unifying base type (<xref:Singulink.IO.IPath>, <xref:Singulink.IO.IAbsolutePath> or <xref:Singulink.IO.IRelativePath> depending on the receiver). Pattern match on the result if you need the specific type:
+For code that works with arbitrary relative paths, <xref:Singulink.IO.IDirectoryPath.Combine*?displayProperty=nameWithType> accepting an <xref:Singulink.IO.IRelativePath> returns the unifying base type (<xref:Singulink.IO.IPath>, <xref:Singulink.IO.IAbsolutePath> or <xref:Singulink.IO.IRelativePath> depending on the receiver). Pattern match on the result if you need the specific type:
 
 ```csharp
 IAbsolutePath result = baseDir.Combine(someRelative);
@@ -71,12 +79,12 @@ if (result is IAbsoluteFilePath file) { /* ... */ }
 
 ## Walking Upward: ParentDirectory
 
-Every path has a <xref:Singulink.IO.IPath.ParentDirectory>. For files it's always the containing directory; for directories it's `null` when the path is a root or otherwise has no parent (check <xref:Singulink.IO.IPath.HasParentDirectory> first).
+Every path has a <xref:Singulink.IO.IPath.ParentDirectory?displayProperty=nameWithType>. For files it's always the containing directory; for directories it's `null` when the path is a root or otherwise has no parent (check <xref:Singulink.IO.IPath.HasParentDirectory?displayProperty=nameWithType> first).
 
 ```csharp
 IAbsoluteFilePath cfg = FilePath.ParseAbsolute(@"C:\Apps\MyApp\config\app.json");
-IAbsoluteDirectoryPath cfgDir = cfg.ParentDirectory;       // C:\Apps\MyApp\config
-IAbsoluteDirectoryPath appDir = cfgDir.ParentDirectory!;   // C:\Apps\MyApp
+IAbsoluteDirectoryPath cfgDir = cfg.ParentDirectory;       // C:\Apps\MyApp\config\
+IAbsoluteDirectoryPath appDir = cfgDir.ParentDirectory!;   // C:\Apps\MyApp\
 ```
 
 A common pattern: ensure a file's directory exists before writing to it:
@@ -88,7 +96,7 @@ using var stream = file.OpenStream(FileMode.Create);
 
 ## Walking to the Root
 
-Use <xref:Singulink.IO.IAbsolutePath.RootDirectory> (on absolute paths) to jump straight to the root, or loop with <xref:Singulink.IO.IPath.HasParentDirectory>:
+Use <xref:Singulink.IO.IAbsolutePath.RootDirectory?displayProperty=nameWithType> (on absolute paths) to jump straight to the root, or loop with <xref:Singulink.IO.IPath.HasParentDirectory?displayProperty=nameWithType>:
 
 ```csharp
 IAbsoluteDirectoryPath root = cfg.RootDirectory;     // C:\
@@ -100,7 +108,7 @@ while (current.HasParentDirectory)
 
 ## GetLastExistingDirectory
 
-When working with a path that may not exist yet, <xref:Singulink.IO.IAbsolutePath.GetLastExistingDirectory*> walks up the path until it finds a directory that does:
+When working with a path that may not exist yet, <xref:Singulink.IO.IAbsolutePath.GetLastExistingDirectory*?displayProperty=nameWithType> walks up the path until it finds a directory that does:
 
 ```csharp
 var maybeMissing = FilePath.ParseAbsolute(@"C:\Apps\NewApp\data\users.json");
@@ -115,18 +123,18 @@ See [Drive and Disk Information](drive-and-disk-info.md) for more on disk-space 
 Relative paths can encode upward navigation with `..`. The library resolves these as far as possible during parsing:
 
 ```csharp
-DirectoryPath.ParseRelative("a/b/../c");      // "a/c"
-DirectoryPath.ParseRelative("../../shared");  // "../../shared" (kept: can't resolve further)
+DirectoryPath.ParseRelative("a/b/../c");      // "a/c/"
+DirectoryPath.ParseRelative("../../shared");  // "../../shared/" (kept: can't resolve further)
 ```
 
-Navigating past the root of an absolute path is always an error (see [Parsing Paths](parsing-paths.md)).
+Navigating past the root of an absolute path is always an error (see [Parsing Paths](parsing-paths.md#past-root-navigation)).
 
 > [!NOTE]
-> Every path is normalized as part of parsing. After parsing, the <xref:Singulink.IO.IPath.PathDisplay> you see is what the library will use everywhere; there is no separate "canonical form".
+> Every path is normalized as part of parsing. After parsing, the <xref:Singulink.IO.IPath.PathDisplay?displayProperty=nameWithType> you see is what the library will use everywhere; there is no separate "canonical form".
 
 ## Cross-Format Combines
 
-Combining works seamlessly when one side uses <xref:Singulink.IO.PathFormat.Universal>:
+Combining works seamlessly when one side uses <xref:Singulink.IO.PathFormat.Universal?displayProperty=nameWithType>:
 
 ```csharp
 IRelativeFilePath portableCfg = FilePath.ParseRelative("config/app.json", PathFormat.Universal);
@@ -134,9 +142,11 @@ IAbsoluteDirectoryPath baseDir = DirectoryPath.GetAppBase();   // current format
 IAbsoluteFilePath cfg = baseDir + portableCfg;                 // current format
 ```
 
-Combining two specific formats that don't match (e.g. Windows + Unix) is an error. See the table in [Path Formats](path-formats.md).
+Combining two specific formats that don't match (e.g. Windows + Unix) is an error. See the table in [Path Formats](path-formats.md#combining-across-formats).
 
 ## Next Steps
+
+Once you can build paths, these guides cover what to do with them:
 
 - [File Names and Extensions](file-names-and-extensions.md): manipulate the trailing segment of a path.
 - [Working with Directories](directory-operations.md): once you've combined a path, do something with it.

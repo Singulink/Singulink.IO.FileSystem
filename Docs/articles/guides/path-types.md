@@ -2,14 +2,7 @@
 
 # Path Types
 
-### Overview
-
-Every path in **Singulink.IO.FileSystem** is represented by an interface. The interface tells you, statically, two independent facts about the path:
-
-1. Is it **absolute** or **relative**?
-2. Does it point to a **file** or a **directory**?
-
-The combination produces four concrete interfaces (one of which every path object implements) plus three abstractions you can use when only one of the two facts matters.
+Every path in **Singulink.IO.FileSystem** is represented by an interface that tells you, statically, two independent facts about the path: whether it is **absolute** or **relative**, and whether it points to a **file** or a **directory**. The combination produces four concrete interfaces (one of which every path object implements) plus the broader abstractions you can use when only one of the two facts matters.
 
 ## The Interface Hierarchy
 
@@ -40,7 +33,7 @@ The common base of every path, <xref:Singulink.IO.IPath>. Members:
 - <xref:Singulink.IO.IPath.PathFormat>: the <xref:Singulink.IO.PathFormat> of the path (Windows, Unix or Universal).
 - <xref:Singulink.IO.IPath.HasParentDirectory>, <xref:Singulink.IO.IPath.ParentDirectory>: walk upward.
 - <xref:Singulink.IO.IPath.IsRooted>: `true` for absolute paths and Windows rooted-relative paths (e.g. `\Some\Path`).
-- <xref:Singulink.IO.IPath.Equals*>, <xref:Singulink.IO.IPath.op_Equality*> and <xref:Singulink.IO.IPath.op_Inequality*>: see [Equality](#equality) below.
+- <xref:Singulink.IO.IPath.Equals*> and the [equality](xref:Singulink.IO.IPath.op_Equality*) / [inequality](xref:Singulink.IO.IPath.op_Inequality*) operators: see [Equality](#equality) below.
 - <xref:Singulink.IO.IPath.ToString*>: diagnostic only; **never use this for I/O**.
 
 #### IAbsolutePath
@@ -50,7 +43,7 @@ The common base of every path, <xref:Singulink.IO.IPath>. Members:
 - <xref:Singulink.IO.IAbsolutePath.PathExport>: the only string form safe to hand to non-library APIs.
 - <xref:Singulink.IO.IAbsolutePath.IsUnc>: `true` for UNC paths (Windows only).
 - <xref:Singulink.IO.IAbsolutePath.Exists>: convenience boolean.
-- <xref:Singulink.IO.IAbsolutePath.State>: richer status, returns one of the <xref:Singulink.IO.EntryState> values: <xref:Singulink.IO.EntryState.Exists>, <xref:Singulink.IO.EntryState.ParentExists>, <xref:Singulink.IO.EntryState.ParentDoesNotExist> or <xref:Singulink.IO.EntryState.WrongType>.
+- <xref:Singulink.IO.IAbsolutePath.State>: richer status, returns one of the <xref:Singulink.IO.EntryState> values: <xref:Singulink.IO.EntryState.Exists?displayProperty=nameWithType>, <xref:Singulink.IO.EntryState.ParentExists?displayProperty=nameWithType>, <xref:Singulink.IO.EntryState.ParentDoesNotExist?displayProperty=nameWithType> or <xref:Singulink.IO.EntryState.WrongType?displayProperty=nameWithType>.
 - <xref:Singulink.IO.IAbsolutePath.Attributes> (get/set), <xref:Singulink.IO.IAbsolutePath.CreationTime>, <xref:Singulink.IO.IAbsolutePath.CreationTimeUtc>, <xref:Singulink.IO.IAbsolutePath.LastAccessTime>, <xref:Singulink.IO.IAbsolutePath.LastAccessTimeUtc>, <xref:Singulink.IO.IAbsolutePath.LastWriteTime>, <xref:Singulink.IO.IAbsolutePath.LastWriteTimeUtc>.
 - <xref:Singulink.IO.IAbsolutePath.RootDirectory>, <xref:Singulink.IO.IAbsolutePath.ParentDirectory> (narrowed to <xref:Singulink.IO.IAbsoluteDirectoryPath>).
 - <xref:Singulink.IO.IAbsolutePath.GetInfo*>: returns a <xref:Singulink.IO.CachedEntryInfo>.
@@ -123,7 +116,7 @@ The library applies the same discipline internally: file system operations only 
 
 ## Pattern Matching
 
-When you don't know statically which kind of path you have (e.g. you used <xref:Singulink.IO.FilePath.Parse*> which returns <xref:Singulink.IO.IFilePath>), use pattern matching:
+When you don't know statically which kind of path you have (e.g. you used <xref:Singulink.IO.FilePath.Parse*?displayProperty=nameWithType> which returns <xref:Singulink.IO.IFilePath>), use pattern matching:
 
 ```csharp
 IFilePath file = FilePath.Parse(userInput);
@@ -142,14 +135,14 @@ else
 ```
 
 > [!TIP]
-> If you know up front that a string must be absolute (or must be relative), call <xref:Singulink.IO.FilePath.ParseAbsolute*> or <xref:Singulink.IO.FilePath.ParseRelative*> directly. The return type is the specific interface, so no cast or pattern match is needed.
+> If you know up front that a string must be absolute (or must be relative), call <xref:Singulink.IO.FilePath.ParseAbsolute*?displayProperty=nameWithType> or <xref:Singulink.IO.FilePath.ParseRelative*?displayProperty=nameWithType> directly. The return type is the specific interface, so no cast or pattern match is needed.
 
 ## Equality
 
 Two paths are equal when:
 
 - They implement the same concrete type (e.g. both are <xref:Singulink.IO.IAbsoluteFilePath>).
-- Their <xref:Singulink.IO.IPath.PathFormat> is the same.
+- Their <xref:Singulink.IO.IPath.PathFormat?displayProperty=nameWithType> is the same.
 - Their root segments compare equal **case-insensitively** (drive letter or UNC name).
 - The remainder of the path compares equal **case-sensitively**.
 
@@ -166,6 +159,8 @@ a == c;   // false: non-root segments are case-sensitive
 > Equality is **textual**. Two different paths that resolve to the same physical entry through symbolic links or case-insensitive file systems are not equal; equality reflects the path, not what it points to.
 
 ## Next Steps
+
+These guides build directly on the path types:
 
 - [Parsing Paths](parsing-paths.md): turn strings into instances of these interfaces.
 - [Path Formats](path-formats.md): understand the third dimension, <xref:Singulink.IO.PathFormat>, that affects every path.

@@ -2,15 +2,11 @@
 
 # Working with Directories
 
-### Overview
-
-Directory operations live on <xref:Singulink.IO.IAbsoluteDirectoryPath>. Like files, relative directory paths can describe a location but cannot perform I/O; combine them with an absolute base directory first.
-
-This article covers existence, creation, deletion and the small set of directory-specific properties. Enumeration and searching live in their own article. See [Searching and Enumeration](searching-and-enumeration.md).
+Directory operations live on <xref:Singulink.IO.IAbsoluteDirectoryPath>. Like files, relative directory paths can describe a location but cannot perform I/O; combine them with an absolute base directory first. This article covers existence checks, creation, deletion, moving and the small set of directory-specific properties, while enumeration lives in [Searching and Enumeration](searching-and-enumeration.md).
 
 ## Existence Checks
 
-Same model as files: <xref:Singulink.IO.IAbsolutePath.Exists> for a quick boolean, <xref:Singulink.IO.IAbsolutePath.State> for a richer answer:
+Same model as files: <xref:Singulink.IO.IAbsolutePath.Exists?displayProperty=nameWithType> for a quick boolean, <xref:Singulink.IO.IAbsolutePath.State?displayProperty=nameWithType> for a richer answer:
 
 ```csharp
 if (!dir.Exists)
@@ -37,7 +33,7 @@ logsDir.Create();   // creates logs, 2026 and 04 as needed
 ```
 
 > [!TIP]
-> Before writing a file at a new location, the simplest pattern is `file.ParentDirectory.Create()`, a single call that ensures every directory in the chain exists.
+> Before writing a file at a new location, the simplest pattern is to call <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*> on the file's <xref:Singulink.IO.IAbsoluteFilePath.ParentDirectory?displayProperty=nameWithType>. That single call ensures every directory in the chain exists.
 
 ## Deleting Directories
 
@@ -70,13 +66,13 @@ Use <xref:Singulink.IO.IAbsoluteDirectoryPath.MoveTo*> to rename or relocate a d
 dir.MoveTo(targetDir);
 ```
 
-The argument is the new path of the directory itself, not its parent. The destination must be on the same volume and must not already exist; otherwise <xref:System.IO.IOException> is thrown. To move across volumes, enumerate the contents and copy them instead (see the [Mirror a structure](#mirror-a-structure) pattern below).
+The argument is the new path of the directory itself, not its parent. The destination must be on the same volume and must not already exist; otherwise <xref:System.IO.IOException> is thrown. To move across volumes, enumerate the contents and copy them instead (see the [Mirror a Structure](#mirror-a-structure) pattern below).
 
 ## Useful Properties
 
 #### IsRoot
 
-<xref:Singulink.IO.IAbsoluteDirectoryPath.IsRoot> is `true` for a root directory (`C:\`, `/`, a UNC share root). Roots have no parent; <xref:Singulink.IO.IPath.HasParentDirectory> is `false`.
+<xref:Singulink.IO.IAbsoluteDirectoryPath.IsRoot> is `true` for a root directory (`C:\`, `/`, a UNC share root). Roots have no parent, so <xref:Singulink.IO.IPath.HasParentDirectory?displayProperty=nameWithType> is `false`.
 
 ```csharp
 file.RootDirectory.IsRoot;   // true
@@ -107,7 +103,7 @@ For a single consistent snapshot, call <xref:Singulink.IO.IAbsoluteDirectoryPath
 
 ## Common Patterns
 
-#### Clear a directory
+#### Clear a Directory
 
 ```csharp
 dir.Delete(recursive: true);
@@ -116,7 +112,7 @@ dir.Create();
 
 This is the simplest reliable way to start from an empty directory. It avoids enumerate-and-delete races.
 
-#### Mirror a structure
+#### Mirror a Structure
 
 ```csharp
 foreach (IRelativeFilePath rel in source.GetRelativeChildFiles("*", new SearchOptions { Recursive = true }))
@@ -129,7 +125,7 @@ foreach (IRelativeFilePath rel in source.GetRelativeChildFiles("*", new SearchOp
 
 See [Searching and Enumeration](searching-and-enumeration.md) for the full enumeration surface.
 
-#### Preserve only certain content
+#### Prune Old Files
 
 ```csharp
 foreach (IAbsoluteFilePath log in dir.GetChildFiles("*.log"))
@@ -154,6 +150,8 @@ dir.FileSystem;   // e.g. "NTFS"
 See [Drive and Disk Information](drive-and-disk-info.md).
 
 ## Next Steps
+
+These guides extend what you can do with a directory:
 
 - [Searching and Enumeration](searching-and-enumeration.md): query the contents of a directory.
 - [Cached Entry Info](cached-entry-info.md): work with consistent metadata snapshots.
