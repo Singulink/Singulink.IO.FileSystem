@@ -26,7 +26,7 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     bool IsRoot { get; }
 
     /// <summary>
-    /// Gets a value indicating whether this directory is empty.
+    /// Gets a value indicating whether this directory is empty, i.e. it contains no files and no subdirectories.
     /// </summary>
     bool IsEmpty { get; }
 

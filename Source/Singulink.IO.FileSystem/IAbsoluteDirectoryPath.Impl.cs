@@ -50,7 +50,7 @@ public partial interface IAbsoluteDirectoryPath
 
                 try
                 {
-                    return Directory.EnumerateFileSystemEntries(PathExport).Any();
+                    return !Directory.EnumerateFileSystemEntries(PathExport).Any();
                 }
                 catch (IOException ex) when (ex.GetType() == typeof(IOException))
                 {

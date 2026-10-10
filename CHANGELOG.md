@@ -2,6 +2,7 @@
 
 ## Version 3.1
 
+- **Fixed in 3.1.1:** `IAbsoluteDirectoryPath.IsEmpty` returned the opposite of its documented value (`true` for a directory that contained entries and `false` for an empty one). It now returns `true` only when the directory contains no files and no subdirectories. Code that worked around the bug by negating the result must drop the negation.
 - New `TryParse`, `TryParseAbsolute` and `TryParseRelative` methods on `FilePath` and `DirectoryPath` that return `false` instead of throwing when the path is invalid, with the same format / options overloads as the `Parse` methods (options default to `PathOptions.NoUnfriendlyNames` when omitted) - thanks to [@volkmnv](https://github.com/volkmnv) for the contribution ([#6](https://github.com/Singulink/Singulink.IO.FileSystem/pull/6))
 
 ## Version 3.0
