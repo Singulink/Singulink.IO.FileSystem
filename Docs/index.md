@@ -20,7 +20,7 @@ Here are some additional links to get you started:
 
 - [Getting Started](articles/guides/getting-started.md) - Visit here first for a quick walkthrough and entry point to additional guides.
 - [Problems with System.IO](articles/system.io/problems-with-system-io.md) - Primer on some of the issues with `System.IO` that this library addresses.
-- [API Documentation](api/index.md) - Browse the fully documented API here.
+- [API Documentation](api/Singulink.IO.yml) - Browse the fully documented API here.
 - [Chat on Discord](https://discord.gg/EkQhJFsBu6) - Have questions or want to discuss the library? This is the place for all Singulink project discussions.
 - [Github Repo](https://github.com/Singulink/Singulink.IO.FileSystem) - File issues, contribute pull requests or check out the code for yourself!
 
