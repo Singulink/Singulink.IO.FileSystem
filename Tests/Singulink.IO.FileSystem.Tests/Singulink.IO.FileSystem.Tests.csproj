@@ -1,7 +1,6 @@
-﻿<Project Sdk="MSTest.Sdk/4.0.2">
+﻿<Project Sdk="MSTest.Sdk/4.5.1">
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <UseVSTest>true</UseVSTest>
   </PropertyGroup>
 
   <ItemGroup>

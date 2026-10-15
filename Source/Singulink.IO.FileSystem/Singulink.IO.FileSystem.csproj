@@ -18,6 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Singulink.Enums" Version="2.4.0" />
+    <PackageReference Include="Singulink.Enums" />
   </ItemGroup>
 </Project>
