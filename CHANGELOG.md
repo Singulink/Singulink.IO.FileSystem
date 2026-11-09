@@ -2,7 +2,7 @@
 
 ## Version 3.2.1
 
-- Fixed: on Linux and macOS, `GetChildEntriesInfo`, `GetChildFilesInfo` and `GetChildDirectoriesInfo` threw when an entry was deleted during the enumeration; such entries are now left out
+- Fixed: on Linux and macOS, `GetChildEntriesInfo`, `GetChildFilesInfo` and `GetChildDirectoriesInfo` could throw `FileNotFoundException` or `DirectoryNotFoundException` if an entry was deleted in the brief window between the enumeration finding it and reading its info; such entries are now skipped
 
 ## Version 3.2
 
