@@ -3,6 +3,8 @@ namespace Singulink.IO.FileSystem.Tests;
 [PrefixTestClass]
 public class EnumeratingDirectoryTests
 {
+    private const string TestDirName = "_test_enumerating";
+
     private const int DirCount = 5;
     private const int SubDirCount = 6;
     private const int FileCount = 7;
@@ -14,12 +16,7 @@ public class EnumeratingDirectoryTests
 
     private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
+        var testDir = CreateEmptyTestDirectory(TestDirName);
 
         for (int i = 0; i < DirCount; i++)
         {
@@ -145,7 +142,7 @@ public class EnumeratingDirectoryTests
         var files = dir.GetRelativeEntries(parentDir, "*_1_file.txt", recursive).ToArray();
         files.Length.ShouldBe(DirCount * SubDirCount);
 
-        // The matchDir loop should collapse the ".." navigation against the "_test" entry in each child path,
+        // The matchDir loop should collapse the ".." navigation against the test directory's entry in each child path,
         // producing the same relative paths as if we had searched the test directory itself.
         // Previously a slicing off-by-one bug here silently chopped the first character of each child name,
         // which still produced parseable paths and passed the count assertion below.
@@ -187,7 +184,7 @@ public class EnumeratingDirectoryTests
 
     [TestMethod]
     [DataRow(".")]
-    [DataRow("../_test")]
+    [DataRow("../" + TestDirName)]
     public void GetRelativeEntriesFromCurrent(string currentDirPath)
     {
         var dir = SetupTestDirectory();

@@ -46,6 +46,22 @@ public class RelativeFileExtensionTests
     }
 
     [TestMethod]
+    [DataRow("Unix", ".txt", ".", ".")]
+    [DataRow("Unix", "dir/..txt", "", ".")]
+    [DataRow("Unix", "dir/..txt", ".", "..")]
+    [DataRow("Windows", @"..\.txt", ".", ".")]
+    [DataRow("Windows", @"dir\..txt", ".", "..")]
+    [DataRow("Universal", "..txt", ".", "..")]
+    public void WithExtension_NavigationalName_Throws(string formatName, string path, string extension, string newName)
+    {
+        var filePath = FilePath.ParseRelative(path, GetFormat(formatName), PathOptions.None);
+
+        var ex = Should.Throw<ArgumentException>(() => filePath.WithExtension(extension, PathOptions.None));
+        ex.Message.ShouldBe($"Invalid new file name: '{newName}' is a navigational path segment. (Parameter 'extension')");
+        ex.ParamName.ShouldBe("extension");
+    }
+
+    [TestMethod]
     public void WithExtension_FromNoExtension()
     {
         var filePath = FilePath.ParseRelative("file", PathFormat.Unix);

@@ -104,7 +104,7 @@ A reference of common `System.IO` operations and their library equivalents:
 | <xref:System.IO.Path.GetDirectoryName*?displayProperty=nameWithType> | <xref:Singulink.IO.IPath.ParentDirectory?displayProperty=nameWithType> |
 | <xref:System.IO.Path.GetFileName*?displayProperty=nameWithType> | <xref:Singulink.IO.IPath.Name?displayProperty=nameWithType> |
 | <xref:System.IO.Path.GetFileNameWithoutExtension*?displayProperty=nameWithType> | <xref:Singulink.IO.IFilePath.NameWithoutExtension?displayProperty=nameWithType> |
-| <xref:System.IO.Path.GetExtension*?displayProperty=nameWithType> | <xref:Singulink.IO.IFilePath.Extension?displayProperty=nameWithType> |
+| <xref:System.IO.Path.GetExtension*?displayProperty=nameWithType> | <xref:Singulink.IO.IFilePath.Extension?displayProperty=nameWithType> (or <xref:Singulink.IO.IFilePath.GetMultiExtension*?displayProperty=nameWithType> with known multi-extensions, which have one or more parts, such as `.tar.gz`) |
 | <xref:System.IO.Path.ChangeExtension*?displayProperty=nameWithType> | <xref:Singulink.IO.IFilePath.WithExtension*?displayProperty=nameWithType> |
 | <xref:System.IO.Path.GetFullPath*?displayProperty=nameWithType> | <xref:Singulink.IO.FilePath.ParseAbsolute*?displayProperty=nameWithType> (or <xref:Singulink.IO.FilePath.Parse*?displayProperty=nameWithType> if it could be relative) |
 | <xref:System.IO.Path.GetTempPath*?displayProperty=nameWithType> | <xref:Singulink.IO.DirectoryPath.GetTemp*?displayProperty=nameWithType> |

@@ -62,7 +62,9 @@ The common base of every path, <xref:Singulink.IO.IPath>. Members:
 
 - <xref:Singulink.IO.IFilePath.NameWithoutExtension>, <xref:Singulink.IO.IFilePath.Extension>.
 - <xref:Singulink.IO.IFilePath.WithExtension*>: replace the trailing extension.
-- <xref:Singulink.IO.IFilePath.AddExtension*>: append an extension, preserving any existing one.
+- <xref:Singulink.IO.IFilePath.AddExtension*>, <xref:Singulink.IO.IFilePath.HasExtension*>, <xref:Singulink.IO.IFilePath.RemoveExtension*>: append, check for or remove a single extension (`.gz`) as the last extension.
+- <xref:Singulink.IO.IFilePath.AddMultiExtension*>, <xref:Singulink.IO.IFilePath.HasMultiExtension*>, <xref:Singulink.IO.IFilePath.RemoveMultiExtension*>: append, check for or remove a multi-extension, which has one or more parts (`.gz` or `.tar.gz`).
+- <xref:Singulink.IO.IFilePath.GetMultiExtension*>: the longest of a list of known multi-extensions that the name ends with, otherwise the last extension.
 
 See [File Names and Extensions](file-names-and-extensions.md).
 

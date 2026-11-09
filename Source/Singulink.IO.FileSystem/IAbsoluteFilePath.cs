@@ -1,8 +1,15 @@
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using Singulink.IO.Converters;
+using Singulink.IO.Json;
+
 namespace Singulink.IO;
 
 /// <summary>
 /// Represents an absolute path to a file.
 /// </summary>
+[TypeConverter(typeof(AbsoluteFilePathConverter))]
+[JsonConverter(typeof(AbsoluteFilePathJsonConverter))]
 public partial interface IAbsoluteFilePath : IAbsolutePath, IFilePath
 {
     /// <summary>
@@ -100,4 +107,22 @@ public partial interface IAbsoluteFilePath : IAbsolutePath, IFilePath
 
     /// <inheritdoc/>
     IFilePath IFilePath.AddExtension(string? extension, PathOptions options) => AddExtension(extension, options);
+
+    /// <inheritdoc cref="IFilePath.AddMultiExtension(string?, PathOptions)"/>
+    new IAbsoluteFilePath AddMultiExtension(string? extension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.AddMultiExtension(string? extension, PathOptions options) => AddMultiExtension(extension, options);
+
+    /// <inheritdoc cref="IFilePath.RemoveExtension(string, PathOptions)"/>
+    new IAbsoluteFilePath RemoveExtension(string extension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.RemoveExtension(string extension, PathOptions options) => RemoveExtension(extension, options);
+
+    /// <inheritdoc cref="IFilePath.RemoveMultiExtension(string, PathOptions)"/>
+    new IAbsoluteFilePath RemoveMultiExtension(string extension, PathOptions options = PathOptions.NoUnfriendlyNames);
+
+    /// <inheritdoc/>
+    IFilePath IFilePath.RemoveMultiExtension(string extension, PathOptions options) => RemoveMultiExtension(extension, options);
 }

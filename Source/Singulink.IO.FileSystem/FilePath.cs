@@ -165,7 +165,7 @@ public static class FilePath
         return TryParseAbsolute(path, format, options, out result, out _);
     }
 
-    private static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteFilePath? result, [NotNullWhen(false)] out string? error)
+    internal static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteFilePath? result, [NotNullWhen(false)] out string? error)
     {
         result = null;
         path = format.NormalizeSeparators(path);
@@ -185,7 +185,7 @@ public static class FilePath
             return false;
         }
 
-        result = new IAbsoluteFilePath.Impl(finalPath, rootLength, format);
+        result = new IAbsoluteFilePath.Impl(finalPath, rootLength, format, PathValidity.FromParse(format, options));
         return true;
     }
 
@@ -265,7 +265,7 @@ public static class FilePath
         return TryParseRelative(path, format, options, out result, out _);
     }
 
-    private static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeFilePath? result, [NotNullWhen(false)] out string? error)
+    internal static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeFilePath? result, [NotNullWhen(false)] out string? error)
     {
         result = null;
         path = format.NormalizeSeparators(path);
@@ -279,7 +279,7 @@ public static class FilePath
         if (!format.TryNormalizeRelativePath(path, options, appendSeparator: false, out string? finalPath, out int rootLength, out error))
             return false;
 
-        result = new IRelativeFilePath.Impl(finalPath, rootLength, format);
+        result = new IRelativeFilePath.Impl(finalPath, rootLength, format, PathValidity.FromParse(format, options));
         return true;
     }
 

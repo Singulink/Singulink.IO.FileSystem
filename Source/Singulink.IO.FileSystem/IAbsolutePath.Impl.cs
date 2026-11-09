@@ -5,7 +5,8 @@ namespace Singulink.IO;
 /// </content>
 public partial interface IAbsolutePath
 {
-    internal new abstract class Impl(string path, int rootLength, PathFormat pathFormat) : IPath.Impl(path, rootLength, pathFormat), IAbsolutePath
+    internal new abstract class Impl(string path, int rootLength, PathFormat pathFormat, int validity)
+        : IPath.Impl(path, rootLength, pathFormat, validity), IAbsolutePath
     {
         public string PathExport => field ??= PathFormat.GetAbsolutePathExportString(PathDisplay);
 
@@ -23,7 +24,7 @@ public partial interface IAbsolutePath
                 if (PathDisplay.Length == RootLength && this is IAbsoluteDirectoryPath dir)
                     return dir;
 
-                return new IAbsoluteDirectoryPath.Impl(PathDisplay[..RootLength], RootLength, PathFormat);
+                return new IAbsoluteDirectoryPath.Impl(PathDisplay[..RootLength], RootLength, PathFormat, InheritedValidity);
             }
         }
 

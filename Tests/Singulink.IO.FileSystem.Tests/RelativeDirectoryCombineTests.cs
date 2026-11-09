@@ -35,6 +35,47 @@ public class RelativeDirectoryCombineTests
     }
 
     [TestMethod]
+    [DataRow(@"test\", false, @"\rooted\")]
+    [DataRow(@"test\", false, @"\")]
+    [DataRow(@"test\", false, @"\dir\file.txt")]
+    [DataRow(@"..\test\", false, @"\dir\sub\")]
+    [DataRow(@"\dir1\dir2\", false, @"\rooted\")]
+    [DataRow(@"\dir1\dir2\", false, @"\dir\file.txt")]
+    [DataRow("", false, @"\dir\file.txt")]
+    [DataRow("a/b/", true, @"\rooted\")]
+    [DataRow("a/b/", true, @"\dir\file.txt")]
+    public void RootedAppended_EqualsParsedRootedPath(string baseDir, bool universalBase, string rooted)
+    {
+        var dir = DirectoryPath.ParseRelative(baseDir, universalBase ? PathFormat.Universal : PathFormat.Windows, PathOptions.None);
+        bool isFile = rooted[^1] is not '\\';
+
+        IRelativePath expected = isFile ?
+            FilePath.ParseRelative(rooted, PathFormat.Windows, PathOptions.None) :
+            DirectoryPath.ParseRelative(rooted, PathFormat.Windows, PathOptions.None);
+
+        var combined = dir.Combine(expected);
+
+        combined.ShouldBe(expected);
+        combined.GetHashCode().ShouldBe(expected.GetHashCode());
+        ((IPath.Impl)combined).RootLength.ShouldBe(1);
+
+        // The parent chains match up to the root, which has no parent.
+        IRelativeDirectoryPath? combinedParent = combined.ParentDirectory;
+        IRelativeDirectoryPath? expectedParent = expected.ParentDirectory;
+
+        while (expectedParent is not null)
+        {
+            combinedParent.ShouldNotBeNull().ShouldBe(expectedParent);
+            combinedParent.GetHashCode().ShouldBe(expectedParent.GetHashCode());
+
+            combinedParent = combinedParent.ParentDirectory;
+            expectedParent = expectedParent.ParentDirectory;
+        }
+
+        combinedParent.ShouldBeNull();
+    }
+
+    [TestMethod]
     public void CombineUniversalFile()
     {
         var dir = DirectoryPath.ParseRelative(@"dir1\dir2", PathFormat.Windows, PathOptions.None);

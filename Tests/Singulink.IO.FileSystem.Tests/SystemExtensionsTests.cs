@@ -5,12 +5,7 @@ public class SystemExtensionsTests
 {
     private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test_sysext");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
+        var testDir = CreateEmptyTestDirectory("_test_sysext");
         testDir.CombineFile("file.txt").OpenStream(FileMode.CreateNew).Dispose();
 
         return testDir;

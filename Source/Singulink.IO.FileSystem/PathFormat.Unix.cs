@@ -18,6 +18,10 @@ public abstract partial class PathFormat
             return path.Length > 0 && path[0] == Separator ? PathKind.Absolute : PathKind.Relative;
         }
 
+        // Reserved device names don't apply to Unix paths.
+        internal override PathOptions GetEffectiveOptions(PathOptions options) =>
+            options.ClearFlags(PathOptions.NoReservedDeviceNames | PathOptions.PathFormatDependent);
+
         internal override bool IsUncPath(string path) => false;
 
         private protected override bool TrySplitAbsoluteRoot(ReadOnlySpan<char> path, out ReadOnlySpan<char> root, out ReadOnlySpan<char> rest, [NotNullWhen(false)] out string? error)

@@ -16,6 +16,8 @@ namespace Singulink.IO;
 [Flags]
 public enum PathOptions
 {
+    // Bit positions 1 and 2 are reserved: paths store PathValidity.Basic and PathValidity.Computed there, next to these flags.
+
     /// <summary>
     /// Default value with no options set which allows all possible valid file system paths without wildcard characters.
     /// </summary>

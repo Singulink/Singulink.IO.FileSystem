@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Singulink.IO.Json;
 
 namespace Singulink.IO;
 
@@ -7,7 +10,9 @@ namespace Singulink.IO;
 /// </content>
 public partial interface IAbsoluteDirectoryPath
 {
-    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IAbsolutePath.Impl(path, rootLength, pathFormat), IAbsoluteDirectoryPath
+    [JsonConverter(typeof(AbsoluteDirectoryPathJsonConverter))]
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat, int validity)
+        : IAbsolutePath.Impl(path, rootLength, pathFormat, validity), IAbsoluteDirectoryPath
     {
         private static readonly EnumerationOptions CheckAccessEnumerationOptions = new() { IgnoreInaccessible = false };
 
@@ -73,7 +78,7 @@ public partial interface IAbsoluteDirectoryPath
                     return null;
 
                 var parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength);
-                return new Impl(parentPath.ToString(), RootLength, PathFormat);
+                return new Impl(parentPath.ToString(), RootLength, PathFormat, InheritedValidity);
             }
         }
 
@@ -281,10 +286,13 @@ public partial interface IAbsoluteDirectoryPath
             // basePath always ends with a path separator under the directory-path invariant, so we can append directly.
             string newPath = basePath + appendPath;
 
+            // A name that is valid in the universal format is also valid in the other formats with the same options.
+            int validity = InheritedValidity & ((IPath.Impl)path).InheritedValidity;
+
             if (path is IDirectoryPath)
-                return new Impl(newPath, RootLength, PathFormat);
+                return new Impl(newPath, RootLength, PathFormat, validity);
             else
-                return new IAbsoluteFilePath.Impl(newPath, RootLength, PathFormat);
+                return new IAbsoluteFilePath.Impl(newPath, RootLength, PathFormat, validity);
         }
 
         private string? GetBasePathForAppending(int parentDirNavCount)
@@ -312,6 +320,11 @@ public partial interface IAbsoluteDirectoryPath
         }
 
         #endregion
+
+        private protected override bool TryParseAgain(PathOptions options, [NotNullWhen(false)] out string? error)
+        {
+            return DirectoryPath.TryParseAbsolute(PathDisplay, PathFormat, options, out _, out error);
+        }
 
         #region File System Operations
 
@@ -523,13 +536,13 @@ public partial interface IAbsoluteDirectoryPath
                 if (entryInfo is DirectoryInfo dirInfo)
                 {
                     string resultPath = $"{PathDisplay}{relativePath}{PathFormat.SeparatorAsString}";
-                    var dir = new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat);
+                    var dir = new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
                     yield return (TEntryInfo)(object)new CachedDirectoryInfo(dirInfo, dir);
                 }
                 else if (entryInfo is FileInfo fileInfo)
                 {
                     string resultPath = $"{PathDisplay}{relativePath}";
-                    var file = new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat);
+                    var file = new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
                     yield return (TEntryInfo)(object)new CachedFileInfo(fileInfo, file);
                 }
             }
@@ -545,12 +558,12 @@ public partial interface IAbsoluteDirectoryPath
                 if (entryInfo is DirectoryInfo)
                 {
                     string resultPath = $"{PathDisplay}{relativePath}{PathFormat.SeparatorAsString}";
-                    yield return (TEntry)(object)new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat);
+                    yield return (TEntry)(object)new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
                 }
                 else if (entryInfo is FileInfo)
                 {
                     string resultPath = $"{PathDisplay}{relativePath}";
-                    yield return (TEntry)(object)new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat);
+                    yield return (TEntry)(object)new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
                 }
             }
         }
@@ -564,9 +577,14 @@ public partial interface IAbsoluteDirectoryPath
                 string relativePath = entryInfo.FullName[PathExport.Length..];
 
                 if (entryInfo is DirectoryInfo)
-                    yield return (TEntry)(object)new IRelativeDirectoryPath.Impl(relativePath + PathFormat.SeparatorAsString, 0, PathFormat);
+                {
+                    string resultPath = relativePath + PathFormat.SeparatorAsString;
+                    yield return (TEntry)(object)new IRelativeDirectoryPath.Impl(resultPath, 0, PathFormat, PathValidity.Unknown);
+                }
                 else if (entryInfo is FileInfo)
-                    yield return (TEntry)(object)new IRelativeFilePath.Impl(relativePath, 0, PathFormat);
+                {
+                    yield return (TEntry)(object)new IRelativeFilePath.Impl(relativePath, 0, PathFormat, PathValidity.Unknown);
+                }
             }
         }
 
@@ -622,9 +640,9 @@ public partial interface IAbsoluteDirectoryPath
                 string finalPath = currentPrefix + entryPath;
 
                 if (entry is IFilePath)
-                    yield return (TEntry)(object)new IRelativeFilePath.Impl(finalPath, 0, PathFormat);
+                    yield return (TEntry)(object)new IRelativeFilePath.Impl(finalPath, 0, PathFormat, PathValidity.Unknown);
                 else
-                    yield return (TEntry)(object)new IRelativeDirectoryPath.Impl(finalPath, 0, PathFormat);
+                    yield return (TEntry)(object)new IRelativeDirectoryPath.Impl(finalPath, 0, PathFormat, PathValidity.Unknown);
             }
         }
 

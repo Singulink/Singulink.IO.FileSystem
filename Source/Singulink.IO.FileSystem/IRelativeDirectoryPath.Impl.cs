@@ -1,3 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Singulink.IO.Json;
+
 namespace Singulink.IO;
 
 /// <content>
@@ -5,7 +9,9 @@ namespace Singulink.IO;
 /// </content>
 public partial interface IRelativeDirectoryPath
 {
-    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IRelativePath.Impl(path, rootLength, pathFormat), IRelativeDirectoryPath
+    [JsonConverter(typeof(RelativeDirectoryPathJsonConverter))]
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat, int validity)
+        : IRelativePath.Impl(path, rootLength, pathFormat, validity), IRelativeDirectoryPath
     {
         public override bool HasParentDirectory => !IsRooted || PathDisplay.Length > RootLength;
 
@@ -30,7 +36,7 @@ public partial interface IRelativeDirectoryPath
                     parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength).ToString();
                 }
 
-                return new Impl(parentPath, RootLength, PathFormat);
+                return new Impl(parentPath, RootLength, PathFormat, InheritedValidity);
             }
         }
 
@@ -80,10 +86,16 @@ public partial interface IRelativeDirectoryPath
             else
                 newPath = $"{basePath.Span}{appendPath.Span}";
 
+            // A rooted path replaces the base path, so the result is rooted whether or not this path is.
+            int rootLength = parentDirNavCount is -1 ? 1 : RootLength;
+
+            // A name that is valid in the universal format is also valid in the other formats with the same options.
+            int validity = InheritedValidity & ((IPath.Impl)path).InheritedValidity;
+
             if (path is IDirectoryPath)
-                return new Impl(newPath, RootLength, mutualFormat);
+                return new Impl(newPath, rootLength, mutualFormat, validity);
             else
-                return new IRelativeFilePath.Impl(newPath, RootLength, mutualFormat);
+                return new IRelativeFilePath.Impl(newPath, rootLength, mutualFormat, validity);
         }
 
         private string? GetBasePathForAppending(int parentDirNavCount)
@@ -131,8 +143,34 @@ public partial interface IRelativeDirectoryPath
 
         public override IRelativeDirectoryPath ToPathFormat(PathFormat format, PathOptions options)
         {
-            var path = PathFormat.ConvertRelativePathFormat(PathDisplay, PathFormat, format);
-            return DirectoryPath.ParseRelative(path.Span, format, options);
+            if (!TryToPathFormat(format, options, out IRelativeDirectoryPath? path, out string? error))
+                throw new ArgumentException(error);
+
+            return path;
+        }
+
+        internal bool TryToPathFormat(PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? path, [NotNullWhen(false)] out string? error)
+        {
+            if (!PathFormat.TryConvertRelativePathFormat(PathDisplay, PathFormat, format, out var convertedPath, out error))
+            {
+                path = null;
+                return false;
+            }
+
+            return DirectoryPath.TryParseRelative(convertedPath.Span, format, options, out path, out error);
+        }
+
+        internal override bool TryToPathFormat(PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativePath? path, [NotNullWhen(false)] out string? error)
+        {
+            bool success = TryToPathFormat(format, options, out IRelativeDirectoryPath? directoryPath, out error);
+            path = directoryPath;
+
+            return success;
+        }
+
+        private protected override bool TryParseAgain(PathOptions options, [NotNullWhen(false)] out string? error)
+        {
+            return DirectoryPath.TryParseRelative(PathDisplay, PathFormat, options, out _, out error);
         }
     }
 }

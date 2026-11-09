@@ -134,13 +134,17 @@ A few <xref:Singulink.IO.PathFormat> members are useful from application code:
 - <xref:Singulink.IO.PathFormat.Separator>: the format's path separator character.
 - <xref:Singulink.IO.PathFormat.SupportsRelativeRootedPaths>: `true` for Windows only.
 - <xref:Singulink.IO.PathFormat.RelativeCurrentDirectory>, <xref:Singulink.IO.PathFormat.RelativeParentDirectory>: pre-built `.` and `..` paths in the format.
-- <xref:Singulink.IO.PathFormat.IsValidExtension*>: validate a file extension against the format's rules.
+- <xref:Singulink.IO.PathFormat.IsValidExtension*>, <xref:Singulink.IO.PathFormat.IsValidMultiExtension*>: validate a file extension against the format's rules.
 
 ```csharp
-PathFormat.Windows.Separator;                        // '\\'
-PathFormat.Universal.IsValidExtension(".tar.gz");    // false: multiple dots
-PathFormat.Universal.IsValidExtension(".gz");        // true
+PathFormat.Windows.Separator;                            // '\\'
+PathFormat.Universal.IsValidExtension(".tar.gz");        // false: multiple dots
+PathFormat.Universal.IsValidExtension(".gz");            // true
+
+PathFormat.Universal.IsValidMultiExtension(".tar.gz");   // true
 ```
+
+<xref:Singulink.IO.PathFormat.IsValidExtension*> checks a single extension, as the single extension members such as <xref:Singulink.IO.IFilePath.WithExtension*?displayProperty=nameWithType> take it. <xref:Singulink.IO.PathFormat.IsValidMultiExtension*> checks a multi-extension, which has one or more parts (e.g. `.gz` or `.tar.gz`), each part as <xref:Singulink.IO.PathFormat.IsValidExtension*> checks a single extension. <xref:Singulink.IO.IFilePath.HasMultiExtension*?displayProperty=nameWithType>, <xref:Singulink.IO.IFilePath.GetMultiExtension*?displayProperty=nameWithType>, <xref:Singulink.IO.IFilePath.RemoveMultiExtension*?displayProperty=nameWithType> and <xref:Singulink.IO.IFilePath.AddMultiExtension*?displayProperty=nameWithType> take multi-extensions; see [File Names and Extensions](file-names-and-extensions.md).
 
 ## Next Steps
 
@@ -149,5 +153,6 @@ Formats come up again in these guides:
 - [PathOptions](path-options.md): interacts with <xref:Singulink.IO.PathFormat> (e.g. <xref:Singulink.IO.PathOptions.PathFormatDependent?displayProperty=nameWithType>).
 - [Combining and Navigating Paths](combining-and-navigating.md): cross-format combine rules in practice.
 - [Interop and Migration](interop-and-migration.md): when to use <xref:Singulink.IO.IAbsolutePath.PathExport?displayProperty=nameWithType>.
+- [Type Converters, JSON and Configuration Binding](type-converters.md#path-formats): the formats paths are written and read in by the type converters and JSON converters.
 
 </div>

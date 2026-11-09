@@ -8,12 +8,7 @@ public class CachedInfoTests
 
     private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test_cachedinfo");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
+        var testDir = CreateEmptyTestDirectory("_test_cachedinfo");
 
         using (var s = testDir.CombineFile(FileName).OpenStream(FileMode.CreateNew))
             s.WriteByte(0x41);

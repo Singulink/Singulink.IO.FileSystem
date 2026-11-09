@@ -15,16 +15,17 @@ public abstract partial class PathFormat
 
         internal override PathKind GetPathKind(ReadOnlySpan<char> path) => PathKind.Relative;
 
-        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
+        // The Unix checks are a subset of the Windows checks with the same options, so the Windows options are the ones applied.
+        internal override PathOptions GetEffectiveOptions(PathOptions options) => Windows.GetEffectiveOptions(options);
+
+        internal override PathOptions CheckEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, bool collect, out string? error, bool wantsError)
         {
-            if (!Unix.ValidateEntryName(name, options, allowWildcards, out error, wantsError))
-                return false;
+            var failed = Unix.CheckEntryName(name, options, allowWildcards, collect, out error, wantsError);
 
-            if (!Windows.ValidateEntryName(name, options, allowWildcards, out error, wantsError))
-                return false;
+            if (failed is not 0 && !collect)
+                return failed;
 
-            error = null;
-            return true;
+            return failed | Windows.CheckEntryName(name, options, allowWildcards, collect, out error, wantsError);
         }
 
         #region Not Supported

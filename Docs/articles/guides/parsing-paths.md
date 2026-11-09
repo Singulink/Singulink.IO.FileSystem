@@ -210,6 +210,7 @@ These guides cover the topics that parsing touches on:
 - [PathOptions](path-options.md): fine-grained control over what counts as a valid path.
 - [Path Formats](path-formats.md): Windows vs Unix vs Universal.
 - [Path Types](path-types.md): what to do with the parsed result.
+- [Type Converters, JSON and Configuration Binding](type-converters.md): creating paths from strings through type converters, JSON serialization and configuration binding.
 - [Exception Handling](exception-handling.md): handling parse failures alongside I/O failures.
 
 </div>

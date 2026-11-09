@@ -3,22 +3,12 @@ namespace Singulink.IO.FileSystem.Tests;
 [PrefixTestClass]
 public class DirectoryIsEmptyTests
 {
-    private static IAbsoluteDirectoryPath SetupTestDirectory()
-    {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
-
-        return testDir;
-    }
+    private const string TestDirName = "_test_isempty";
 
     [TestMethod]
     public void EmptyDirectory()
     {
-        var dir = SetupTestDirectory();
+        var dir = CreateEmptyTestDirectory(TestDirName);
 
         dir.IsEmpty.ShouldBeTrue();
     }
@@ -26,7 +16,7 @@ public class DirectoryIsEmptyTests
     [TestMethod]
     public void DirectoryWithFile()
     {
-        var dir = SetupTestDirectory();
+        var dir = CreateEmptyTestDirectory(TestDirName);
         dir.CombineFile("test.file").OpenStream(FileMode.CreateNew).Dispose();
 
         dir.IsEmpty.ShouldBeFalse();
@@ -35,7 +25,7 @@ public class DirectoryIsEmptyTests
     [TestMethod]
     public void DirectoryWithSubdirectory()
     {
-        var dir = SetupTestDirectory();
+        var dir = CreateEmptyTestDirectory(TestDirName);
         dir.CombineDirectory("subdir").Create();
 
         // An empty subdirectory is still an entry of its parent, and is itself empty.
@@ -46,7 +36,7 @@ public class DirectoryIsEmptyTests
     [TestMethod]
     public void DirectoryEmptiedAgain()
     {
-        var dir = SetupTestDirectory();
+        var dir = CreateEmptyTestDirectory(TestDirName);
         var file = dir.CombineFile("test.file");
         var subDir = dir.CombineDirectory("subdir");
 
@@ -64,7 +54,7 @@ public class DirectoryIsEmptyTests
     [TestMethod]
     public void MissingDirectory()
     {
-        var dir = SetupTestDirectory().CombineDirectory("missing");
+        var dir = CreateEmptyTestDirectory(TestDirName).CombineDirectory("missing");
 
         dir.Exists.ShouldBeFalse();
         Should.Throw<DirectoryNotFoundException>(() => _ = dir.IsEmpty);

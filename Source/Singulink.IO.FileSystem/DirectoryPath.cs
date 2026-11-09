@@ -165,7 +165,7 @@ public static class DirectoryPath
         return TryParseAbsolute(path, format, options, out result, out _);
     }
 
-    private static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result, [NotNullWhen(false)] out string? error)
+    internal static bool TryParseAbsolute(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IAbsoluteDirectoryPath? result, [NotNullWhen(false)] out string? error)
     {
         result = null;
         path = format.NormalizeSeparators(path);
@@ -173,7 +173,7 @@ public static class DirectoryPath
         if (!format.TryNormalizeAbsolutePath(path, options, asDirectory: true, out string? finalPath, out int rootLength, out error))
             return false;
 
-        result = new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format);
+        result = new IAbsoluteDirectoryPath.Impl(finalPath, rootLength, format, PathValidity.FromParse(format, options));
         return true;
     }
 
@@ -253,7 +253,7 @@ public static class DirectoryPath
         return TryParseRelative(path, format, options, out result, out _);
     }
 
-    private static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? result, [NotNullWhen(false)] out string? error)
+    internal static bool TryParseRelative(ReadOnlySpan<char> path, PathFormat format, PathOptions options, [NotNullWhen(true)] out IRelativeDirectoryPath? result, [NotNullWhen(false)] out string? error)
     {
         result = null;
         path = format.NormalizeSeparators(path);
@@ -261,7 +261,7 @@ public static class DirectoryPath
         if (!format.TryNormalizeRelativePath(path, options, appendSeparator: true, out string? finalPath, out int rootLength, out error))
             return false;
 
-        result = new IRelativeDirectoryPath.Impl(finalPath, rootLength, format);
+        result = new IRelativeDirectoryPath.Impl(finalPath, rootLength, format, PathValidity.FromParse(format, options));
         return true;
     }
 

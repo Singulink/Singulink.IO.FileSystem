@@ -1,8 +1,15 @@
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using Singulink.IO.Converters;
+using Singulink.IO.Json;
+
 namespace Singulink.IO;
 
 /// <summary>
 /// Represents a relative path to a directory.
 /// </summary>
+[TypeConverter(typeof(RelativeDirectoryPathConverter))]
+[JsonConverter(typeof(RelativeDirectoryPathJsonConverter))]
 public partial interface IRelativeDirectoryPath : IRelativePath, IDirectoryPath
 {
     /// <summary>

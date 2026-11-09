@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -94,24 +95,47 @@ public abstract partial class PathFormat
     }
 
     /// <summary>
-    /// Determines whether the given file extension is valid for this path format.
+    /// Determines whether the given file extension is a valid single extension for this path format.
     /// </summary>
+    /// <param name="extension">The extension to check.</param>
+    /// <param name="options">The options the extension is checked with.</param>
     /// <remarks>
     /// <para>
     /// The empty extension is valid for all path formats.</para>
     /// <para>
-    /// If non-empty, the extension should begin with a <c>.</c> character, and not have any <c>.</c> characters after the first one.</para>
+    /// If non-empty, the extension should begin with a <c>.</c> character, and not have any <c>.</c> characters after the first one. A lone <c>.</c> is
+    /// valid.</para>
+    /// <para>
+    /// <see cref="IFilePath.HasExtension(string)"/>, <see cref="IFilePath.RemoveExtension(string, PathOptions)"/>, <see
+    /// cref="IFilePath.AddExtension(string?, PathOptions)"/> and <see cref="IFilePath.WithExtension(string?, PathOptions)"/> take an extension that is
+    /// valid with <see cref="PathOptions.None"/>.</para>
     /// </remarks>
     public virtual bool IsValidExtension(ReadOnlySpan<char> extension, PathOptions options = PathOptions.NoUnfriendlyNames)
     {
-        if (extension.Length is 0)
-            return true;
+        return extension.Length is 0 || CheckExtension(extension, options, allowMulti: false, checkParts: true, out _, wantsError: false);
+    }
 
-        if (extension is not ['.', .. var rest] || rest.Contains('.'))
-            return false;
-
-        options = options.ClearFlags(PathOptions.NoReservedDeviceNames | PathOptions.NoLeadingSpaces | PathOptions.NoTrailingDots);
-        return ValidateEntryName(extension, options, allowWildcards: false, out _, wantsError: false);
+    /// <summary>
+    /// Determines whether the given file extension is a valid multi-extension for this path format. A multi-extension has one or more parts (e.g.
+    /// <c>".gz"</c> or <c>".tar.gz"</c>).
+    /// </summary>
+    /// <param name="extension">The extension to check.</param>
+    /// <param name="options">The options each part of the extension is checked with.</param>
+    /// <remarks>
+    /// <para>
+    /// The empty extension is valid for all path formats.</para>
+    /// <para>
+    /// If non-empty, the extension is a lone <c>.</c> or one or more parts, each a <c>.</c> followed by at least one character other than a <c>.</c>. Each
+    /// part is checked exactly as <see cref="IsValidExtension(ReadOnlySpan{char}, PathOptions)"/> checks a single extension with <paramref
+    /// name="options"/>.</para>
+    /// <para>
+    /// <see cref="IFilePath.HasMultiExtension(string)"/>, <see cref="IFilePath.GetMultiExtension(ReadOnlySpan{string})"/>, <see
+    /// cref="IFilePath.RemoveMultiExtension(string, PathOptions)"/> and <see cref="IFilePath.AddMultiExtension(string?, PathOptions)"/> take an extension
+    /// that is valid with <see cref="PathOptions.None"/>.</para>
+    /// </remarks>
+    public bool IsValidMultiExtension(ReadOnlySpan<char> extension, PathOptions options = PathOptions.NoUnfriendlyNames)
+    {
+        return extension.Length is 0 || CheckExtension(extension, options, allowMulti: true, checkParts: true, out _, wantsError: false);
     }
 
     /// <summary>
@@ -171,44 +195,82 @@ public abstract partial class PathFormat
         return separatorNormalizedPath.Length is 2 || separatorNormalizedPath[^3] == Separator;
     }
 
+    /// <summary>
+    /// Gets the options that the checks of this format apply when parsing with the specified options.
+    /// </summary>
+    internal abstract PathOptions GetEffectiveOptions(PathOptions options);
+
     // 'wantsError' indicates whether we should potentially allocate a useful error message or just return a possibly generic one or none.
-    internal virtual bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
+    internal bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
     {
+        return CheckEntryName(name, options, allowWildcards, collect: false, out error, wantsError) is 0;
+    }
+
+    /// <summary>
+    /// Runs the entry name checks in order, skipping the checks of options that aren't set. Without <paramref name="collect"/>, it stops at the first failed
+    /// check and outputs its error. With <paramref name="collect"/>, it runs every remaining check and outputs a null error. Returns the options of the failed
+    /// checks, with <see cref="PathValidity.Basic"/> for checks that apply regardless of options.
+    /// </summary>
+    internal virtual PathOptions CheckEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, bool collect, out string? error, bool wantsError)
+    {
+        PathOptions failed = 0;
+
+        // The remaining checks need a character, so an empty name stops in both modes.
         if (name.IsEmpty) {
-            error = "Empty entry name.";
-            return false;
+            error = collect ? null : "Empty entry name.";
+            return PathValidity.Basic;
         }
 
         if (name.IndexOfAny(Separator, (char)0) is int i and >= 0) {
-            error = wantsError ? $"Invalid character '{name[i]}' in entry name '{name}'." : "Invalid.";
-            return false;
+            if (!collect) {
+                error = wantsError ? $"Invalid character '{name[i]}' in entry name '{name}'." : "Invalid.";
+                return PathValidity.Basic;
+            }
+
+            failed |= PathValidity.Basic;
         }
 
         if (options.HasAllFlags(PathOptions.NoControlCharacters)) {
             int idx = name.IndexOfAnyInRange((char)1, (char)31);
             if (idx >= 0) {
-                error = wantsError ? $"Invalid control character '{name[idx]}' in entry name '{name}'." : "Invalid.";
-                return false;
+                if (!collect) {
+                    error = wantsError ? $"Invalid control character '{name[idx]}' in entry name '{name}'." : "Invalid.";
+                    return PathOptions.NoControlCharacters;
+                }
+
+                failed |= PathOptions.NoControlCharacters;
             }
         }
 
         if (options.HasAllFlags(PathOptions.NoLeadingSpaces) && name[0] is ' ') {
-            error = "Entry name starts with a space.";
-            return false;
+            if (!collect) {
+                error = "Entry name starts with a space.";
+                return PathOptions.NoLeadingSpaces;
+            }
+
+            failed |= PathOptions.NoLeadingSpaces;
         }
 
         if (options.HasAllFlags(PathOptions.NoTrailingDots) && name[^1] is '.') {
-            error = "Entry name ends with a dot.";
-            return false;
+            if (!collect) {
+                error = "Entry name ends with a dot.";
+                return PathOptions.NoTrailingDots;
+            }
+
+            failed |= PathOptions.NoTrailingDots;
         }
 
         if (options.HasAllFlags(PathOptions.NoTrailingSpaces) && name[^1] is ' ') {
-            error = "Entry name ends with a space.";
-            return false;
+            if (!collect) {
+                error = "Entry name ends with a space.";
+                return PathOptions.NoTrailingSpaces;
+            }
+
+            failed |= PathOptions.NoTrailingSpaces;
         }
 
         error = null;
-        return true;
+        return failed;
     }
 
     internal bool TryNormalizeRelativePath(ReadOnlySpan<char> path, PathOptions options, bool appendSeparator, [NotNullWhen(true)] out string? finalPath, out int rootLength, [NotNullWhen(false)] out string? error)
@@ -314,6 +376,41 @@ public abstract partial class PathFormat
         return true;
     }
 
+    /// <summary>
+    /// Works out in one pass over the names of a path which options parsing its <see cref="IPath.PathDisplay"/> again, as the same kind of path, would succeed
+    /// with. Returns the validity bits described in <see cref="PathValidity"/>, without <see cref="PathValidity.Computed"/>.
+    /// </summary>
+    /// <remarks>
+    /// The root of an absolute path isn't checked: it was checked when the path was parsed, and no option applies to it.
+    /// </remarks>
+    internal int GetValidity(ReadOnlySpan<char> pathDisplay, int rootLength, bool isAbsolute, bool isFile)
+    {
+        PathOptions failed = 0;
+
+        // Parsing fails for a rooted relative path with NoNavigation (see TryNormalizeRelativePath) and for a directory-shaped file path.
+
+        if (!isAbsolute && rootLength > 0)
+            failed |= PathOptions.NoNavigation;
+
+        if (isFile && IsDirectoryShaped(pathDisplay))
+            failed |= PathValidity.Basic;
+
+        var names = pathDisplay[rootLength..];
+
+        if (names.Length > 0 && names[^1] == Separator)
+            names = names[..^1];
+
+        while (names.Length > 0) {
+            int separatorIndex = names.IndexOf(Separator);
+            var segment = separatorIndex < 0 ? names : names[..separatorIndex];
+            names = separatorIndex < 0 ? default : names[(separatorIndex + 1)..];
+
+            failed |= CheckSegment(segment, PathValidity.Restrictions, collect: true, out _);
+        }
+
+        return (int)((PathValidity.Restrictions | PathValidity.Basic) & ~failed);
+    }
+
     internal abstract string GetAbsolutePathExportString(string pathDisplay);
 
     /// <summary>
@@ -371,29 +468,38 @@ public abstract partial class PathFormat
         return path;
     }
 
-    internal static StringOrSpan ConvertRelativePathFormat(StringOrSpan path, PathFormat sourceFormat, PathFormat destinationFormat)
+    internal static bool TryConvertRelativePathFormat(
+        StringOrSpan path, PathFormat sourceFormat, PathFormat destinationFormat, out StringOrSpan convertedPath, [NotNullWhen(false)] out string? error)
     {
         if (sourceFormat.Separator != destinationFormat.Separator) {
-            if (path.Span.Contains(destinationFormat.SeparatorAsString, StringComparison.Ordinal))
-                throw new ArgumentException($"Invalid separator character '{destinationFormat.Separator}' in path entry.");
-            else if (sourceFormat.GetPathKind(path) == PathKind.RelativeRooted && !destinationFormat.SupportsRelativeRootedPaths)
-                throw new ArgumentException("Destination path format does not support relative rooted paths.");
-            else
+            if (path.Span.Contains(destinationFormat.SeparatorAsString, StringComparison.Ordinal)) {
+                convertedPath = default;
+                error = $"Invalid separator character '{destinationFormat.Separator}' in path entry.";
+                return false;
+            }
+            else if (sourceFormat.GetPathKind(path) == PathKind.RelativeRooted && !destinationFormat.SupportsRelativeRootedPaths) {
+                convertedPath = default;
+                error = "Destination path format does not support relative rooted paths.";
+                return false;
+            }
+            else {
                 path = path.Replace(sourceFormat.Separator, destinationFormat.Separator);
+            }
         }
 
-        return path;
+        convertedPath = path;
+        error = null;
+        return true;
     }
 
     internal string? ChangeFileNameExtension(string path, string? extension, int rootLength, PathOptions options)
     {
-        if (extension?.Length > 0 && extension.LastIndexOf('.') is not 0)
-            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(extension));
+        // The characters are checked as part of the new file name.
+        if (extension?.Length > 0)
+            ValidateExtension(extension, allowMulti: false, checkParts: false, nameof(extension));
 
         string newFileName = $"{GetFileNameWithoutExtension(path).Span}{extension}";
-
-        if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
-            throw new ArgumentException($"Invalid new file name: {error}", nameof(extension));
+        ValidateNewFileName(newFileName, options, nameof(extension));
 
         if (GetEntryName(path, rootLength).Span.SequenceEqual(newFileName))
             return null;
@@ -404,17 +510,16 @@ public abstract partial class PathFormat
         return $"{parentDir}{newFileName}";
     }
 
-    internal string? AddFileNameExtension(string path, string? extension, int rootLength, PathOptions options)
+    internal string? AddFileNameExtension(string path, string? extension, int rootLength, PathOptions options, bool allowMulti)
     {
-        if (extension?.Length > 0 && extension.LastIndexOf('.') is not 0)
-            throw new ArgumentException("New file extension must either be empty or start with a dot '.' character and contain no additional dots.", nameof(extension));
+        // The characters are checked as part of the new file name.
+        if (extension?.Length > 0)
+            ValidateExtension(extension, allowMulti, checkParts: false, nameof(extension));
 
         StringOrSpan fileName = GetEntryName(path, rootLength);
 
         string newFileName = $"{fileName.Span}{extension}";
-
-        if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
-            throw new ArgumentException($"Invalid new file name: {error}", nameof(extension));
+        ValidateNewFileName(newFileName, options, nameof(extension));
 
         if (fileName.Span.SequenceEqual(newFileName))
             return null;
@@ -423,6 +528,97 @@ public abstract partial class PathFormat
 
         // parentDir always ends with a separator under the directory-path invariant.
         return $"{parentDir}{newFileName}";
+    }
+
+    internal string? RemoveFileNameExtension(string path, string extension, int rootLength, PathOptions options, bool allowMulti)
+    {
+        if (extension.Length is 0)
+            return null;
+
+        ValidateExtension(extension, allowMulti, checkParts: true, nameof(extension));
+
+        StringOrSpan fileName = GetEntryName(path, rootLength);
+
+        if (!fileName.Span.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException($"File name '{fileName}' does not end with the extension '{extension}'.", nameof(extension));
+
+        if (fileName.Length == extension.Length)
+            throw new ArgumentException($"Extension '{extension}' is the whole file name, so removing it leaves no name.", nameof(extension));
+
+        string newFileName = fileName.Span[..^extension.Length].ToString();
+        ValidateNewFileName(newFileName, options, nameof(extension));
+
+        var parentDir = GetParentDirectoryPath(path, rootLength);
+
+        // parentDir always ends with a separator under the directory-path invariant.
+        return $"{parentDir}{newFileName}";
+    }
+
+    /// <summary>
+    /// Throws <see cref="ArgumentException"/> for an empty extension and where <see cref="IsValidExtension(ReadOnlySpan{char}, PathOptions)"/>, or <see
+    /// cref="IsValidMultiExtension(ReadOnlySpan{char}, PathOptions)"/> with <paramref name="allowMulti"/>, returns <see langword="false"/> with <see
+    /// cref="PathOptions.None"/>. Without <paramref name="checkParts"/>, only the shape is checked, for callers that check the characters another way.
+    /// </summary>
+    internal void ValidateExtension(ReadOnlySpan<char> extension, bool allowMulti, bool checkParts, string paramName)
+    {
+        if (extension.Length is 0)
+            throw new ArgumentException("Invalid extension '': it can't be empty.", paramName);
+
+        if (!CheckExtension(extension, PathOptions.None, allowMulti, checkParts, out string? error, wantsError: true))
+            throw new ArgumentException($"Invalid extension '{extension}': {error}", paramName);
+    }
+
+    /// <summary>
+    /// Checks the shape of a non-empty extension and, with <paramref name="checkParts"/>, each of its parts as an entry name with <paramref name="options"/>.
+    /// See <see cref="IsValidExtension(ReadOnlySpan{char}, PathOptions)"/> and <see cref="IsValidMultiExtension(ReadOnlySpan{char}, PathOptions)"/>.
+    /// </summary>
+    private bool CheckExtension(
+        ReadOnlySpan<char> extension, PathOptions options, bool allowMulti, bool checkParts, [NotNullWhen(false)] out string? error, bool wantsError)
+    {
+        // A multi-extension is a lone dot or parts that each are a dot followed by at least one character other than a dot. A single extension is a dot
+        // followed by zero or more characters other than a dot.
+        bool isShaped = allowMulti ?
+            extension is "." || (extension is ['.', .., not '.'] && !extension.Contains("..", StringComparison.Ordinal)) :
+            extension is ['.', .. var rest] && !rest.Contains('.');
+
+        if (!isShaped) {
+            error = allowMulti ?
+                "it must be a lone dot '.' or start with a dot and have a character other than a dot after every dot (e.g. \".gz\" or \".tar.gz\")." :
+                "it must start with a dot '.' and have no other dots.";
+
+            return false;
+        }
+
+        if (checkParts) {
+            // Resolve PathFormatDependent first, so the name checks can't set the relaxed flags again.
+            options = GetEffectiveOptions(options).ClearFlags(
+                PathOptions.PathFormatDependent | PathOptions.NoReservedDeviceNames | PathOptions.NoLeadingSpaces | PathOptions.NoTrailingDots);
+
+            while (extension.Length > 0) {
+                int nextDotIndex = extension[1..].IndexOf('.') + 1;
+                var part = nextDotIndex is 0 ? extension : extension[..nextDotIndex];
+                extension = extension[part.Length..];
+
+                if (!ValidateEntryName(part, options, allowWildcards: false, out error, wantsError))
+                    return false;
+            }
+        }
+
+        error = null;
+        return true;
+    }
+
+    /// <summary>
+    /// Validates the new name of a file whose extension changes. Besides the entry name rules, the name can't be <c>.</c> or <c>..</c>, which are
+    /// navigational segments and would make the path a directory path.
+    /// </summary>
+    private void ValidateNewFileName(string newFileName, PathOptions options, string paramName)
+    {
+        if (newFileName is "." or "..")
+            throw new ArgumentException($"Invalid new file name: '{newFileName}' is a navigational path segment.", paramName);
+
+        if (!ValidateEntryName(newFileName, options, allowWildcards: false, out string error))
+            throw new ArgumentException($"Invalid new file name: {error}", paramName);
     }
 
     /// <summary>
@@ -547,34 +743,52 @@ public abstract partial class PathFormat
                 path = path[(separatorIndex + 1)..];
             }
 
-            if (segment.Length is 0) {
-                if (!options.HasAllFlags(PathOptions.AllowEmptyDirectories)) {
-                    error = "Invalid empty directory in path.";
-                    return false;
-                }
-            }
-            else if (segment is "." or "..") {
-                if (options.HasAllFlags(PathOptions.NoNavigation)) {
-                    error = "Invalid navigational path segment.";
-                    return false;
-                }
-
-                if (segment.Length is 2) {
-                    if (segments.Count is 0 || segments[^1] is "..")
-                        segments.Add("..");
-                    else
-                        segments.RemoveAt(segments.Count - 1);
-                }
-            }
-            else if (!ValidateEntryName(segment, options, allowWildcards: false, out error)) {
+            if (CheckSegment(segment, options, collect: false, out error) is not 0) {
+                Debug.Assert(error is not null, "A failed check outputs an error.");
                 return false;
             }
-            else {
+
+            if (segment is "..") {
+                if (segments.Count is 0 || segments[^1] is "..")
+                    segments.Add("..");
+                else
+                    segments.RemoveAt(segments.Count - 1);
+            }
+            else if (segment.Length > 0 && segment is not ".") {
                 segments.Add(segment.ToString());
             }
         }
 
         error = null;
         return true;
+    }
+
+    /// <summary>
+    /// Checks a segment of a non-rooted relative path: an empty directory, a navigational segment (<c>.</c> or <c>..</c>) or an entry name. Works like <see
+    /// cref="CheckEntryName"/>.
+    /// </summary>
+    private PathOptions CheckSegment(ReadOnlySpan<char> segment, PathOptions options, bool collect, out string? error)
+    {
+        if (segment.Length is 0) {
+            if (options.HasAllFlags(PathOptions.AllowEmptyDirectories)) {
+                error = null;
+                return 0;
+            }
+
+            error = collect ? null : "Invalid empty directory in path.";
+            return PathValidity.Basic;
+        }
+
+        if (segment is "." or "..") {
+            if (!options.HasAllFlags(PathOptions.NoNavigation)) {
+                error = null;
+                return 0;
+            }
+
+            error = collect ? null : "Invalid navigational path segment.";
+            return PathOptions.NoNavigation;
+        }
+
+        return CheckEntryName(segment, options, allowWildcards: false, collect, out error, wantsError: !collect);
     }
 }

@@ -5,12 +5,7 @@ public class EntryStateTests
 {
     private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test_entrystate");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
+        var testDir = CreateEmptyTestDirectory("_test_entrystate");
         testDir.CombineFile("existing.txt").OpenStream(FileMode.CreateNew).Dispose();
         testDir.CombineDirectory("existing_dir").Create();
 

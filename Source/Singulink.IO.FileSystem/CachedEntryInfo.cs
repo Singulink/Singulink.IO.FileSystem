@@ -60,7 +60,8 @@ public abstract class CachedEntryInfo
 
         // The path resolves to a directory on the file system: rebuild as an IAbsoluteDirectoryPath by appending the separator.
         var impl = (IPath.Impl)filePath;
-        var dirPath = new IAbsoluteDirectoryPath.Impl(impl.PathDisplay + impl.PathFormat.SeparatorAsString, impl.RootLength, impl.PathFormat);
+        var dirPath = new IAbsoluteDirectoryPath.Impl(
+            impl.PathDisplay + impl.PathFormat.SeparatorAsString, impl.RootLength, impl.PathFormat, impl.InheritedValidity);
         return new CachedDirectoryInfo(fileInfo, dirPath);
     }
 

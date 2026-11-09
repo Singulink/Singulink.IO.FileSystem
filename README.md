@@ -23,4 +23,4 @@ The package is available on NuGet - simply install the `Singulink.IO.FileSystem`
 
 ## Further Reading
 
-Please head over to the [project documentation site](http://www.singulink.com/Docs/Singulink.IO.FileSystem/) to view articles, examples and the fully documented API.
+Please head over to the [project documentation site](https://www.singulink.com/Docs/Singulink.IO.FileSystem/) to view articles, examples and the fully documented API.

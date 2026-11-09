@@ -13,6 +13,9 @@
 - name: Path Formats
   href: path-formats.md
 
+- name: Type Converters, JSON and Configuration Binding
+  href: type-converters.md
+
 - name: Combining and Navigating Paths
   href: combining-and-navigating.md
 

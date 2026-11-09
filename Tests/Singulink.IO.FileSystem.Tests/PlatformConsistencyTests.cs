@@ -7,12 +7,7 @@ public class PlatformConsistencyTests
 
     private static IAbsoluteDirectoryPath SetupTestDirectory()
     {
-        var testDir = DirectoryPath.GetCurrent() + DirectoryPath.ParseRelative("_test");
-
-        if (testDir.Exists)
-            testDir.Delete(true);
-
-        testDir.Create();
+        var testDir = CreateEmptyTestDirectory("_test_platformconsistency");
         testDir.CombineFile(FileName).OpenStream(FileMode.CreateNew).Dispose();
 
         return testDir;

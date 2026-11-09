@@ -117,6 +117,39 @@ var loaded = FilePath.ParseAbsolute(File.ReadAllText("path.txt"), PathOptions.No
 > [!WARNING]
 > If your storage layer trims whitespace (a database column with `TRIM`, an INI parser, etc.), do not use <xref:Singulink.IO.PathOptions.None?displayProperty=nameWithType>; the round-tripped string won't match the original path on the file system. Either constrain inputs to <xref:Singulink.IO.PathOptions.NoUnfriendlyNames?displayProperty=nameWithType> or guarantee verbatim storage.
 
+## Checking a Path Against Options
+
+<xref:Singulink.IO.IPath.IsValidFor*?displayProperty=nameWithType> tells whether an existing path is valid for a set of options: it returns `true` exactly when parsing the path's <xref:Singulink.IO.IPath.PathDisplay> in its own format, as the same kind of path, with those options would succeed. The overload with an `out` parameter also gives the error message that parsing would give.
+
+```csharp
+var dir = DirectoryPath.ParseAbsolute(@"C:\data \", PathOptions.None);
+
+dir.IsValidFor(PathOptions.None);                                 // true
+dir.IsValidFor(PathOptions.NoUnfriendlyNames, out string? error); // false, error: "Entry name ends with a space."
+```
+
+The options apply as they do when parsing: <xref:Singulink.IO.PathOptions.NoReservedDeviceNames> has no effect on Unix paths, control characters are always invalid in Windows paths, <xref:Singulink.IO.PathOptions.PathFormatDependent> adds the unfriendly-name rules for Windows and universal paths only, and <xref:Singulink.IO.PathOptions.AllowEmptyDirectories> makes no difference because paths never contain empty directories.
+
+A path remembers what it is known to be valid for. A parsed path is known to be valid for the options it was parsed with, and paths derived from it (its parent directory, root directory, combined paths and paths with a changed extension) keep what is known about the names they share. Anything else, such as a path from a directory listing, is worked out the first time it is needed, in one pass over the names, and remembered for every later check.
+
+### ValidPath Attribute
+
+<xref:Singulink.IO.ValidPathAttribute> is a DataAnnotations <xref:System.ComponentModel.DataAnnotations.ValidationAttribute> that checks a path member with <xref:Singulink.IO.IPath.IsValidFor*>:
+
+```csharp
+public class StorageOptions
+{
+    [ValidPath(PathOptions.NoUnfriendlyNames)]
+    public IAbsoluteDirectoryPath? Directory { get; set; }
+}
+```
+
+- A `null` value is valid; <xref:System.ComponentModel.DataAnnotations.RequiredAttribute> is what requires a value.
+- The attribute checks <xref:Singulink.IO.IPath> values. A value of any other type, including a string, is invalid and isn't parsed.
+- The default error message is `The {0} field is not a valid path. {1}`, where `{0}` is the member's display name and `{1}` is the reason: the parse error, e.g. `The Directory field is not a valid path. Entry name ends with a space.`, or for a value that isn't a path, its type, e.g. `Value of type String is not a path.` <xref:System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessage> or <xref:System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessageResourceType> and <xref:System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessageResourceName> replace the message and can use the same placeholders.
+
+The attribute works with <xref:System.ComponentModel.DataAnnotations.Validator?displayProperty=nameWithType>, with options validation through `ValidateDataAnnotations()`, and with the options validation source generator (`[OptionsValidator]`), which is trim and native AOT compatible.
+
 ## Next Steps
 
 Continue with these related guides:

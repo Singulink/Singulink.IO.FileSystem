@@ -1,8 +1,15 @@
+using System.ComponentModel;
+using System.Text.Json.Serialization;
+using Singulink.IO.Converters;
+using Singulink.IO.Json;
+
 namespace Singulink.IO;
 
 /// <summary>
 /// Represents an absolute path to a file or directory.
 /// </summary>
+[TypeConverter(typeof(AbsolutePathConverter))]
+[JsonConverter(typeof(AbsolutePathJsonConverter))]
 public partial interface IAbsolutePath : IPath
 {
     /// <summary>

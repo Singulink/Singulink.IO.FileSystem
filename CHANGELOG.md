@@ -1,5 +1,27 @@
 # Singulink.IO.FileSystem Version History
 
+## Version 3.2
+
+Paths now work with configuration binding, `System.Text.Json` and DataAnnotations validation, and file paths gain methods for extensions such as `.tar.gz`. There are no breaking changes.
+
+### Fixes
+
+- Combining a relative directory with a rooted relative path (e.g. `a\` with `\b` on Windows) gave a path that wasn't equal to the same path parsed directly
+- `WithExtension` could give a file name of `.` or `..`; it now throws `ArgumentException` for those names
+
+### New
+
+- Type converters for all path types, so the configuration binder (`Get<T>()`, `Bind()`, `Configure<T>(section)`; not the configuration binding source generator) can create paths from configuration values; see the [Type Converters, JSON and Configuration Binding](https://www.singulink.com/Docs/Singulink.IO.FileSystem/articles/guides/type-converters.html) guide
+- `System.Text.Json` converters for all path types (in the `Singulink.IO.Json` namespace), attached to the types so paths serialize as strings
+- `IPath.IsValidFor(options)` methods that check whether an existing path is valid for a set of path options
+- `ValidPathAttribute` to validate path members with DataAnnotations, e.g. `[ValidPath(PathOptions.NoUnfriendlyNames)]`
+- Methods to check for and remove a file extension: `HasExtension`, `RemoveExtension`
+- Methods to handle multi-extensions such as `.tar.gz`: `HasMultiExtension`, `GetMultiExtension`, `AddMultiExtension`, `RemoveMultiExtension` and `PathFormat.IsValidMultiExtension`
+
+## Version 3.1.1
+
+- Fixed: `IAbsoluteDirectoryPath.IsEmpty` returned the opposite value
+
 ## Version 3.1
 
 - New `TryParse`, `TryParseAbsolute` and `TryParseRelative` methods on `FilePath` and `DirectoryPath` that return `false` instead of throwing when the path is invalid, with the same format / options overloads as the `Parse` methods (options default to `PathOptions.NoUnfriendlyNames` when omitted) - thanks to [@volkmnv](https://github.com/volkmnv) for the contribution ([#6](https://github.com/Singulink/Singulink.IO.FileSystem/pull/6))

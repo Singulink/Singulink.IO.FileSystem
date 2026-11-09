@@ -21,7 +21,7 @@ public class SearchOptions
     }
 
     /// <summary>
-    /// Gets or sets the suggested buffer size in bytes. Default value is <c>0</c>, indicating no suggestion.
+    /// Gets or sets the suggested buffer size in bytes. Default is <c>0</c>, indicating no suggestion.
     /// </summary>
     public int BufferSize { get; set; }
 
@@ -53,7 +53,7 @@ public class SearchOptions
     public bool Recursive { get; set; }
 
     /// <summary>
-    /// Gets or sets the behavior when encountering inaccessible directories during searches. Defaults to <see
+    /// Gets or sets the behavior when encountering inaccessible directories during searches. Default is <see
     /// cref="InaccessibleSearchBehavior.ThrowForSearchDir"/>.
     /// </summary>
     public InaccessibleSearchBehavior InaccessibleSearchBehavior {

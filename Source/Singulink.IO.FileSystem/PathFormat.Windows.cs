@@ -50,23 +50,38 @@ public abstract partial class PathFormat
             return path.Length > 0 && path[0] == Separator ? PathKind.RelativeRooted : PathKind.Relative;
         }
 
-        internal override bool ValidateEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, [NotNullWhen(false)] out string? error, bool wantsError = true)
+        internal override PathOptions GetEffectiveOptions(PathOptions options)
         {
             options = options.SetFlags(PathOptions.NoControlCharacters);
 
             if (options.HasAllFlags(PathOptions.PathFormatDependent))
                 options = options.SetFlags(PathOptions.NoUnfriendlyNames);
 
-            if (!base.ValidateEntryName(name, options, allowWildcards, out error))
-                return false;
+            return options;
+        }
+
+        internal override PathOptions CheckEntryName(ReadOnlySpan<char> name, PathOptions options, bool allowWildcards, bool collect, out string? error, bool wantsError)
+        {
+            options = GetEffectiveOptions(options);
+
+            var failed = base.CheckEntryName(name, options, allowWildcards, collect, out error, wantsError);
+
+            if (failed is not 0 && !collect)
+                return failed;
 
             if (allowWildcards)
             {
                 int idx = name.IndexOfAny(InvalidNameCharsWithoutWildcards);
                 if (idx >= 0)
                 {
-                    error = wantsError ? $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | / \\" : "Invalid.";
-                    return false;
+                    if (!collect)
+                    {
+                        error = wantsError ?
+                            $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | / \\" : "Invalid.";
+                        return PathValidity.Basic;
+                    }
+
+                    failed |= PathValidity.Basic;
                 }
             }
             else
@@ -74,8 +89,14 @@ public abstract partial class PathFormat
                 int idx = name.IndexOfAny(InvalidNameChars);
                 if (idx >= 0)
                 {
-                    error = wantsError ? $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | ? * / \\" : "Invalid.";
-                    return false;
+                    if (!collect)
+                    {
+                        error = wantsError ?
+                            $"Invalid character '{name[idx]}' in entry name '{name}'. Invalid characters include: < > : \" | ? * / \\" : "Invalid.";
+                        return PathValidity.Basic;
+                    }
+
+                    failed |= PathValidity.Basic;
                 }
             }
 
@@ -94,13 +115,18 @@ public abstract partial class PathFormat
                 if ((name.Length == 3 && (name.Equals("CON", cmp) || name.Equals("PRN", cmp) || name.Equals("AUX", cmp) || name.Equals("NUL", cmp))) ||
                     (name.Length == 4 && (name[3] is >= '1' and <= '9') && (name.StartsWith("COM", cmp) || name.StartsWith("LPT", cmp))))
                 {
-                    error = wantsError ? $"Invalid reserved device name in entry name '{name}'." : "Invalid.";
-                    return false;
+                    if (!collect)
+                    {
+                        error = wantsError ? $"Invalid reserved device name in entry name '{name}'." : "Invalid.";
+                        return PathOptions.NoReservedDeviceNames;
+                    }
+
+                    failed |= PathOptions.NoReservedDeviceNames;
                 }
             }
 
             error = null;
-            return true;
+            return failed;
         }
 
         internal override bool IsUncPath(string absoluteDisplayPath) => absoluteDisplayPath[1] != ':';

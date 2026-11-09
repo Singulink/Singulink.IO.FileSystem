@@ -1,3 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
+using Singulink.IO.Json;
+
 namespace Singulink.IO;
 
 /// <content>
@@ -5,7 +9,9 @@ namespace Singulink.IO;
 /// </content>
 public partial interface IAbsoluteFilePath
 {
-    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat) : IAbsolutePath.Impl(path, rootLength, pathFormat), IAbsoluteFilePath
+    [JsonConverter(typeof(AbsoluteFilePathJsonConverter))]
+    internal new sealed class Impl(string path, int rootLength, PathFormat pathFormat, int validity)
+        : IAbsolutePath.Impl(path, rootLength, pathFormat, validity), IAbsoluteFilePath
     {
         public override bool HasParentDirectory => true;
 
@@ -13,7 +19,7 @@ public partial interface IAbsoluteFilePath
         {
             get {
                 var parentPath = PathFormat.GetParentDirectoryPath(PathDisplay, RootLength);
-                return new IAbsoluteDirectoryPath.Impl(parentPath.ToString(), RootLength, PathFormat);
+                return new IAbsoluteDirectoryPath.Impl(parentPath.ToString(), RootLength, PathFormat, InheritedValidity);
             }
         }
 
@@ -129,17 +135,40 @@ public partial interface IAbsoluteFilePath
             if (newPath is null)
                 return this;
 
-            return new Impl(newPath, RootLength, PathFormat);
+            return new Impl(newPath, RootLength, PathFormat, InheritedValidity & PathValidity.FromNewFileName(PathFormat, options));
         }
 
-        public IAbsoluteFilePath AddExtension(string? extension, PathOptions options)
+        public IAbsoluteFilePath AddExtension(string? extension, PathOptions options) => AddExtensionCore(extension, options, allowMulti: false);
+
+        public IAbsoluteFilePath AddMultiExtension(string? extension, PathOptions options) => AddExtensionCore(extension, options, allowMulti: true);
+
+        public IAbsoluteFilePath RemoveExtension(string extension, PathOptions options) => RemoveExtensionCore(extension, options, allowMulti: false);
+
+        public IAbsoluteFilePath RemoveMultiExtension(string extension, PathOptions options) => RemoveExtensionCore(extension, options, allowMulti: true);
+
+        private Impl AddExtensionCore(string? extension, PathOptions options, bool allowMulti)
         {
-            string newPath = PathFormat.AddFileNameExtension(PathDisplay, extension, RootLength, options);
+            string newPath = PathFormat.AddFileNameExtension(PathDisplay, extension, RootLength, options, allowMulti);
 
             if (newPath is null)
                 return this;
 
-            return new Impl(newPath, RootLength, PathFormat);
+            return new Impl(newPath, RootLength, PathFormat, InheritedValidity & PathValidity.FromNewFileName(PathFormat, options));
+        }
+
+        private Impl RemoveExtensionCore(string extension, PathOptions options, bool allowMulti)
+        {
+            string newPath = PathFormat.RemoveFileNameExtension(PathDisplay, extension, RootLength, options, allowMulti);
+
+            if (newPath is null)
+                return this;
+
+            return new Impl(newPath, RootLength, PathFormat, InheritedValidity & PathValidity.FromNewFileName(PathFormat, options));
+        }
+
+        private protected override bool TryParseAgain(PathOptions options, [NotNullWhen(false)] out string? error)
+        {
+            return FilePath.TryParseAbsolute(PathDisplay, PathFormat, options, out _, out error);
         }
 
         #endregion

@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.13" />
     <PackageVersion Include="PrefixClassName.MsTest" Version="2.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
   </ItemGroup>

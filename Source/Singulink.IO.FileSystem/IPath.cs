@@ -1,10 +1,17 @@
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
+using Singulink.IO.Converters;
+using Singulink.IO.Json;
 
 namespace Singulink.IO;
 
 /// <summary>
 /// Represents an absolute or relative path to a file or directory.
 /// </summary>
+[TypeConverter(typeof(PathConverter))]
+[JsonConverter(typeof(PathJsonConverter))]
 public partial interface IPath : IEquatable<IPath?>
 {
 #pragma warning disable IDE1006 // Naming Styles
@@ -82,6 +89,36 @@ public partial interface IPath : IEquatable<IPath?>
     /// Unix (paths that start with the path separator are absolute paths).</para>
     /// </remarks>
     bool IsRooted { get; }
+
+    /// <summary>
+    /// Determines whether this path is valid for the specified options.
+    /// </summary>
+    /// <param name="options">The path options to check the path against.</param>
+    /// <returns><see langword="true"/> if parsing this path's <see cref="PathDisplay"/> in its <see cref="PathFormat"/>, as the same kind of path (absolute or
+    /// relative, file or directory), with <paramref name="options"/> would succeed; otherwise <see langword="false"/>.</returns>
+    /// <remarks>
+    /// <para>The options apply as they do when parsing: <see cref="PathOptions.NoReservedDeviceNames"/> has no effect on <see cref="PathFormat.Unix"/>
+    /// paths, control characters are always invalid in <see cref="PathFormat.Windows"/> paths, <see cref="PathOptions.PathFormatDependent"/> adds the <see
+    /// cref="PathOptions.NoUnfriendlyNames"/> flags for <see cref="PathFormat.Windows"/> and <see cref="PathFormat.Universal"/> paths, and <see
+    /// cref="PathOptions.AllowEmptyDirectories"/> makes no difference because paths never contain empty directories.</para>
+    /// <para>Paths remember what they are known to be valid for. A path that was parsed is known to be valid for the options it was parsed with, and paths
+    /// derived from it (e.g. its parent directory or a combined path) keep what is known about their names. Anything else is worked out the first time it is
+    /// needed, in one pass over the names, and remembered for every later check.</para>
+    /// </remarks>
+    bool IsValidFor(PathOptions options);
+
+    /// <summary>
+    /// Determines whether this path is valid for the specified options and outputs the reason when it isn't.
+    /// </summary>
+    /// <param name="options">The path options to check the path against.</param>
+    /// <param name="errorMessage">When this method returns <see langword="false"/>, contains the error message that parsing this path with <paramref
+    /// name="options"/> gives; otherwise <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if parsing this path's <see cref="PathDisplay"/> in its <see cref="PathFormat"/>, as the same kind of path (absolute or
+    /// relative, file or directory), with <paramref name="options"/> would succeed; otherwise <see langword="false"/>.</returns>
+    /// <remarks>
+    /// <para>See <see cref="IsValidFor(PathOptions)"/> for how the options apply. The error message is only worked out when the path isn't valid.</para>
+    /// </remarks>
+    bool IsValidFor(PathOptions options, [NotNullWhen(false)] out string? errorMessage);
 
     /// <summary>
     /// Determines whether this file/directory is equal to another file/directory.

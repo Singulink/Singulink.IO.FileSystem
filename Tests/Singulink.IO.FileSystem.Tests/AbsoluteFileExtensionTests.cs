@@ -18,6 +18,20 @@ public class AbsoluteFileExtensionTests
     }
 
     [TestMethod]
+    [DataRow(false, "/.txt", ".", ".")]
+    [DataRow(false, "/dir/..txt", ".", "..")]
+    [DataRow(true, @"C:\..txt", "", ".")]
+    [DataRow(true, @"\\server\share\..txt", ".", "..")]
+    public void WithExtension_NavigationalName_Throws(bool windows, string path, string extension, string newName)
+    {
+        var filePath = FilePath.ParseAbsolute(path, windows ? PathFormat.Windows : PathFormat.Unix, PathOptions.None);
+
+        var ex = Should.Throw<ArgumentException>(() => filePath.WithExtension(extension, PathOptions.None));
+        ex.Message.ShouldBe($"Invalid new file name: '{newName}' is a navigational path segment. (Parameter 'extension')");
+        ex.ParamName.ShouldBe("extension");
+    }
+
+    [TestMethod]
     public void WithExtension_ChildDirFile()
     {
         var filePath = FilePath.ParseAbsolute("/dir/file.txt", PathFormat.Unix);
