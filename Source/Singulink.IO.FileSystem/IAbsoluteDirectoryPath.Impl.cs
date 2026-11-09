@@ -532,19 +532,35 @@ public partial interface IAbsoluteDirectoryPath
                 // PathExport already ends with a path separator under the directory-path invariant, so the remainder of FullName
                 // is the child entry's relative path without a leading separator.
                 var relativePath = entryInfo.FullName.AsSpan()[PathExport.Length..];
+                CachedEntryInfo cachedInfo;
 
-                if (entryInfo is DirectoryInfo dirInfo)
+                // On Windows the directory listing gives each entry's info. On Unix the info is read separately after the listing, so an entry deleted
+                // since then has none and is left out.
+                try
                 {
-                    string resultPath = $"{PathDisplay}{relativePath}{PathFormat.SeparatorAsString}";
-                    var dir = new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
-                    yield return (TEntryInfo)(object)new CachedDirectoryInfo(dirInfo, dir);
+                    if (entryInfo is DirectoryInfo dirInfo)
+                    {
+                        string resultPath = $"{PathDisplay}{relativePath}{PathFormat.SeparatorAsString}";
+                        var dir = new IAbsoluteDirectoryPath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
+                        cachedInfo = new CachedDirectoryInfo(dirInfo, dir);
+                    }
+                    else if (entryInfo is FileInfo fileInfo)
+                    {
+                        string resultPath = $"{PathDisplay}{relativePath}";
+                        var file = new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
+                        cachedInfo = new CachedFileInfo(fileInfo, file);
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
-                else if (entryInfo is FileInfo fileInfo)
+                catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
                 {
-                    string resultPath = $"{PathDisplay}{relativePath}";
-                    var file = new IAbsoluteFilePath.Impl(resultPath, RootLength, PathFormat, PathValidity.Unknown);
-                    yield return (TEntryInfo)(object)new CachedFileInfo(fileInfo, file);
+                    continue;
                 }
+
+                yield return (TEntryInfo)(object)cachedInfo;
             }
         }
 

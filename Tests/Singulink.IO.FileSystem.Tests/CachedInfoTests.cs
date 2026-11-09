@@ -206,6 +206,37 @@ public class CachedInfoTests
         entries.OfType<CachedDirectoryInfo>().Select(d => d.Path.Name).ShouldContain(SubDirName);
     }
 
+    [TestMethod]
+    public void GetChildEntriesInfo_EntriesDeletedDuringTheEnumeration_AreLeftOutOnUnix()
+    {
+        var testDir = CreateEmptyTestDirectory("_test_cachedinfo_deleted");
+
+        for (int i = 0; i < 5; i++)
+        {
+            testDir.CombineFile($"file{i}.txt").OpenStream(FileMode.CreateNew).Dispose();
+            testDir.CombineDirectory($"dir{i}").Create();
+        }
+
+        using var entries = testDir.GetChildEntriesInfo().GetEnumerator();
+        entries.MoveNext().ShouldBeTrue();
+        var first = entries.Current.Path;
+
+        foreach (var file in testDir.GetChildFiles().Where(f => !f.Equals(first)))
+            file.Delete();
+
+        foreach (var dir in testDir.GetChildDirectories().Where(d => !d.Equals(first)))
+            dir.Delete();
+
+        var rest = new List<CachedEntryInfo>();
+
+        while (entries.MoveNext())
+            rest.Add(entries.Current);
+
+        // On Windows the directory listing gives the info of the entries, so the deleted ones can still be included.
+        if (!OperatingSystem.IsWindows())
+            rest.ShouldBeEmpty();
+    }
+
     // ---- Path-shape behavior ----
 
     [TestMethod]

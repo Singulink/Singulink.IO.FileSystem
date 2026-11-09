@@ -185,11 +185,17 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <summary>
     /// Gets info for the child directories that reside in this directory and match the specified search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     sealed IEnumerable<CachedDirectoryInfo> GetChildDirectoriesInfo(SearchOptions? options = null) => GetChildDirectoriesInfo("*", options);
 
     /// <summary>
     /// Gets info for the child directories that reside in this directory and match the specified search pattern and search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     IEnumerable<CachedDirectoryInfo> GetChildDirectoriesInfo(string searchPattern, SearchOptions? options = null);
 
     // Files
@@ -197,11 +203,17 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <summary>
     /// Gets info for the child files that reside in this directory and match the specified search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     sealed IEnumerable<CachedFileInfo> GetChildFilesInfo(SearchOptions? options = null) => GetChildFilesInfo("*", options);
 
     /// <summary>
     /// Gets info for the child files that reside in this directory and match the specified search pattern and search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     IEnumerable<CachedFileInfo> GetChildFilesInfo(string searchPattern, SearchOptions? options = null);
 
     // Entries
@@ -209,11 +221,17 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// <summary>
     /// Gets info for the child files/directories that reside in this directory and match the specified search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     sealed IEnumerable<CachedEntryInfo> GetChildEntriesInfo(SearchOptions? options = null) => GetChildEntriesInfo("*", options);
 
     /// <summary>
     /// Gets info for the child files/directories that reside in this directory and match the specified search pattern and search options.
     /// </summary>
+    /// <remarks>
+    /// An entry that is deleted during the enumeration may or may not be included.
+    /// </remarks>
     IEnumerable<CachedEntryInfo> GetChildEntriesInfo(string searchPattern, SearchOptions? options = null);
 
     #endregion

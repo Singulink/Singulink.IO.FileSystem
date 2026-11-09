@@ -1,5 +1,9 @@
 # Singulink.IO.FileSystem Version History
 
+## Version 3.2.1
+
+- Fixed: on Linux and macOS, `GetChildEntriesInfo`, `GetChildFilesInfo` and `GetChildDirectoriesInfo` threw when an entry was deleted during the enumeration; such entries are now left out
+
 ## Version 3.2
 
 Paths now work with configuration binding, `System.Text.Json` and DataAnnotations validation, and file paths gain methods for extensions such as `.tar.gz`. There are no breaking changes.
