@@ -87,6 +87,54 @@ await stream.WriteAsync(buffer);
 > [!NOTE]
 > The OS may not actually support asynchronous I/O for the underlying handle, in which case the runtime falls back to synchronous internally. The <xref:System.IO.FileOptions.Asynchronous?displayProperty=nameWithType> option only opts in to true async when the platform allows it.
 
+## Opening Handles
+
+A <xref:System.IO.FileStream> keeps a position and a buffer. Code that reads or writes a file in a few large pieces at offsets it already knows needs neither, and can work with the file's handle directly through the static methods of <xref:System.IO.RandomAccess>, which take the handle and an offset.
+
+#### OpenHandle
+
+<xref:Singulink.IO.IAbsoluteFilePath.OpenHandle*> returns a <xref:Microsoft.Win32.SafeHandles.SafeFileHandle>. It takes the same arguments as <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*> with the same defaults, except that it has no buffer size and adds a preallocation size:
+
+```csharp
+SafeFileHandle OpenHandle(
+    FileMode mode = FileMode.Open,
+    FileAccess access = FileAccess.ReadWrite,
+    FileShare share = FileShare.None,
+    FileOptions options = FileOptions.None,
+    long preallocationSize = 0);
+```
+
+Dispose the handle like a stream:
+
+```csharp
+using SafeFileHandle handle = file.OpenHandle(FileMode.Open, FileAccess.Read, FileShare.Read);
+
+byte[] header = new byte[16];
+int read = RandomAccess.Read(handle, header, fileOffset: 0);
+long length = RandomAccess.GetLength(handle);
+```
+
+```csharp
+using SafeFileHandle handle = file.OpenHandle(FileMode.CreateNew, FileAccess.Write, preallocationSize: data.Length);
+
+RandomAccess.Write(handle, data, fileOffset: 0);
+RandomAccess.FlushToDisk(handle);   // see Flushing to Disk below
+```
+
+The preallocation size is a hint to the file system that only has an effect when a file is created or overwritten with write access. It does not change the length of the file.
+
+> [!TIP]
+> Each call on <xref:System.IO.RandomAccess> goes straight to the operating system, so a handle suits a few large reads or writes. For many small ones, the buffer of a <xref:System.IO.FileStream> is what makes them fast.
+
+#### OpenAsyncHandle
+
+<xref:Singulink.IO.IAbsoluteFilePath.OpenAsyncHandle*> has an identical signature to <xref:Singulink.IO.IAbsoluteFilePath.OpenHandle*> but always sets <xref:System.IO.FileOptions.Asynchronous?displayProperty=nameWithType>, for use with <xref:System.IO.RandomAccess.ReadAsync*?displayProperty=nameWithType> and <xref:System.IO.RandomAccess.WriteAsync*?displayProperty=nameWithType>:
+
+```csharp
+using SafeFileHandle handle = file.OpenAsyncHandle(FileMode.Create, FileAccess.Write);
+await RandomAccess.WriteAsync(handle, buffer, fileOffset: 0);
+```
+
 ## File Properties
 
 #### Length and IsReadOnly
@@ -152,6 +200,37 @@ newFile.Replace(originalFile, backupFile: backupPath, ignoreMetadataErrors: true
 
 <xref:Singulink.IO.IAbsoluteFilePath.Replace*> is the recommended way to atomically commit changes: write to a temporary file, then call it to swap the temp file into place.
 
+#### MoveToExclusive
+
+A move can decide between parties: workers that each claim a job file by moving it to a name of their own, or two processes that each want to change the state of a file by renaming it. That only works if one of them wins. <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*> does not ensure it: on Windows, when the same file is moved to two different names at the same time, both moves report success and the file ends up under the name that was applied last.
+
+<xref:Singulink.IO.IAbsoluteFilePath.MoveToExclusive*> moves the file in such a way that, of several attempts to move the same file at the same time, at most one succeeds:
+
+```csharp
+try
+{
+    job.MoveToExclusive(claimedJob);
+    // This worker has the job.
+}
+catch (FileNotFoundException)
+{
+    // Another worker has it.
+}
+```
+
+A party that loses gets a <xref:System.IO.FileNotFoundException> once the file has been moved. On Windows, a party whose attempt overlaps the winner's gets an <xref:System.IO.IOException> for a sharing violation instead.
+
+> [!IMPORTANT]
+> On Windows, any handle that is open on the file without sharing deletion causes the same sharing violation, so that exception alone does not say that another party moved the file. A caller that tries again has lost when the attempt throws <xref:System.IO.FileNotFoundException>.
+
+It differs from <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*> in a few other ways:
+
+- The file is never copied, so the destination must be on the same volume. A destination on another volume throws <xref:System.IO.IOException>.
+- On Windows, handles that are open on the file and share deletion (<xref:System.IO.FileShare.Delete?displayProperty=nameWithType>), such as those of readers and of a writer appending to it, do not block the move and stay valid. On Unix, open handles never block it.
+- With `overwrite: false`, an existing destination is refused as part of the rename on Windows and on Linux. On other Unix platforms, and on Linux file systems that do not support that (NFS, for example), the destination is checked before the rename, so a file that is created there between the two is replaced.
+
+The guarantee is between callers of <xref:Singulink.IO.IAbsoluteFilePath.MoveToExclusive*>.
+
 ## Deleting
 
 Use <xref:Singulink.IO.IAbsoluteFilePath.Delete*>:
@@ -160,6 +239,43 @@ Use <xref:Singulink.IO.IAbsoluteFilePath.Delete*>:
 file.Delete();                      // ignores not-found by default
 file.Delete(ignoreNotFound: false); // throws FileNotFoundException if absent
 ```
+
+## Flushing to Disk
+
+Writing to a file and closing its stream only hands the data to the operating system, which writes it to the disk some time later. Until then, a power loss or an operating system crash can lose it. <xref:Singulink.IO.IAbsoluteFilePath.FlushToDisk*> forces the data and metadata of an existing file onto the disk before it returns:
+
+```csharp
+using (FileStream s = file.OpenStream(FileMode.Create, FileAccess.Write))
+    s.Write(data);
+
+file.FlushToDisk();
+```
+
+The file is opened for writing while it is flushed, because Windows only flushes a file through a handle with write access. A read-only file therefore cannot be flushed, and other handles that are open on the file must share writing.
+
+> [!NOTE]
+> Only data that the operating system already has is flushed. If a <xref:System.IO.FileStream> on the file is still open, flush or dispose it first, or call <xref:System.IO.FileStream.Flush(System.Boolean)?displayProperty=nameWithType> on it with `true` instead, which writes the stream's buffer and then flushes the file to disk.
+
+#### New, Renamed and Moved Files
+
+The name of a file is an entry of its directory and not part of the file. A file that was just created, renamed or moved is only durable under its name once its directory is flushed as well, with <xref:Singulink.IO.IAbsoluteDirectoryPath.FlushToDisk*?displayProperty=nameWithType>:
+
+```csharp
+file.FlushToDisk();                   // the contents
+file.ParentDirectory.FlushToDisk();   // the name
+```
+
+What flushing a directory does differs between Windows and Unix. See [Flushing to Disk](directory-operations.md#flushing-to-disk) in Working with Directories, which also shows how to make a renamed file durable on both.
+
+#### Missing Files
+
+A file that does not exist throws <xref:System.IO.FileNotFoundException> by default. That differs from <xref:Singulink.IO.IAbsoluteFilePath.Delete*> on purpose: if the file is missing then nothing was made durable, which is usually a mistake. Pass `ignoreNotFound: true` where a missing file is expected, such as a file that another process may delete at any time:
+
+```csharp
+file.FlushToDisk(ignoreNotFound: true);
+```
+
+What is ignored is the same as what <xref:Singulink.IO.IAbsoluteFilePath.Delete*> ignores: a file that does not exist in a parent directory that does. A parent directory that does not exist still throws <xref:System.IO.DirectoryNotFoundException>, and a path that points to a directory still throws <xref:System.IO.IOException>.
 
 ## Putting It Together
 

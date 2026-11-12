@@ -1,5 +1,11 @@
 # Singulink.IO.FileSystem Version History
 
+## Version 3.3
+
+- New `FlushToDisk(ignoreNotFound)` methods on `IAbsoluteFilePath` and `IAbsoluteDirectoryPath` that flush a file, or the entries of a directory, to disk so that they survive a power loss; see [Flushing to Disk](https://www.singulink.com/Docs/Singulink.IO.FileSystem/articles/guides/file-operations.html#flushing-to-disk)
+- New `IAbsoluteFilePath.MoveToExclusive` method that moves a file so that, of several concurrent attempts to move it, at most one succeeds, which `MoveTo` does not ensure on Windows; see [MoveToExclusive](https://www.singulink.com/Docs/Singulink.IO.FileSystem/articles/guides/file-operations.html#movetoexclusive)
+- New `IAbsoluteFilePath.OpenHandle` and `OpenAsyncHandle` methods that open a `SafeFileHandle` to a file, for use with `RandomAccess`
+
 ## Version 3.2.1
 
 - Fixed: on Linux and macOS, `GetChildEntriesInfo`, `GetChildFilesInfo` and `GetChildDirectoriesInfo` could throw `FileNotFoundException` or `DirectoryNotFoundException` if an entry was deleted in the brief window between the enumeration finding it and reading its info; such entries are now skipped

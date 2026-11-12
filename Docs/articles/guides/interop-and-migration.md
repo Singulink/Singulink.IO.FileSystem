@@ -116,10 +116,12 @@ A reference of common `System.IO` operations and their library equivalents:
 |-------------|---------|
 | <xref:System.IO.File.Exists*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsolutePath.Exists?displayProperty=nameWithType> |
 | <xref:System.IO.File.Open*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*?displayProperty=nameWithType> |
+| <xref:System.IO.File.OpenHandle*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.OpenHandle*?displayProperty=nameWithType> |
 | <xref:System.IO.File.Copy*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.CopyTo*?displayProperty=nameWithType> |
 | <xref:System.IO.File.Move*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*?displayProperty=nameWithType> |
 | <xref:System.IO.File.Replace*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.Replace*?displayProperty=nameWithType> |
 | <xref:System.IO.File.Delete*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsoluteFilePath.Delete*?displayProperty=nameWithType> |
+| <xref:System.IO.RandomAccess.FlushToDisk*?displayProperty=nameWithType> (on a handle to the file) | <xref:Singulink.IO.IAbsoluteFilePath.FlushToDisk*?displayProperty=nameWithType> |
 | <xref:System.IO.File.GetAttributes*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsolutePath.Attributes?displayProperty=nameWithType> |
 | <xref:System.IO.File.GetLastWriteTimeUtc*?displayProperty=nameWithType> | <xref:Singulink.IO.IAbsolutePath.LastWriteTimeUtc?displayProperty=nameWithType> |
 | A new <xref:System.IO.FileInfo> (for metadata) | <xref:Singulink.IO.IAbsoluteFilePath.GetInfo*?displayProperty=nameWithType> (returns <xref:Singulink.IO.CachedFileInfo>) |

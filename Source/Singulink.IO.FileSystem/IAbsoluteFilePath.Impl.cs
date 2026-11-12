@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using Microsoft.Win32.SafeHandles;
 using Singulink.IO.Json;
 
 namespace Singulink.IO;
@@ -197,6 +198,22 @@ public partial interface IAbsoluteFilePath
             }
         }
 
+        public SafeFileHandle OpenHandle(FileMode mode = FileMode.Open, FileAccess access = FileAccess.ReadWrite, FileShare share = FileShare.None, FileOptions options = FileOptions.None, long preallocationSize = 0)
+        {
+            PathFormat.EnsureCurrent();
+
+            try
+            {
+                // Throws UnauthorizedAccessException with a nonsense message if file is a dir, convert to IOEx.
+                return File.OpenHandle(PathExport, mode, access, share, options, preallocationSize);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                ThrowIfFileIsDir(this);
+                throw Ex.Convert(ex);
+            }
+        }
+
         public void CopyTo(IAbsoluteFilePath destinationFile, bool overwrite = false)
         {
             PathFormat.EnsureCurrent();
@@ -239,6 +256,47 @@ public partial interface IAbsoluteFilePath
                     ThrowIfFileIsDir(destinationFile);
 
                 throw Ex.Convert(ex);
+            }
+        }
+
+        public void MoveToExclusive(IAbsoluteFilePath destinationFile, bool overwrite = false)
+        {
+            PathFormat.EnsureCurrent();
+            destinationFile.PathFormat.EnsureCurrent(nameof(destinationFile));
+
+            try
+            {
+                if (PathFormat == PathFormat.Windows)
+                {
+                    Interop.Windows.MoveFileExclusive(this, destinationFile, overwrite);
+                    return;
+                }
+
+                // A rename moves a dir as readily as a file on Unix, so check that this is a file first. Getting the state allocates there, so that is only
+                // done to find out what is wrong, which is then reported the way Delete() does.
+                if (!File.Exists(PathExport))
+                {
+                    var state = State;
+
+                    if (state is EntryState.WrongType)
+                        throw Ex.FileIsDir(this);
+                    else if (state is EntryState.ParentExists)
+                        throw Ex.NotFound(this);
+                    else if (state is EntryState.ParentDoesNotExist)
+                        throw Ex.NotFound(ParentDirectory);
+                }
+
+                Interop.Unix.MoveFileExclusive(this, destinationFile, overwrite);
+            }
+            catch (UnauthorizedIOAccessException) when (PathFormat == PathFormat.Windows)
+            {
+                // Windows denies access if this path is a dir, and if the destination is one and may be overwritten. Always throw IOEx for a dir.
+                ThrowIfFileIsDir(this);
+
+                if (overwrite)
+                    ThrowIfFileIsDir(destinationFile);
+
+                throw;
             }
         }
 
@@ -290,6 +348,30 @@ public partial interface IAbsoluteFilePath
             {
                 // If file is a dir then UnauthorizedAccessEx is thrown with a nonsense message. Convert to IOEx.
                 File.Delete(PathExport);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                ThrowIfFileIsDir(this);
+                throw Ex.Convert(ex);
+            }
+        }
+
+        public void FlushToDisk(bool ignoreNotFound = false)
+        {
+            PathFormat.EnsureCurrent();
+
+            try
+            {
+                // Write access is required because FlushFileBuffers needs it on Windows. Read access is not requested, so handles that do not share reading
+                // do not block the flush, and everything is shared so that the flush gets in the way of other handles as little as possible.
+                // If file is a dir then UnauthorizedAccessEx is thrown with a nonsense message. Convert to IOEx.
+                using var handle = File.OpenHandle(PathExport, FileMode.Open, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete);
+                RandomAccess.FlushToDisk(handle);
+            }
+            catch (FileNotFoundException) when (ignoreNotFound)
+            {
+                // Thrown only if the parent dir exists and the file does not, which is what Delete() ignores as well. A missing parent dir throws
+                // DirectoryNotFoundEx, from both.
             }
             catch (UnauthorizedAccessException ex)
             {

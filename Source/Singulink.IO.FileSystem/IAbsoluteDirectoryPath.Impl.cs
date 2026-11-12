@@ -419,6 +419,52 @@ public partial interface IAbsoluteDirectoryPath
             }
         }
 
+        public void FlushToDisk(bool ignoreNotFound = false)
+        {
+            PathFormat.EnsureCurrent();
+
+            if (PathFormat == PathFormat.Windows)
+            {
+                // There is nothing to flush on Windows (see the remarks on the interface method), so only check that this is an existing directory, so that
+                // a wrong path fails here as it does on Unix. Getting the state allocates, so that is only done to find out what is wrong. If a missing
+                // directory is to be ignored then there is nothing to check either, and no system call is made at all.
+                if (!ignoreNotFound && !Interop.Windows.IsExistingDirectory(this))
+                {
+                    var state = State;
+
+                    if (state is EntryState.WrongType)
+                        throw Ex.DirIsFile(this);
+
+                    if (state is not EntryState.Exists)
+                        throw Ex.NotFound(this);
+                }
+
+                return;
+            }
+
+            if (Interop.Unix.FlushDirectory(this))
+                return;
+
+            // Opening the directory fails the same way whether it does not exist or the path points to a file. As in Delete(), always throw IOEx for a
+            // file, and only ignore a dir that does not exist in a parent dir that does. The state is only read once because that is costly on Unix.
+            if (ignoreNotFound)
+            {
+                var state = State;
+
+                if (state is EntryState.WrongType)
+                    throw Ex.DirIsFile(this);
+
+                if (state is EntryState.ParentExists)
+                    return;
+            }
+            else
+            {
+                ThrowIfDirIsFile(this);
+            }
+
+            throw Ex.NotFound(this);
+        }
+
         public override IAbsoluteDirectoryPath GetLastExistingDirectory()
         {
             // PathFormat.EnsureCurrent() is called by Exists so no need to do it again here.

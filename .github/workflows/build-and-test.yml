@@ -90,3 +90,45 @@ jobs:
       run: dotnet build --configuration Release --no-restore /p:EnableWindowsTargeting=true
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
+
+  debug-macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+    - name: Clean
+      run: dotnet clean --configuration Debug /p:EnableWindowsTargeting=true && dotnet nuget locals all --clear
+    - name: Install dependencies
+      run: dotnet restore /p:EnableWindowsTargeting=true
+    - name: Build
+      run: dotnet build --configuration Debug --no-restore /p:EnableWindowsTargeting=true
+    - name: Test
+      run: dotnet test --configuration Debug --no-build --verbosity normal
+
+  release-macos:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+    - name: Clean
+      run: dotnet clean --configuration Release /p:EnableWindowsTargeting=true && dotnet nuget locals all --clear
+    - name: Install dependencies
+      run: dotnet restore /p:EnableWindowsTargeting=true
+    - name: Build
+      run: dotnet build --configuration Release --no-restore /p:EnableWindowsTargeting=true
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal

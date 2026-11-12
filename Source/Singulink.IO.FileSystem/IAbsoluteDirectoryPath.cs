@@ -116,6 +116,39 @@ public partial interface IAbsoluteDirectoryPath : IAbsolutePath, IDirectoryPath
     /// </summary>
     void MoveTo(IAbsoluteDirectoryPath destinationDir);
 
+    /// <summary>
+    /// Flushes the directory's entries to disk, so that files and directories created in, renamed into or removed from it survive a power loss or an
+    /// operating system crash.
+    /// </summary>
+    /// <param name="ignoreNotFound"><see langword="true"/> to ignore directory not found errors; otherwise, <see langword="false"/> to throw <see
+    /// cref="DirectoryNotFoundException"/> if the directory was not found.</param>
+    /// <remarks>
+    /// <para>
+    /// Only the directory's own entries are flushed: not the contents of the files in it (see <see cref="IAbsoluteFilePath.FlushToDisk(bool)"/>), and not
+    /// the entries of its subdirectories or of its parent directory. A directory's own name is an entry of its parent directory.</para>
+    /// <para>
+    /// On Unix the directory is opened and flushed with <c>fsync</c>. On Apple platforms <c>F_FULLFSYNC</c> is tried first, as it also flushes the drive's
+    /// write cache, and <c>fsync</c> is used if it fails. A file system that refuses to flush a directory, by failing <c>fsync</c> with <c>EINVAL</c>,
+    /// <c>EBADF</c> or <c>ENOTSUP</c> (as some network and virtual file systems do), is tolerated: the call returns normally without anything having been
+    /// flushed, and the entries are then only as durable as that file system makes them by itself. Any other failure is thrown.</para>
+    /// <para>
+    /// On Windows nothing is flushed, and the call only checks that the directory exists. NTFS records changes to directories in its log, and flushing any
+    /// file on the volume forces that log to disk. A change to a directory is therefore durable on Windows once a file on the same volume has been flushed
+    /// after the change was made, such as by calling <see cref="IAbsoluteFilePath.FlushToDisk(bool)"/> on a file after creating it in or moving it into the
+    /// directory. Windows file systems that keep no such log, such as FAT32 and exFAT, give no equivalent guarantee.</para>
+    /// <para>
+    /// Unlike <see cref="Delete(bool, bool)"/>, a directory that is not found is not ignored by default: nothing was made durable, which is usually a
+    /// mistake. If <paramref name="ignoreNotFound"/> is <see langword="true"/> then on Unix what <see cref="Delete(bool, bool)"/> ignores is ignored: a
+    /// directory that does not exist in a parent directory that does. A parent directory that does not exist and a path that points to a file still throw
+    /// there. On Windows, where the existence of the directory is all there is to check, nothing is checked and no system call is made, so a parent
+    /// directory that does not exist and a path that points to a file pass as well.</para>
+    /// </remarks>
+    /// <exception cref="DirectoryNotFoundException">The directory does not exist and <paramref name="ignoreNotFound"/> is <see langword="false"/>, or on Unix
+    /// its parent directory does not exist.</exception>
+    /// <exception cref="UnauthorizedIOAccessException">Access to the directory is denied.</exception>
+    /// <exception cref="IOException">The path points to a file, or the directory could not be opened or flushed.</exception>
+    void FlushToDisk(bool ignoreNotFound = false);
+
     #endregion
 
     #region Combining

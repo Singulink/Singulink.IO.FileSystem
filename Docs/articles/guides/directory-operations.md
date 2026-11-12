@@ -2,7 +2,7 @@
 
 # Working with Directories
 
-Directory operations live on <xref:Singulink.IO.IAbsoluteDirectoryPath>. Like files, relative directory paths can describe a location but cannot perform I/O; combine them with an absolute base directory first. This article covers existence checks, creation, deletion, moving and the small set of directory-specific properties, while enumeration lives in [Searching and Enumeration](searching-and-enumeration.md).
+Directory operations live on <xref:Singulink.IO.IAbsoluteDirectoryPath>. Like files, relative directory paths can describe a location but cannot perform I/O; combine them with an absolute base directory first. This article covers existence checks, creation, deletion, moving, flushing to disk and the small set of directory-specific properties, while enumeration lives in [Searching and Enumeration](searching-and-enumeration.md).
 
 ## Existence Checks
 
@@ -67,6 +67,64 @@ dir.MoveTo(targetDir);
 ```
 
 The argument is the new path of the directory itself, not its parent. The destination must be on the same volume and must not already exist; otherwise <xref:System.IO.IOException> is thrown. To move across volumes, enumerate the contents and copy them instead (see the [Mirror a Structure](#mirror-a-structure) pattern below).
+
+## Flushing to Disk
+
+Creating, renaming, moving or deleting a file or directory changes the entries of the directory it is in, and the operating system writes those changes to the disk some time later, as it does with file data. <xref:Singulink.IO.IAbsoluteDirectoryPath.FlushToDisk*> forces the entries of an existing directory onto the disk, so that what was created in, renamed into or removed from it survives a power loss or an operating system crash:
+
+```csharp
+IAbsoluteFilePath file = dir.CombineFile("journal.dat");
+
+using (FileStream s = file.OpenStream(FileMode.CreateNew, FileAccess.Write))
+{
+    s.Write(data);
+    s.Flush(flushToDisk: true);   // the contents
+}
+
+dir.FlushToDisk();                // the name
+```
+
+Only the directory's own entries are flushed: not the contents of the files in it (see [Flushing to Disk](file-operations.md#flushing-to-disk) in Working with Files), and not the entries of its subdirectories or of its parent directory. A directory's own name is an entry of its parent directory.
+
+#### On Unix
+
+The directory is opened and flushed with `fsync`. On Apple platforms `F_FULLFSYNC` is tried first, as it also flushes the drive's write cache, and `fsync` is used if it fails.
+
+Some file systems, network mounts in particular, refuse to flush a directory. That is tolerated: if `fsync` fails with `EINVAL`, `EBADF` or `ENOTSUP`, the call returns normally without anything having been flushed, and the entries are then only as durable as that file system makes them by itself. Any other failure throws <xref:System.IO.IOException>.
+
+#### On Windows
+
+Nothing is flushed, and the call only checks that the directory exists (see [Missing Directories](#missing-directories) for skipping that check). NTFS records changes to directories in its log, and flushing any file on the volume forces that log to disk. A change to a directory is therefore durable once a file on the same volume has been flushed after the change was made. Windows file systems that keep no such log, such as FAT32 and exFAT, give no equivalent guarantee.
+
+> [!IMPORTANT]
+> On Windows the file flush has to come after the change to the directory. Flushing a file and then renaming it leaves the rename unflushed there, no matter which directories are flushed afterwards.
+
+#### Durable on Both
+
+Flush a file after the change to its directory, then flush the directory. For a file that is written under a temporary name and then renamed:
+
+```csharp
+tempFile.FlushToDisk();                         // the contents, before the file gets its final name
+tempFile.MoveTo(finalFile, overwrite: true);
+
+finalFile.FlushToDisk();                        // Windows: forces the rename to disk
+finalFile.ParentDirectory.FlushToDisk();        // Unix: flushes the entries of the directory
+```
+
+#### Missing Directories
+
+A directory that does not exist throws <xref:System.IO.DirectoryNotFoundException> by default. That differs from <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*> on purpose: if the directory is missing then nothing was made durable, which is usually a mistake. Pass `ignoreNotFound: true` where a missing directory is expected:
+
+```csharp
+dir.FlushToDisk(ignoreNotFound: true);
+```
+
+On Unix, what is ignored is the same as what <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*> ignores: a directory that does not exist in a parent directory that does. A parent directory that does not exist still throws <xref:System.IO.DirectoryNotFoundException>, and a path that points to a file still throws <xref:System.IO.IOException>.
+
+On Windows, the existence of the directory is all that a flush checks, so with `ignoreNotFound: true` nothing is checked and no system call is made.
+
+> [!NOTE]
+> Because nothing is checked on Windows with `ignoreNotFound: true`, a parent directory that does not exist and a path that points to a file pass there as well, where they throw on Unix.
 
 ## Useful Properties
 

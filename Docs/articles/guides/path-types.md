@@ -85,6 +85,7 @@ See [Combining and Navigating Paths](combining-and-navigating.md).
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.DriveType>, <xref:Singulink.IO.IAbsoluteDirectoryPath.FileSystem>, <xref:Singulink.IO.IAbsoluteDirectoryPath.AvailableFreeSpace>, <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalFreeSpace>, <xref:Singulink.IO.IAbsoluteDirectoryPath.TotalSize>: see [Drive and Disk Information](drive-and-disk-info.md).
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.Create*>, <xref:Singulink.IO.IAbsoluteDirectoryPath.Delete*>.
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.MoveTo*>: move or rename the directory (same volume).
+- <xref:Singulink.IO.IAbsoluteDirectoryPath.FlushToDisk*>: flush the directory's entries to disk.
 - <xref:Singulink.IO.IAbsoluteDirectoryPath.GetInfo*> returning <xref:Singulink.IO.CachedDirectoryInfo>.
 - A full set of enumeration methods: see [Searching and Enumeration](searching-and-enumeration.md).
 
@@ -94,7 +95,10 @@ See [Combining and Navigating Paths](combining-and-navigating.md).
 
 - <xref:Singulink.IO.IAbsoluteFilePath.IsReadOnly>, <xref:Singulink.IO.IAbsoluteFilePath.Length>.
 - <xref:Singulink.IO.IAbsoluteFilePath.OpenStream*>, <xref:Singulink.IO.IAbsoluteFilePath.OpenAsyncStream*>.
+- <xref:Singulink.IO.IAbsoluteFilePath.OpenHandle*>, <xref:Singulink.IO.IAbsoluteFilePath.OpenAsyncHandle*>.
 - <xref:Singulink.IO.IAbsoluteFilePath.CopyTo*>, <xref:Singulink.IO.IAbsoluteFilePath.MoveTo*>, <xref:Singulink.IO.IAbsoluteFilePath.Replace*>, <xref:Singulink.IO.IAbsoluteFilePath.Delete*>.
+- <xref:Singulink.IO.IAbsoluteFilePath.MoveToExclusive*>: move the file so that only one of several concurrent moves of it succeeds.
+- <xref:Singulink.IO.IAbsoluteFilePath.FlushToDisk*>: flush the file's data and metadata to disk.
 - <xref:Singulink.IO.IAbsoluteFilePath.GetInfo*> returning <xref:Singulink.IO.CachedFileInfo>.
 
 See [Working with Files](file-operations.md).
